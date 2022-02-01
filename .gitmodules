@@ -1,8 +1,0 @@
-[submodule "georchestra"]
-	path = georchestra
-	url = https://github.com/georchestra/georchestra.git
-	shallow = true
-[submodule "datadir"]
-	path = datadir
-	url = https://github.com/georchestra/datadir.git
-	branch = spring_gateway

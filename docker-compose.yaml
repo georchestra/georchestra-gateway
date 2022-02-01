@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  georchestra-gateway:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        - REPO_USER
+        - REPO_PW
+        - REPO_URL
+    image: mtr.external.otc.telekomcloud.com/ftth/georchestra-gateway:latest
+

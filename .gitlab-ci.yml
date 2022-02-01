@@ -1,0 +1,6 @@
+# include the shared library
+include:
+  - project: "geo-hub/platforms/gdi-otc/cicd/gitlab-share"
+    ref: "master"
+    file: ".gitlab-ci-build-image.yml"
+
