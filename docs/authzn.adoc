@@ -88,6 +88,11 @@ is `ou=users,dc=georchestra,dc=org`, the RDN is `ou=users`.
 |Optional if `activeDirectory` is `true`, mandatory otherwise. Users search filter,
 e.g. `(uid={0})`.
 
+|`georchestra.gateway.security.ldap.[name].users.returningAttributes`
+|null
+|Specifies the attributes that will be returned as part of the search. null indicates
+that all attributes will be returned. An empty array indicates no attributes are returned.
+
 |`georchestra.gateway.security.ldap.[name].roles.rdn`
 |
 |Ignored for Active Directory, mandatory otherwise. Relative Distinguished Name of the "roles" LDAP organization unit. E.g. if the complete name (or DN) is `ou=roles,dc=georchestra,dc=org`,
@@ -128,6 +133,7 @@ georchestra:
           users:
             rdn: ${ldapUsersRdn:ou=users}
             searchFilter: ${ldapUserSearchFilter:(uid={0})}
+            returningAttributes: custom_id,isMemberOf
           roles:
             rdn: ${ldapRolesRdn:ou=roles}
             searchFilter: ${ldapRolesSearchFilter:(member={0})}
@@ -157,26 +163,25 @@ Both standard and non-standard claims can be used to set the `GeorchestraUser`'s
 
 > `org.springframework.security.oauth2.core.oidc.user.OidcUser`
 
-Configuration properties after `georchestra.gateway.security.oidc.claims`:
 |===
 |Property name | Default value | Description
-|`organization.path`
+|`georchestra.gateway.security.oidc.claims.organization.path`
 |
 |JSONPath expression to extract the organization short name from the OIDC claims map
 
-|`roles.path`
+|`georchestra.gateway.security.oidc.claims.roles.json.path`
 | 
 |JSONPath expression to extract the user role names from the OIDC claims map
 
-|`roles.uppercase`
+|`georchestra.gateway.security.oidc.claims.roles.uppercase`
 | true
 |Whether to return mapped role names as upper-case.
 
-|`roles.normalize`
+|`georchestra.gateway.security.oidc.claims.roles.normalize`
 | true
 |Whether to remove special characters and replace spaces by underscores.
 
-|`roles.append`
+|`georchestra.gateway.security.oidc.claims.roles.append`
 | true
 |Whether to append (`true`) the resolved role names to the roles given by the OAuth2 authentication, or replace them (`false`).
 |===
@@ -197,7 +202,7 @@ Take as example the following claims provided by an OIDC ID Token:
     "updated_at": 1490198843,
     "groups": [
         "GDI Planer",
-        "GDI Editor"
+        "GDI Editor (exten)"
     ],
     "PartyOrganisationID": "6007280321"
 }
@@ -208,26 +213,58 @@ and the organization's short name from the `PartyOrganisationID` claim:
 
 [source,yaml]
 ----
-georchestra.gateway.security.oidc.claims:
-  organization.path: "$.PartyOrganisationID"
-  roles:
-    path: "$.groups..['name']"
-    uppercase: true
-    normalize: true
-    append: true
+georchestra:
+  gateway:
+    security:
+      oidc:
+        # Configure mappings of custom IDToken claims to roles and org name
+        claims:
+          # JSONPath expression to extract the organization identifier conveyed as
+          # the sec-org request header to backend georchestra services
+          organization.path: "$.PartyOrganisationID"
+          roles:
+              #  List of JSONPath expressions to extract additional role names
+              # conveyed as the sec-roles request header to backend georchestra services.
+              #  The ICU IDToken `PartyOrganisationID` attribute is converted to role `ORG_<orgid>`
+              # and added first to the list due to a bug in Geofence that will only consider the
+              # first role when resolving the user's data access rules.
+              #  The "$.groups_json..['name']" JSONPath expression will extract all role names
+              # from the IDToken's custom `groups_json` claim.
+              #  For a sample IDToken containing the following properties:
+              # 
+              # {
+              # "authorities": [
+              #       {
+              #         "authority": "ROLE_USER",
+              #         "attributes": {
+              #           "PartyOrganisationID": 6007280321, 
+              #           "groups_json": [ [ {"name": "GDI Planer"}, {"name": "GDI Editor (extern)"} ] ]
+              #         }
+              #       }
+              #  ]
+              # }
+              #
+              # The resulting list of roles will be ["ORG_6007280321", "GDI_PLANER_EXTERN", "GDI_EDITOR_EXTERN"]
+              # and the request header will be `sec-roles: ROLE_ORG_6007280321;ROLE_GDI_PLANER;ROLE_GDI_EDITOR_EXTERN;ROLE_USER`
+              json.path:
+              - "$.concat(\"ORG_\", $.PartyOrganisationID)"
+              - "$.groups_json..['name']"
+              uppercase: true
+              normalize: true
+              append: true
 ----
 
 Resulting in the following property values for the `GeorchestraUser` instance associated to the request:
 
 ```
-roles = ["ROLE_GDI_PLANER", "ROLE_GDI_EDITOR"]
+roles = ["ROLE_GDI_PLANER", "ROLE_GDI_EDITOR_EXTERN"]
 organization = "6007280321"
 ```
 
 Which the gateway will then convey to the proxied services as the following request headers:
 
 ```
-sec-roles: ROLE_GDI_PLANER;ROLE_GDI_EDITOR
+sec-roles: ROLE_ORG_6007280321;ROLE_GDI_PLANER;ROLE_GDI_EDITOR;ROLE_USER
 sec-org: 6007280321
 ```
 

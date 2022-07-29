@@ -39,6 +39,8 @@ public class ExtendedLdapConfig {
     private @NonNull String usersSearchFilter;
     private @NonNull String rolesRdn;
     private @NonNull String rolesSearchFilter;
+    // null = all atts, empty == none
+    private String[] returningAttributes;
 
     private @NonNull Optional<String> adminDn;
     private @NonNull Optional<String> adminPassword;

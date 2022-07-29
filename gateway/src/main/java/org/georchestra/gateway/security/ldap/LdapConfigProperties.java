@@ -35,6 +35,7 @@ import org.springframework.validation.annotation.Validated;
 
 import lombok.Data;
 import lombok.Generated;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 /**
@@ -139,6 +140,14 @@ public class LdapConfigProperties implements Validator {
          * (&(objectClass=user)(userPrincipalName={0})) for ActiveDirectory
          */
         private String searchFilter;
+
+        /**
+         * Specifies the attributes that will be returned as part of the search.
+         * <p>
+         * null indicates that all attributes will be returned. An empty array indicates
+         * no attributes are returned.
+         */
+        private @Setter String[] returningAttributes;
     }
 
     @Generated

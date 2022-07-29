@@ -21,6 +21,7 @@ package org.georchestra.gateway.app;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.georchestra.gateway.security.GeorchestraUserMapper;
 import org.georchestra.security.model.GeorchestraUser;
@@ -56,7 +57,7 @@ public class GeorchestraGatewayApplication {
     @GetMapping(path = "/whoami", produces = "application/json")
     @ResponseBody
     public Mono<Map<String, Object>> whoami(Authentication principal, ServerWebExchange exchange) {
-        GeorchestraUser user = userMapper.resolve(principal).orElse(null);
+        GeorchestraUser user = Optional.ofNullable(principal).flatMap(userMapper::resolve).orElse(null);
         Map<String, Object> ret = new LinkedHashMap<>();
         ret.put("GeorchestraUser", user);
         if (principal == null) {
