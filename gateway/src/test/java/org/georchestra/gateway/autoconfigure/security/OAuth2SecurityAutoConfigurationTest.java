@@ -21,8 +21,12 @@ package org.georchestra.gateway.autoconfigure.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.georchestra.gateway.security.oauth2.OAuth2Configuration.OAuth2AuthenticationCustomizer;
 import org.georchestra.gateway.security.oauth2.OAuth2ProxyConfigProperties;
+import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomClaimsConfigProperties;
+import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomClaimsConfigProperties.RolesMapping;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -63,6 +67,54 @@ class OAuth2SecurityAutoConfigurationTest {
                     assertThat(context).hasBean("oauth2WebClient");
                     assertThat(context).hasBean("oAuth2GeorchestraUserUserMapper");
                     assertThat(context).hasBean("openIdConnectGeorchestraUserUserMapper");
+                });
+        ;
+    }
+
+    @Test
+    void testOpenIdConnectCustomClaimsConfigProperties() {
+        runner.withPropertyValues(//
+                "georchestra.gateway.security.oauth2.enabled: true" //
+                , "georchestra.gateway.security.oidc.claims.organization.path: $.PartyOrganisationID" //
+                , "georchestra.gateway.security.oidc.claims.roles.json.path: $.groups_json..['name']" //
+                , "georchestra.gateway.security.oidc.claims.roles.uppercase: false" //
+                , "georchestra.gateway.security.oidc.claims.roles.normalize: false" //
+                , "georchestra.gateway.security.oidc.claims.roles.append: false" //
+        )//
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    OpenIdConnectCustomClaimsConfigProperties claimsConfig = context
+                            .getBean(OpenIdConnectCustomClaimsConfigProperties.class);
+                    assertThat(claimsConfig.getOrganization().getPath()).isEqualTo(List.of("$.PartyOrganisationID"));
+                    RolesMapping rolesMapping = claimsConfig.getRoles();
+                    assertThat(rolesMapping.getJson().getPath()).isEqualTo(List.of("$.groups_json..['name']"));
+                    assertThat(rolesMapping.isUppercase()).isFalse();
+                    assertThat(rolesMapping.isNormalize()).isFalse();
+                    assertThat(rolesMapping.isAppend()).isFalse();
+                });
+        ;
+    }
+
+    @Test
+    void testOpenIdConnectCustomClaimsConfigProperties_multiple_role_expressions() {
+        runner.withPropertyValues(//
+                "georchestra.gateway.security.oauth2.enabled: true", //
+                "georchestra.gateway.security.oidc.claims.roles.json.path[0]: $.concat(\"ORG_\", $.PartyOrganisationID)", //
+                "georchestra.gateway.security.oidc.claims.roles.json.path[1]: $.groups_json..['name']" //
+        )//
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    OpenIdConnectCustomClaimsConfigProperties claimsConfig = context
+                            .getBean(OpenIdConnectCustomClaimsConfigProperties.class);
+
+                    List<String> expected = List.of(//
+                            "$.concat(\"ORG_\", $.PartyOrganisationID)", //
+                            "$.groups_json..['name']");
+
+                    RolesMapping rolesMapping = claimsConfig.getRoles();
+                    List<String> actual = rolesMapping.getJson().getPath();
+                    assertThat(actual).size().isEqualTo(2);
+                    assertThat(actual).isEqualTo(expected);
                 });
         ;
     }

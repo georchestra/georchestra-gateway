@@ -95,7 +95,7 @@ public class ExtendedLdapAuthenticationConfiguration {
                 .rolesSearchFilter(config.getRolesSearchFilter())//
                 .adminDn(config.getAdminDn().orElse(null))//
                 .adminPassword(config.getAdminPassword().orElse(null))//
-                .build();
+                .returningAttributes(config.getReturningAttributes()).build();
 
         return new GeorchestraLdapAuthenticationProvider(config.getName(), delegate);
     }

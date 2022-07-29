@@ -20,6 +20,7 @@ package org.georchestra.gateway.security.oauth2;
 
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,7 +91,7 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
                     return;
                 }
                 if (append) {
-                    target.getRoles().addAll(roles);
+                    target.getRoles().addAll(0, roles);
                 } else {
                     target.setRoles(roles);
                 }
@@ -125,7 +126,7 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
     @Accessors(chain = true)
     public static @Data class JsonPathExtractor {
         /**
-         * JsonPath expression to extract the role names from the
+         * JsonPath expression(s) to extract the role names from the
          * {@literal Map<String, Object>} containing all OIDC authentication token
          * claims.
          * <p>
@@ -150,14 +151,20 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
          * the first group name, while the expression {@literal $.groups_json..['name']}
          * would match them all to a {@code List<String>}.
          */
-        private String path;
+        private List<String> path = new ArrayList<>();
 
         /**
          * @param claims
          * @return
          */
         public @NonNull List<String> extract(@NonNull Map<String, Object> claims) {
-            final String jsonPathExpression = this.path;
+            return this.path.stream()//
+                    .map(jsonPathExpression -> this.extract(jsonPathExpression, claims))//
+                    .flatMap(List::stream)//
+                    .collect(Collectors.toList());
+        }
+
+        private List<String> extract(final String jsonPathExpression, Map<String, Object> claims) {
             if (!StringUtils.hasText(jsonPathExpression)) {
                 return List.of();
             }

@@ -49,6 +49,9 @@ public class LdapAuthenticatorProviderBuilder {
     private @Setter String adminDn;
     private @Setter String adminPassword;
 
+    // null = all atts, empty == none
+    private @Setter String[] returningAttributes = null;
+
     public LdapAuthenticationProvider build() {
         requireNonNull(url, "url is not set");
         requireNonNull(baseDn, "baseDn is not set");
@@ -71,6 +74,8 @@ public class LdapAuthenticatorProviderBuilder {
     private BindAuthenticator ldapAuthenticator(BaseLdapPathContextSource contextSource) {
         FilterBasedLdapUserSearch search = new FilterBasedLdapUserSearch(userSearchBase, userSearchFilter,
                 contextSource);
+
+        search.setReturningAttributes(returningAttributes);
 
         BindAuthenticator authenticator = new BindAuthenticator(contextSource);
         authenticator.setUserSearch(search);

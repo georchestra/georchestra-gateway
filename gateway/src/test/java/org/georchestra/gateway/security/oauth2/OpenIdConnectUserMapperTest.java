@@ -79,7 +79,7 @@ class OpenIdConnectUserMapperTest {
     @Test
     void applyNonStandardClaims_jsonPath_nested_array_single_value_to_roles() throws ParseException {
         final String jsonPath = "$.groups_json..['name']";
-        nonStandardClaimsConfig.getRoles().getJson().setPath(jsonPath);
+        nonStandardClaimsConfig.getRoles().getJson().getPath().add(jsonPath);
 
         final String json = //
                 "{" //
@@ -105,7 +105,7 @@ class OpenIdConnectUserMapperTest {
     void applyNonStandardClaims_jsonPath_nested_array_multiple_values_to_roles() throws ParseException {
 
         final String jsonPath = "$.groups_json..['name']";
-        nonStandardClaimsConfig.getRoles().getJson().setPath(jsonPath);
+        nonStandardClaimsConfig.getRoles().getJson().getPath().add(jsonPath);
 
         final String json = //
                 "{" //
@@ -133,10 +133,43 @@ class OpenIdConnectUserMapperTest {
     }
 
     @Test
+    void applyNonStandardClaims_jsonPath_multiple_json_paths() throws ParseException {
+        final String orgJsonPath = "$.concat(\"ORG_\", $.PartyOrganisationID)";
+        final String groupsJsonPath = "$.groups_json..['name']";
+
+        nonStandardClaimsConfig.getRoles().getJson().getPath().add(orgJsonPath);
+        nonStandardClaimsConfig.getRoles().getJson().getPath().add(groupsJsonPath);
+
+        final String json = //
+                "{" //
+                        + "'groups_json': [ [ " //
+                        + "  { " //
+                        + "    'name': 'GDI Planer (extern)', "//
+                        + "    'targetSystem': 'gdi' "//
+                        + "  }, " //
+                        + "  { " //
+                        + "    'name': 'GDI Editor (extern)', "//
+                        + "    'targetSystem': 'gdi' "//
+                        + "  } " //
+                        + "] ], " //
+                        + "'PartyOrganisationID': '6007280321'" + "}";
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> claims = (Map<String, Object>) JSONUtils.parseJSON(json.replaceAll("'", "\""));
+
+        GeorchestraUser target = new GeorchestraUser();
+        mapper.applyNonStandardClaims(claims, target);
+
+        List<String> expected = List.of("ORG_6007280321", "GDI_PLANER_EXTERN", "GDI_EDITOR_EXTERN");
+        List<String> actual = target.getRoles();
+        assertEquals(expected, actual);
+    }
+
+    @Test
     void applyNonStandardClaims_jsonPath_to_organization() throws ParseException {
 
         final String jsonPath = "$.PartyOrganisationID";
-        nonStandardClaimsConfig.getOrganization().setPath(jsonPath);
+        nonStandardClaimsConfig.getOrganization().getPath().add(jsonPath);
 
         final String json = "{'PartyOrganisationID': '6007280321'}";
 

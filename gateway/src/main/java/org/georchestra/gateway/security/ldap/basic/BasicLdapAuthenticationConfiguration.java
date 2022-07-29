@@ -96,7 +96,7 @@ public class BasicLdapAuthenticationConfiguration {
                     .rolesSearchFilter(config.getRolesSearchFilter())//
                     .adminDn(config.getAdminDn().orElse(null))//
                     .adminPassword(config.getAdminPassword().orElse(null))//
-                    .build();
+                    .returningAttributes(config.getReturningAttributes()).build();
             return new BasicLdapAuthenticationProvider(config.getName(), provider);
         } catch (RuntimeException e) {
             throw new BeanCreationException(

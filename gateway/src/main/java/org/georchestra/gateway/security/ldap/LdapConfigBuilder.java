@@ -44,6 +44,7 @@ class LdapConfigBuilder {
                 .baseDn(config.getBaseDn())//
                 .usersRdn(config.getUsers().getRdn())//
                 .usersSearchFilter(searchFilter)//
+                .returningAttributes(config.getUsers().getReturningAttributes())//
                 .rolesRdn(config.getRoles().getRdn())//
                 .rolesSearchFilter(config.getRoles().getSearchFilter())//
                 .adminDn(toOptional(config.getAdminDn()))//
@@ -59,6 +60,7 @@ class LdapConfigBuilder {
                 .baseDn(config.getBaseDn())//
                 .usersRdn(config.getUsers().getRdn())//
                 .usersSearchFilter(searchFilter)//
+                .returningAttributes(config.getUsers().getReturningAttributes())//
                 .rolesRdn(config.getRoles().getRdn())//
                 .rolesSearchFilter(config.getRoles().getSearchFilter())//
                 .orgsRdn(config.getOrgs().getRdn())//
