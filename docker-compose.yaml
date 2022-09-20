@@ -8,5 +8,4 @@ services:
         - REPO_USER
         - REPO_PW
         - REPO_URL
-    image: mtr.external.otc.telekomcloud.com/ftth/georchestra-gateway:latest
-
+    image: mtr.devops.telekom.de/geo-hub/georchestra-gateway:latest

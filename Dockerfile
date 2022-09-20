@@ -1,4 +1,4 @@
-FROM mtr.external.otc.telekomcloud.com/ftth/maven-dt-ftth:3-jdk-11 AS build
+FROM mtr.devops.telekom.de/geo-hub/maven-dt-ftth:3-jdk-11 AS build
 
 ARG REPO_USER
 ARG REPO_PW
@@ -18,7 +18,7 @@ COPY pom.xml pom.xml
 
 RUN mvn package -P-georchestra
 
-FROM mtr.external.otc.telekomcloud.com/ftth/zulu-openjdk:11
+FROM mtr.devops.telekom.de/geo-hub/zulu-openjdk:11
 
 WORKDIR /app
 COPY --from=build /build/gateway/target/*.jar /app/app.jar
