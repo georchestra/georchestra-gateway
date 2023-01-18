@@ -136,4 +136,4 @@ logging:
 
 ---
 spring.config.activate.on-profile: dev
-spring.config.import: file:../datadir/default.properties,file:../datadir/gateway/gateway.yaml
+spring.config.import: file:./datadir/default.properties,file:./datadir/gateway/gateway.yaml

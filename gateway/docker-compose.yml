@@ -1,0 +1,99 @@
+version: "3.1"
+
+volumes:
+  postgresql_data:
+  datadir:
+    driver_opts:
+      type: none
+      o: bind
+      device: $PWD/datadir
+
+secrets:
+  slapd_password:
+    file: ./datadir/secrets/slapd_password.txt
+  geoserver_privileged_user_passwd:
+    file: ./datadir/secrets/geoserver_privileged_user_passwd.txt
+
+services:
+  database:
+    image: georchestra/database:latest
+    environment:
+      - POSTGRES_USER=georchestra
+      - POSTGRES_PASSWORD=georchestra
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - 54321:5432
+
+  ldap:
+    image: georchestra/ldap:latest
+    secrets:
+      - slapd_password
+      - geoserver_privileged_user_passwd
+    environment:
+        - SLAPD_ORGANISATION=georchestra
+        - SLAPD_DOMAIN=georchestra.org
+        - SLAPD_PASSWORD_FILE=/run/secrets/slapd_password
+        - SLAPD_PASSWORD=
+        - GEOSERVER_PRIVILEGED_USER_PASSWORD_FILE=/run/secrets/geoserver_privileged_user_passwd
+        - SLAPD_LOG_LEVEL=32768 # See https://www.openldap.org/doc/admin24/slapdconfig.html#loglevel%20%3Clevel%3E
+    restart: always
+    ports:
+      - 3891:389
+
+  gateway:
+    image: georchestra/gateway:latest
+    depends_on:
+      - ldap
+      - database
+    volumes:
+      - datadir:/etc/georchestra
+    environment:
+      - JAVA_TOOL_OPTIONS=-Dgeorchestra.datadir=/etc/georchestra -Dspring.profiles.active=docker -Xmx512M
+    restart: always
+    ports:
+      - 8080:8080
+      - 8090:8090
+
+  header:
+    image: georchestra/header:latest
+    volumes:
+      - datadir:/etc/georchestra
+    environment:
+      - JAVA_OPTIONS=-Dorg.eclipse.jetty.annotations.AnnotationParser.LEVEL=OFF
+      - XMS=256M
+      - XMX=512M
+    restart: always
+    ports:
+      - 10003:8080
+
+  geoserver:
+    image: georchestra/geoserver:latest
+    depends_on:
+      - ldap
+    volumes:
+      - datadir:/etc/georchestra
+    environment:
+      - JAVA_OPTIONS=-Dorg.eclipse.jetty.annotations.AnnotationParser.LEVEL=OFF
+      - XMS=256M
+      - XMX=8G
+    restart: always
+    ports:
+      - 10006:8080
+
+  console:
+    image: georchestra/console:latest
+    depends_on:
+      - ldap
+      - database
+    volumes:
+      - datadir:/etc/georchestra
+    environment:
+      - JAVA_OPTIONS=-Dorg.eclipse.jetty.annotations.AnnotationParser.LEVEL=OFF
+      - XMS=256M
+      - XMX=1G
+    restart: always
+    ports:
+      - 10007:8080
+    

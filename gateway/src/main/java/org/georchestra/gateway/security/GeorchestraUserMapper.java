@@ -35,11 +35,22 @@ import lombok.RequiredArgsConstructor;
  * token.
  * <p>
  * Relies on the provided {@link GeorchestraUserMapperExtension}s to map an
- * {@link Authentication} to a {@link GeorchestraUsers}.
+ * {@link Authentication} to a {@link GeorchestraUsers}, and on
+ * {@link GeorchestraUserCustomizerExtension} to apply additional user
+ * customizations once resolved from {@link Authentication} to
+ * {@link GeorchestraUser}.
  * <p>
  * {@literal GeorchestraUserMapperExtension} beans specialize in mapping auth
  * tokens for specific authentication sources (e.g. LDAP, OAuth2, OAuth2+OpenID,
  * etc).
+ * <p>
+ * {@literal GeorchestraUserCustomizerExtension} beans specialize in applying
+ * any additional customization to the {@link GeorchestraUser} object after it
+ * has been extracted from the {@link Authentication} created by the actual
+ * authentication provider.
+ * 
+ * @see GeorchestraUserMapperExtension
+ * @see GeorchestraUserCustomizerExtension
  */
 @RequiredArgsConstructor
 public class GeorchestraUserMapper {
@@ -48,6 +59,16 @@ public class GeorchestraUserMapper {
      * {@link Ordered ordered} list of user mapper extensions.
      */
     private final @NonNull List<GeorchestraUserMapperExtension> resolvers;
+
+    private final @NonNull List<GeorchestraUserCustomizerExtension> customizers;
+
+    GeorchestraUserMapper() {
+        this(List.of(), List.of());
+    }
+
+    GeorchestraUserMapper(List<GeorchestraUserMapperExtension> resolvers) {
+        this(resolvers, List.of());
+    }
 
     /**
      * @return the first non-empty user from
@@ -60,8 +81,15 @@ public class GeorchestraUserMapper {
         return resolvers.stream()//
                 .map(resolver -> resolver.resolve(authToken))//
                 .filter(Optional::isPresent)//
-                .map(Optional::get)//
-                .findFirst();
+                .map(Optional::orElseThrow)//
+                .map(this::customize).findFirst();
     }
 
+    private GeorchestraUser customize(GeorchestraUser user) {
+        GeorchestraUser customized = user;
+        for (GeorchestraUserCustomizerExtension customizer : customizers) {
+            customized = customizer.apply(customized);
+        }
+        return customized;
+    }
 }
