@@ -52,8 +52,7 @@ public class GeorchestraUserHeadersContributor extends HeaderContributor {
                         add(headers, "sec-lastname", mappings.getLastname(), user.map(GeorchestraUser::getLastName));
                         add(headers, "sec-tel", mappings.getTel(), user.map(GeorchestraUser::getTelephoneNumber));
 
-                        List<String> roles = user.map(GeorchestraUser::getRoles).orElse(List.of()).stream()
-                                .map(r -> r.startsWith("ROLE_") ? r : "ROLE_" + r).collect(Collectors.toList());
+                        List<String> roles = user.map(GeorchestraUser::getRoles).orElse(List.of());
 
                         add(headers, "sec-roles", mappings.getRoles(), roles);
 
