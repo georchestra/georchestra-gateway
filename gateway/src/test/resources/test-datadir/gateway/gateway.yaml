@@ -9,3 +9,18 @@ spring:
         - Path=/test
 georchestra:
   test-datadir: true #used to verify the config is loaded from the datadir
+  gateway:
+    roles-mappings:
+      '[ROLE_GP.GDI.*]':
+        - ROLE_USER
+      '[ROLE_GP.GDI.ADMINISTRATOR]':
+        - ROLE_SUPERUSER
+        - ROLE_ADMINISTRATOR
+        - ROLE_GN_ADMIN
+      '[ROLE_GP.GDI.GEODATA_MANAGER]':
+        - ROLE_ADMINISTRATOR
+        - ROLE_GN_ADMIN
+      '[ROLE_GP.GDI.FPIT_SERVICE_USER]':
+        - ROLE_ADMINISTRATOR
+        - ROLE_GN_ADMIN
+        - ROLE_GP.GDI.ADMINISTRATOR

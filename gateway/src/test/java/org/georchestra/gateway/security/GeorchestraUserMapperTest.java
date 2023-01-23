@@ -19,6 +19,7 @@
 
 package org.georchestra.gateway.security;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -91,4 +92,32 @@ class GeorchestraUserMapperTest {
         assertSame(user1, resolved.get());
     }
 
+    @Test
+    void testAppliesPosResolvingCustomizerExtensions() {
+        Authentication auth = mock(Authentication.class);
+
+        GeorchestraUser user = new GeorchestraUser();
+        GeorchestraUserMapperExtension userMapper = mock(GeorchestraUserMapperExtension.class);
+        when(userMapper.resolve(same(auth))).thenReturn(Optional.of(user));
+
+        GeorchestraUserCustomizerExtension customizer1 = u -> {
+            u.setUsername("customizer1");
+            return u;
+        };
+
+        GeorchestraUserCustomizerExtension customizer2 = u -> {
+            u.setRoles(List.of("ROLE_1", "ROLE_2"));
+            return u;
+        };
+
+        List<GeorchestraUserCustomizerExtension> postResolveCustomizers = List.of(customizer1, customizer2);
+
+        GeorchestraUserMapper mapper = new GeorchestraUserMapper(List.of(userMapper), postResolveCustomizers);
+        Optional<GeorchestraUser> resolved = mapper.resolve(auth);
+        assertTrue(resolved.isPresent());
+        assertSame(user, resolved.get());
+
+        assertEquals("customizer1", resolved.get().getUsername());
+        assertEquals(List.of("ROLE_1", "ROLE_2"), resolved.get().getRoles());
+    }
 }

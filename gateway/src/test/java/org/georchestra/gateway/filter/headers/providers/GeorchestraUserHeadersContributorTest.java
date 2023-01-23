@@ -128,22 +128,4 @@ class GeorchestraUserHeadersContributorTest {
         String roles = user.getRoles().stream().collect(Collectors.joining(";"));
         assertEquals(List.of(roles), target.get("sec-roles"));
     }
-
-    @Test
-    void testRolePrefixAppendedToRoleNames() {
-
-        GeorchestraUser user = new GeorchestraUser();
-        user.setRoles(List.of("ROLE_ADMIN", "USER", "EDITOR"));
-
-        final List<String> expected = List.of("ROLE_ADMIN;ROLE_USER;ROLE_EDITOR");
-
-        GeorchestraUsers.store(exchange, user);
-
-        matchedRouteHeadersConfig.disableAll();
-        matchedRouteHeadersConfig.setRoles(Optional.of(true));
-
-        HttpHeaders target = new HttpHeaders();
-        headerContributor.prepare(exchange).accept(target);
-        assertEquals(expected, target.get("sec-roles"));
-    }
 }

@@ -19,6 +19,7 @@
 package org.georchestra.gateway.security;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.georchestra.gateway.model.GatewayConfigProperties;
@@ -78,12 +79,23 @@ public class GatewaySecurityConfiguration {
         return customizers.stream().sorted((c1, c2) -> Integer.compare(c1.getOrder(), c2.getOrder()));
     }
 
-    public @Bean GeorchestraUserMapper georchestraUserResolver(List<GeorchestraUserMapperExtension> resolvers) {
-        return new GeorchestraUserMapper(resolvers);
+    public @Bean GeorchestraUserMapper georchestraUserResolver(List<GeorchestraUserMapperExtension> resolvers,
+            List<GeorchestraUserCustomizerExtension> customizers) {
+        return new GeorchestraUserMapper(resolvers, customizers);
     }
 
     public @Bean ResolveGeorchestraUserGlobalFilter resolveGeorchestraUserGlobalFilter(GeorchestraUserMapper resolver) {
         return new ResolveGeorchestraUserGlobalFilter(resolver);
+    }
+
+    /**
+     * Extension to make {@link GeorchestraUserMapper} append user roles based on
+     * {@link GatewayConfigProperties#getRolesMappings()}
+     */
+    public @Bean RolesMappingsUserCustomizer rolesMappingsUserCustomizer(GatewayConfigProperties config) {
+        Map<String, List<String>> rolesMappings = config.getRolesMappings();
+        log.info("Creating {}", RolesMappingsUserCustomizer.class.getSimpleName());
+        return new RolesMappingsUserCustomizer(rolesMappings);
     }
 
 }
