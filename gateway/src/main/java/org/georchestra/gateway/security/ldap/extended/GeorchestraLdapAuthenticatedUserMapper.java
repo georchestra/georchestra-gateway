@@ -49,39 +49,39 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 class GeorchestraLdapAuthenticatedUserMapper implements GeorchestraUserMapperExtension {
 
-	private final @NonNull DemultiplexingUsersApi users;
+    private final @NonNull DemultiplexingUsersApi users;
 
-	@Override
-	public Optional<GeorchestraUser> resolve(Authentication authToken) {
-		return Optional.ofNullable(authToken)//
-				.filter(GeorchestraUserNamePasswordAuthenticationToken.class::isInstance)
-				.map(GeorchestraUserNamePasswordAuthenticationToken.class::cast)//
-				.filter(token -> token.getPrincipal() instanceof LdapUserDetails)//
-				.flatMap(this::map);
-	}
+    @Override
+    public Optional<GeorchestraUser> resolve(Authentication authToken) {
+        return Optional.ofNullable(authToken)//
+                .filter(GeorchestraUserNamePasswordAuthenticationToken.class::isInstance)
+                .map(GeorchestraUserNamePasswordAuthenticationToken.class::cast)//
+                .filter(token -> token.getPrincipal() instanceof LdapUserDetails)//
+                .flatMap(this::map);
+    }
 
-	Optional<GeorchestraUser> map(GeorchestraUserNamePasswordAuthenticationToken token) {
-		final LdapUserDetails principal = (LdapUserDetails) token.getPrincipal();
-		final String ldapConfigName = token.getConfigName();
-		final String username = principal.getUsername();
+    Optional<GeorchestraUser> map(GeorchestraUserNamePasswordAuthenticationToken token) {
+        final LdapUserDetails principal = (LdapUserDetails) token.getPrincipal();
+        final String ldapConfigName = token.getConfigName();
+        final String username = principal.getUsername();
 
-		Optional<GeorchestraUser> user = users.findByUsername(ldapConfigName, username);
-		return user.map(u -> fixPrefixedRoleNames(u, token));
-	}
+        Optional<GeorchestraUser> user = users.findByUsername(ldapConfigName, username);
+        return user.map(u -> fixPrefixedRoleNames(u, token));
+    }
 
-	private GeorchestraUser fixPrefixedRoleNames(GeorchestraUser user,
-			GeorchestraUserNamePasswordAuthenticationToken token) {
+    private GeorchestraUser fixPrefixedRoleNames(GeorchestraUser user,
+            GeorchestraUserNamePasswordAuthenticationToken token) {
 
-		// Fix role name mismatch between authority provider (adds ROLE_ prefix) and
-		// users api
-		Set<String> prefixedRoleNames = token.getAuthorities().stream().filter(SimpleGrantedAuthority.class::isInstance)
-				.map(GrantedAuthority::getAuthority).filter(role -> role.startsWith("ROLE_"))
-				.collect(Collectors.toSet());
+        // Fix role name mismatch between authority provider (adds ROLE_ prefix) and
+        // users api
+        Set<String> prefixedRoleNames = token.getAuthorities().stream().filter(SimpleGrantedAuthority.class::isInstance)
+                .map(GrantedAuthority::getAuthority).filter(role -> role.startsWith("ROLE_"))
+                .collect(Collectors.toSet());
 
-		List<String> roles = user.getRoles().stream()
-				.map(r -> prefixedRoleNames.contains("ROLE_" + r) ? "ROLE_" + r : r).collect(Collectors.toList());
+        List<String> roles = user.getRoles().stream()
+                .map(r -> prefixedRoleNames.contains("ROLE_" + r) ? "ROLE_" + r : r).collect(Collectors.toList());
 
-		user.setRoles(roles);
-		return user;
-	}
+        user.setRoles(roles);
+        return user;
+    }
 }
