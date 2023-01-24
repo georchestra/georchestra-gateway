@@ -17,7 +17,7 @@
     <module>gateway</module>
   </modules>
   <properties>
-    <revision>21.0-SNAPSHOT</revision>
+    <revision>22.1-SNAPSHOT</revision>
     <spring-cloud.version>2021.0.1</spring-cloud.version>
     <formatter-maven-plugin.version>2.10.0</formatter-maven-plugin.version>
     <fmt.skip>false</fmt.skip>
