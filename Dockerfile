@@ -7,6 +7,10 @@ ARG REPO_URL
 WORKDIR /build
 COPY georchestra georchestra
 COPY .mvn .mvn
+# copy the .git directory for the git-commit-id-maven-plugin
+# to be able of resolving the git info and write ./target/classes/git.properties
+# which is used by the actuator/info endpoint
+COPY .git .git
 
 RUN mvn install -DskipTests -f georchestra/pom.xml --non-recursive && \
     mvn install -DskipTests -f georchestra/commons && \
