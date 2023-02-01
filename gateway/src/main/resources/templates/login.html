@@ -1,28 +1,43 @@
-<div>
-    <h2>Please Login</h2>
-    <br/>
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Login</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous"/>
+</head>
+<body>
+<header th:if="${header_url != null}">
+    <iframe id="header" title="Header" th:src="${header_url}" style="width:100%;height:${header_height}px;border:none;overflow:hidden;transition: all 0.3s ease 0s;" scrolling="no"
+            frameborder="0"></iframe>
+
+</header>
+<div class="container">
+    <form class="form-signin" method="post" action="/login">
+        <h2 class="form-signin-heading">Please sign in</h2>
+        <p>
+            <label for="username" class="sr-only">Username</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
+        </p>
+        <p>
+            <label for="password" class="sr-only">Password</label>
+            <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+        </p>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+    <!-- todo: this should be configurable like in:
+    https://github.com/spring-projects/spring-security/blob/main/web/src/main/java/org/springframework/security/web/server/ui/LoginPageGeneratingWebFilter.java#L114-L138
+    -->
+    <div class="container"><h2 class="form-signin-heading">Login with OAuth 2.0</h2><table class="table table-striped">
+        <tr><td><a href="/oauth2/authorization/icu">icu</a></td></tr>
+    </table></div>
 </div>
-<div>
-    <h4><a th:href="/@{/oauth2/authorization/google}">Login with Google</a></h4>   
-</div>
-<div><p>OR</p></div>
-     
-<form th:action="@{/login}" method="post" style="max-width: 400px; margin: 0 auto;">
-<div class="border border-secondary rounded p-3">
-    <div th:if="${param.error}">
-        <p class="text-danger">Invalid username or password.</p>
-    </div>
-    <div th:if="${param.logout}">
-        <p class="text-warning">You have been logged out.</p>
-    </div>
-    <div>
-        <p><input type="email" name="email" required class="form-control" placeholder="E-mail" /></p>
-    </div>
-    <div>
-        <p><input type="password" name="pass" required class="form-control" placeholder="Password" /></p>
-    </div>
-    <div>
-        <p><input type="submit" value="Login" class="btn btn-primary" /></p>
-    </div>
-</div>
-</form>
+<footer th:if="${footer_url != null}">
+    <iframe id="footer" th:src="${footer_url}" style="width:100%;border:none;overflow:hidden;" scrolling="no"
+            frameborder="0"></iframe>
+</footer>
+</body>
+</html>

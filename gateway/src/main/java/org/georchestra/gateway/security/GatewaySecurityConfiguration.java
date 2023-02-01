@@ -18,19 +18,23 @@
  */
 package org.georchestra.gateway.security;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
+import lombok.extern.slf4j.Slf4j;
 import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Description;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.reactive.result.view.UrlBasedViewResolver;
+import org.springframework.web.reactive.result.view.ViewResolver;
+import org.springframework.web.reactive.result.view.freemarker.FreeMarkerView;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * {@link Configuration} to initialize the Gateway's
@@ -65,6 +69,8 @@ public class GatewaySecurityConfiguration {
         // Revisit.
         log.info("CSRF and CORS disabled. Revisit how they interfer with Websockets proxying.");
         http.csrf().disable().cors().disable();
+
+        http.formLogin().loginPage("/login");
 
         sortedCustomizers(customizers).forEach(customizer -> {
             log.debug("Applying security customizer {}", customizer.getName());
