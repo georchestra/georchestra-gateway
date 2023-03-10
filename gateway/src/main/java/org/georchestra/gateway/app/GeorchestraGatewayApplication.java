@@ -57,6 +57,8 @@ public class GeorchestraGatewayApplication {
     private @Value("${georchestra.gateway.headerHeight:90}") String georchestraHeaderHeight;
     private @Value("${georchestra.gateway.footerUrl:#{null}}") String georchestraFooterUrl;
 
+    private @Value("${georchestra.gateway.security.ldap.default.enabled:false}") boolean ldapEnabled;
+
     public static void main(String[] args) {
         SpringApplication.run(GeorchestraGatewayApplication.class, args);
     }
@@ -82,6 +84,7 @@ public class GeorchestraGatewayApplication {
         mdl.addAttribute("header_url", georchestraHeaderUrl);
         mdl.addAttribute("header_height", georchestraHeaderHeight);
         mdl.addAttribute("footer_url", georchestraFooterUrl);
+        mdl.addAttribute("ldapEnabled", ldapEnabled);
 
         return "login";
     }
