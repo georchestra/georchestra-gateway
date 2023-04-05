@@ -31,8 +31,13 @@
     <!-- todo: this should be configurable like in:
     https://github.com/spring-projects/spring-security/blob/main/web/src/main/java/org/springframework/security/web/server/ui/LoginPageGeneratingWebFilter.java#L114-L138
     -->
-    <div class="container"><h2 class="form-signin-heading">Login with OAuth 2.0</h2><table class="table table-striped">
-        <tr><td><a href="/oauth2/authorization/icu">icu</a></td></tr>
+    <div class="container"><h2 class="form-signin-heading">Login with OAuth 2.0</h2>
+        <table class="table table-striped">
+        <tr th:each="oauth2Client : ${oauth2LoginLinks}">
+            <td>
+                <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value}"></a>
+            </td>
+        </tr>
     </table></div>
 </div>
 <footer th:if="${footer_url != null}">

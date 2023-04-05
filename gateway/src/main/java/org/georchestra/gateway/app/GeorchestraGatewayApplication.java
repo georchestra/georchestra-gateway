@@ -18,32 +18,31 @@
  */
 package org.georchestra.gateway.app;
 
-import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-
+import lombok.extern.slf4j.Slf4j;
 import org.georchestra.gateway.security.GeorchestraUserMapper;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ServerWebExchange;
-
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+
+import java.io.File;
+import java.util.*;
 
 @Controller
 @Slf4j
@@ -53,6 +52,7 @@ public class GeorchestraGatewayApplication {
     private @Autowired RouteLocator routeLocator;
     private @Autowired GeorchestraUserMapper userMapper;
 
+    private @Autowired(required = false) OAuth2ClientProperties oauth2ClientConfig;
     private @Value("${georchestra.gateway.headerUrl:/header/}") String georchestraHeaderUrl;
     private @Value("${georchestra.gateway.headerHeight:90}") String georchestraHeaderHeight;
     private @Value("${georchestra.gateway.footerUrl:#{null}}") String georchestraFooterUrl;
@@ -81,10 +81,17 @@ public class GeorchestraGatewayApplication {
 
     @GetMapping(path = "/login")
     public String loginPage(Model mdl) {
+        Map<String, String> oauth2LoginLinks = new HashMap<String, String>();
+        if (oauth2ClientConfig != null) {
+            oauth2ClientConfig.getRegistration().forEach((k, v) -> {
+                oauth2LoginLinks.put("/oauth2/authorization/" + k, v.getClientName());
+            });
+        }
         mdl.addAttribute("header_url", georchestraHeaderUrl);
         mdl.addAttribute("header_height", georchestraHeaderHeight);
         mdl.addAttribute("footer_url", georchestraFooterUrl);
         mdl.addAttribute("ldapEnabled", ldapEnabled);
+        mdl.addAttribute("oauth2LoginLinks", oauth2LoginLinks);
 
         return "login";
     }
@@ -114,4 +121,5 @@ public class GeorchestraGatewayApplication {
         log.info("{} ready. Data dir: {}. Routes: {}. Instance-id: {}, cpus: {}, max memory: {}", app, datadir,
                 routeCount, instanceId, cpus, maxMem);
     }
+
 }
