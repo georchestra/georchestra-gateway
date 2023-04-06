@@ -151,7 +151,7 @@ class AccessRulesCustomizerIT {
      *     anonymous: true
      * }
      */
-    public @Test void testMapfishApp_ogproxy_access_denied_to_anonymoys() {
+    public @Test void testMapfishApp_ogproxy_access_denied_to_anonymous() {
         mockService.stubFor(get(urlMatching("/mapfishapp/ogcproxy(/.*)?")).willReturn(ok()));
         mockService.stubFor(get(urlMatching("/mapfishapp(/.*)?")).willReturn(ok()));
 
