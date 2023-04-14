@@ -19,6 +19,7 @@
 
 package org.georchestra.gateway.security.oauth2;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,6 +56,7 @@ class OpenIdConnectUserMapperTest {
     @Test
     void applyStandardClaims() {
         StandardClaimAccessor standardClaims = mock(StandardClaimAccessor.class);
+        when(standardClaims.getSubject()).thenReturn("b7f3dd13-f9cc-4573-8482-b4fccf8e1977");
         when(standardClaims.getPreferredUsername()).thenReturn("tesuser");
         when(standardClaims.getGivenName()).thenReturn("John");
         when(standardClaims.getFamilyName()).thenReturn("Doe");
@@ -68,6 +70,7 @@ class OpenIdConnectUserMapperTest {
         GeorchestraUser target = new GeorchestraUser();
         mapper.applyStandardClaims(standardClaims, target);
 
+        assertEquals(standardClaims.getSubject(), target.getId());
         assertEquals(standardClaims.getPreferredUsername(), target.getUsername());
         assertEquals(standardClaims.getGivenName(), target.getFirstName());
         assertEquals(standardClaims.getFamilyName(), target.getLastName());
@@ -92,8 +95,7 @@ class OpenIdConnectUserMapperTest {
                         + "] ] " //
                         + "}";
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) JSONUtils.parseJSON(json.replaceAll("'", "\""));
+        Map<String, Object> claims = sampleClaims(json);
 
         GeorchestraUser target = new GeorchestraUser();
         mapper.applyNonStandardClaims(claims, target);
@@ -121,8 +123,7 @@ class OpenIdConnectUserMapperTest {
                         + "] ] " //
                         + "}";
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) JSONUtils.parseJSON(json.replaceAll("'", "\""));
+        Map<String, Object> claims = sampleClaims(json);
 
         GeorchestraUser target = new GeorchestraUser();
         mapper.applyNonStandardClaims(claims, target);
@@ -154,8 +155,7 @@ class OpenIdConnectUserMapperTest {
                         + "] ], " //
                         + "'PartyOrganisationID': '6007280321'" + "}";
 
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) JSONUtils.parseJSON(json.replaceAll("'", "\""));
+        Map<String, Object> claims = sampleClaims(json);
 
         GeorchestraUser target = new GeorchestraUser();
         mapper.applyNonStandardClaims(claims, target);
@@ -171,10 +171,8 @@ class OpenIdConnectUserMapperTest {
         final String jsonPath = "$.PartyOrganisationID";
         nonStandardClaimsConfig.getOrganization().getPath().add(jsonPath);
 
-        final String json = "{'PartyOrganisationID': '6007280321'}";
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> claims = (Map<String, Object>) JSONUtils.parseJSON(json.replaceAll("'", "\""));
+        Map<String, Object> claims = sampleClaims();
+        assertThat(claims.get("PartyOrganisationID")).isEqualTo("6007280321");
 
         GeorchestraUser target = new GeorchestraUser();
         target.setOrganization("unexpected");
@@ -185,4 +183,76 @@ class OpenIdConnectUserMapperTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    void applyNonStandardClaim_jsonPath_to_userId() throws Exception {
+        final String icuid = "50334123";
+        Map<String, Object> claims = sampleClaims();
+        assertThat(claims.get("icuid")).isEqualTo(icuid);
+
+        final String jsonPath = "$.icuid";
+        nonStandardClaimsConfig.getId().getPath().add(jsonPath);
+
+        GeorchestraUser target = new GeorchestraUser();
+        mapper.applyNonStandardClaims(claims, target);
+        assertEquals(icuid, target.getId());
+    }
+
+    private Map<String, Object> sampleClaims() throws ParseException {
+        String json = SAMPLE_CLAIMS;
+        return sampleClaims(json);
+    }
+
+    private Map<String, Object> sampleClaims(String json) throws ParseException {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> claims = (Map<String, Object>) JSONUtils.parseJSON(json.replaceAll("'", "\""));
+        return claims;
+    }
+
+    /**
+     * Sample value for IDToken's "claims": {...}
+     */
+    private static final String SAMPLE_CLAIMS = //
+            "{\n" //
+                    + "          'at_hash': 'YuZBluv2Ehrn_nEqNi0NzA',\n" //
+                    + "          'icuid': '50334123',\n" //
+                    + "          'sub': 'b7f3dd13-f9cc-4573-8482-b4fccf8e1977',\n" //
+                    + "          'groups_json': [\n" //
+                    + "            [\n" //
+                    + "              {\n" //
+                    + "                'parameter': [\n" //
+                    + "                  \n" //
+                    + "                ],\n" //
+                    + "                'name': 'GDI Planer (extern)',\n" //
+                    + "                'targetSystem': 'gdi'\n" //
+                    + "              },\n" //
+                    + "              {\n" //
+                    + "                'parameter': [\n" //
+                    + "                  \n" //
+                    + "                ],\n" //
+                    + "                'name': 'GDI Editor (extern)',\n" //
+                    + "                'targetSystem': 'gdi'\n" //
+                    + "              }\n" //
+                    + "            ]\n" //
+                    + "          ],\n" //
+                    + "          'email_verified': false,\n" //
+                    + "          'iss': 'https://test.login/auth/realms/external-customer-k2',\n" //
+                    + "          'typ': 'ID',\n" //
+                    + "          'preferred_username': 'gabriel.roldan@test.com',\n" //
+                    + "          'given_name': 'Gabriel',\n" //
+                    + "          'nonce': 'p1239kUkQjqBNA7YHBjAiiYy7ULhGq-K01NiF-fm_CEI',\n" //
+                    + "          'sid': 'f123a5b6-a326-4cbe-8af0-75e6f633f0b9',\n" //
+                    + "          'PartyOrganisationID': '6007280321',\n" //
+                    + "          'aud': [\n" //
+                    + "            'gdi'\n" //
+                    + "          ],\n" //
+                    + "          'azp': 'gdi',\n" //
+                    + "          'auth_time': 1681387195,\n" //
+                    + "          'name': 'Gabriel Roldan',\n" //
+                    + "          'exp': '2023-04-13T12:04:57Z',\n" //
+                    + "          'session_state': 'f123a5b6-a326-4cbe-8af0-75e6f633f0b9',\n" //
+                    + "          'iat': '2023-04-13T11:59:57Z',\n" //
+                    + "          'family_name': 'Roldan',\n" //
+                    + "          'jti': 'dc886b41-9d9c-4652-b9c7-8f160c037ccc',\n" //
+                    + "          'email': 'gabriel.roldan@test.com'\n" //
+                    + "        }";
 }

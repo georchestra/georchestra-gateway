@@ -49,6 +49,8 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * {@link StandardClaimAccessor standard claims} map as follow:
  * <ul>
+ * <li>{@link StandardClaimAccessor#getSubject() subject} to
+ * {@link GeorchestraUser#getId() id}
  * <li>{@link StandardClaimAccessor#getPreferredUsername preferredUsername} or
  * {@link StandardClaimAccessor#getEmail email} to
  * {@link GeorchestraUser#setUsername username}, in that order of precedence.
@@ -164,6 +166,11 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
     @VisibleForTesting
     void applyNonStandardClaims(Map<String, Object> claims, GeorchestraUser target) {
 
+        nonStandardClaimsConfig.id().map(jsonEvaluator -> jsonEvaluator.extract(claims))//
+                .map(List::stream)//
+                .flatMap(Stream::findFirst)//
+                .ifPresent(target::setId);
+
         nonStandardClaimsConfig.roles().ifPresent(rolesMapper -> rolesMapper.apply(claims, target));
         nonStandardClaimsConfig.organization().map(jsonEvaluator -> jsonEvaluator.extract(claims))//
                 .map(List::stream)//
@@ -173,6 +180,7 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
 
     @VisibleForTesting
     void applyStandardClaims(StandardClaimAccessor standardClaims, GeorchestraUser target) {
+        String subjectId = standardClaims.getSubject();
         String preferredUsername = standardClaims.getPreferredUsername();
         String givenName = standardClaims.getGivenName();
         String familyName = standardClaims.getFamilyName();
@@ -183,6 +191,7 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
         AddressStandardClaim address = standardClaims.getAddress();
         String formattedAddress = address == null ? null : address.getFormatted();
 
+        apply(target::setId, subjectId);
         apply(target::setUsername, preferredUsername, email);
         apply(target::setFirstName, givenName);
         apply(target::setLastName, familyName);

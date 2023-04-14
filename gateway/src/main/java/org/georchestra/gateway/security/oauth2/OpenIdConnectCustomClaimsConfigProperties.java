@@ -44,8 +44,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j(topic = "org.georchestra.gateway.security.oauth2")
 public @Data class OpenIdConnectCustomClaimsConfigProperties {
 
+    private JsonPathExtractor id = new JsonPathExtractor();
     private RolesMapping roles = new RolesMapping();
     private JsonPathExtractor organization = new JsonPathExtractor();
+
+    public Optional<JsonPathExtractor> id() {
+        return Optional.ofNullable(id);
+    }
 
     public Optional<RolesMapping> roles() {
         return Optional.ofNullable(roles);
