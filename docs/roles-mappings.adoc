@@ -3,7 +3,7 @@
 The Gateway sends a `sec-roles` HTTP request header to the backend services
 with the role names provided by the authentication provider.
 
-Sometimes, these roles are unsuficcient as some services may require additional
+Sometimes, these roles are insufficient as some services may require additional
 or different role names.
 
 For example, let's say the OpenID Connect provider gives us a role namded `GDI.ADMIN`, and 

@@ -165,6 +165,10 @@ Both standard and non-standard claims can be used to set the `GeorchestraUser`'s
 
 |===
 |Property name | Default value | Description
+|`georchestra.gateway.security.oidc.claims.id.path`
+|Defaults to the standard "sub" claim (subject identifier)
+|JSONPath expression to extract the user identifier from the OIDC claims map
+
 |`georchestra.gateway.security.oidc.claims.organization.path`
 |
 |JSONPath expression to extract the organization short name from the OIDC claims map
@@ -193,6 +197,7 @@ Take as example the following claims provided by an OIDC ID Token:
 [source,json]
 ----
 {
+    "icuid": "abc123",
     "family_name": "Doe",
     "given_name": "John",
     "locale": "en-US",
@@ -208,7 +213,8 @@ Take as example the following claims provided by an OIDC ID Token:
 }
 ----
 
-The following configuration properties can be used to extract the role names from the `groups` claim,
+The following configuration properties can be used to extract the user id from the
+`icuid` claim, the role names from the `groups` claim,
 and the organization's short name from the `PartyOrganisationID` claim:
 
 [source,yaml]
@@ -219,6 +225,8 @@ georchestra:
       oidc:
         # Configure mappings of custom IDToken claims to roles and org name
         claims:
+          # JSONPath expression to extract the user id from a non-standard claim. Otherwise defaults to the "sub" claim (subject identifier)
+          id.path: "$.icuid"
           # JSONPath expression to extract the organization identifier conveyed as
           # the sec-org request header to backend georchestra services
           organization.path: "$.PartyOrganisationID"
