@@ -14,10 +14,10 @@
 
 <body>
     <header th:if="${header_url != null}">
-        <iframe id="header" title="Header" th:src="${header_url}?noLoginButton=true" th:style="'width:100%;height:'+${header_height}+'px;border:none;overflow:hidden;transition: all 0.3s ease 0s;'" scrolling="no"
+        <iframe id="header" title="Header" th:src="${header_url} + '?noLoginButton=true'" th:style="'width:100%;height:'+${header_height}+'px;border:none;overflow:hidden;transition: all 0.3s ease 0s;'" scrolling="no"
                 frameborder="0"></iframe>
     </header>
-    <main>
+    <main style="margin-top: 150px;">
         <div class="container-fluid">
             <div class="welcome-session">
                 <form class="form-signin" method="post" action="/login" th:if="${ldapEnabled}">
@@ -36,7 +36,7 @@
                 <table class="table table-striped">
                     <tr th:each="oauth2Client : ${oauth2LoginLinks}">
                         <td>
-                            <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value == 'ICU' ? 'anmelden' : oauth2Client.value}"></a>
+                            <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value == 'icu' ? 'anmelden' : oauth2Client.value}"></a>
                         </td>
                     </tr>
                 </table>
