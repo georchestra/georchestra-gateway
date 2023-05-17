@@ -32,14 +32,16 @@
                     </p>
                     <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
                 </form>
-                <h2 class="form-signin-heading">Telekom Business Login</h2>
-                <table class="table table-striped">
-                    <tr th:each="oauth2Client : ${oauth2LoginLinks}">
-                        <td>
-                            <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value == 'icu' ? 'anmelden' : oauth2Client.value}"></a>
-                        </td>
-                    </tr>
-                </table>
+                <div th:if="${oauth2LoginLinks.size() != 0}" class="container">
+                    <h2 class="form-signin-heading">Telekom Business Login</h2>
+                    <table class="table table-striped">
+                        <tr th:each="oauth2Client : ${oauth2LoginLinks}">
+                            <td>
+                                <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value == 'ICU' ? 'anmelden' : oauth2Client.value}"></a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
