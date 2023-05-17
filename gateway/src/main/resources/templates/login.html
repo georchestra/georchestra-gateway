@@ -37,7 +37,7 @@
                     <table class="table table-striped">
                         <tr th:each="oauth2Client : ${oauth2LoginLinks}">
                             <td>
-                                <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value == 'ICU' ? 'anmelden' : oauth2Client.value}"></a>
+                                <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value == 'icu' ? 'anmelden' : oauth2Client.value}"></a>
                             </td>
                         </tr>
                     </table>
