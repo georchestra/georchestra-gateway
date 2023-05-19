@@ -20,6 +20,7 @@ package org.georchestra.gateway.app;
 
 import lombok.extern.slf4j.Slf4j;
 import org.georchestra.gateway.security.GeorchestraUserMapper;
+import org.georchestra.gateway.security.ldap.LdapConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,9 +39,11 @@ import org.springframework.ui.Model;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.reactive.result.view.Rendering;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.util.*;
 
@@ -52,12 +55,19 @@ public class GeorchestraGatewayApplication {
     private @Autowired RouteLocator routeLocator;
     private @Autowired GeorchestraUserMapper userMapper;
 
+    private @Autowired(required = false) LdapConfigProperties ldapConfigProperties;
     private @Autowired(required = false) OAuth2ClientProperties oauth2ClientConfig;
+    private boolean ldapEnabled = false;
     private @Value("${georchestra.gateway.headerUrl:/header/}") String georchestraHeaderUrl;
     private @Value("${georchestra.gateway.headerHeight:90}") String georchestraHeaderHeight;
     private @Value("${georchestra.gateway.footerUrl:#{null}}") String georchestraFooterUrl;
 
-    private @Value("${georchestra.gateway.security.ldap.default.enabled:false}") boolean ldapEnabled;
+    @PostConstruct
+    void initialize() {
+        if (ldapConfigProperties != null) {
+            ldapEnabled = ldapConfigProperties.getLdap().values().stream().anyMatch((server -> server.isEnabled()));
+        }
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(GeorchestraGatewayApplication.class, args);
@@ -94,6 +104,11 @@ public class GeorchestraGatewayApplication {
         mdl.addAttribute("oauth2LoginLinks", oauth2LoginLinks);
 
         return "login";
+    }
+
+    @GetMapping(path = "/logout", produces = "text/html")
+    public Mono<Rendering.Builder<?>> logout(Authentication principal, ServerWebExchange exchange) {
+        return Mono.just(Rendering.view("logout"));
     }
 
     @EventListener(ApplicationReadyEvent.class)

@@ -6,43 +6,48 @@
     <meta name="description" content="">
     <meta name="author" content="">
     <title>Login</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
-    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="/home/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="/home/css/style.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="/home/css/contacts-style.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="/home/css/information-style.css">
 </head>
-<body>
-<header th:if="${header_url != null}">
-    <iframe id="header" title="Header" th:src="${header_url}" th:style="'width:100%;height:'+${header_height}+'px;border:none;overflow:hidden;transition: all 0.3s ease 0s;'" scrolling="no"
-            frameborder="0"></iframe>
 
-</header>
-<div class="container">
-    <form class="form-signin" method="post" action="/login" th:if="${ldapEnabled}">
-        <h2 class="form-signin-heading">Please sign in</h2>
-        <p>
-            <label for="username" class="sr-only">Username</label>
-            <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
-        </p>
-        <p>
-            <label for="password" class="sr-only">Password</label>
-            <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
-        </p>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-    </form>
-    <!-- todo: this should be configurable like in:
-    https://github.com/spring-projects/spring-security/blob/main/web/src/main/java/org/springframework/security/web/server/ui/LoginPageGeneratingWebFilter.java#L114-L138
-    -->
-    <div class="container"><h2 class="form-signin-heading">Login with OAuth 2.0</h2>
-        <table class="table table-striped">
-        <tr th:each="oauth2Client : ${oauth2LoginLinks}">
-            <td>
-                <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value}"></a>
-            </td>
-        </tr>
-    </table></div>
-</div>
-<footer th:if="${footer_url != null}">
-    <iframe id="footer" th:src="${footer_url}" style="width:100%;border:none;overflow:hidden;" scrolling="no"
-            frameborder="0"></iframe>
-</footer>
+<body>
+    <header th:if="${header_url != null}">
+        <iframe id="header" title="Header" th:src="${header_url} + '?noLoginButton=true'" th:style="'width:100%;height:'+${header_height}+'px;border:none;overflow:hidden;transition: all 0.3s ease 0s;'" scrolling="no"
+                frameborder="0"></iframe>
+    </header>
+    <main style="margin-top: 150px;">
+        <div class="container-fluid">
+            <div class="welcome-session">
+                <form class="form-signin" method="post" action="/login" th:if="${ldapEnabled}">
+                    <h2 class="form-signin-heading">Please sign in: </h2>
+                    <p>
+                        <label for="username" class="sr-only">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
+                    </p>
+                    <p>
+                        <label for="password" class="sr-only">Password</label>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+                    </p>
+                    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+                </form>
+                <div th:if="${oauth2LoginLinks.size() != 0}" class="container">
+                    <h2 class="form-signin-heading">Telekom Business Login</h2>
+                    <table class="table table-striped">
+                        <tr th:each="oauth2Client : ${oauth2LoginLinks}">
+                            <td>
+                                <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value == 'icu' ? 'anmelden' : oauth2Client.value}"></a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer th:if="${footer_url != null}">
+        <iframe id="footer" th:src="${footer_url}" style="width:100%;border:none;overflow:hidden;" scrolling="no"
+                frameborder="0"></iframe>
+    </footer>
 </body>
 </html>
