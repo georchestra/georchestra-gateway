@@ -7,7 +7,7 @@ georchestra:
       oauth2:
         # if enabled, make sure to have at least one OAuth2 client
         # set up at spring.security.oauth2.client below 
-        enabled: false
+        enabled: true
         proxy:
           # If the OAuht2 clients need to go through an HTTP Proxy, enable and configure.
           enabled: false

@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.georchestra.gateway.security.oauth2.OAuth2Configuration;
 import org.georchestra.gateway.security.oauth2.OAuth2Configuration.OAuth2AuthenticationCustomizer;
 import org.georchestra.gateway.security.oauth2.OAuth2ProxyConfigProperties;
 import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomClaimsConfigProperties;
@@ -30,18 +31,44 @@ import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomClaimsConfigPr
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.endpoint.ReactiveOAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcReactiveOAuth2UserService;
+import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.ReactiveOAuth2UserService;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.UnAuthenticatedServerOAuth2AuthorizedClientRepository;
 
 /**
  * Assert context contributions of {@link OAuth2SecurityAutoConfiguration}
  *
  */
 class OAuth2SecurityAutoConfigurationTest {
+
+    /**
+     * bean to satisfy the dependency of
+     * {@link OAuth2Configuration#gatewayOverrideReactiveOAuth2AuthorizedClientManager()}
+     */
+    private ReactiveClientRegistrationRepository repo = new InMemoryReactiveClientRegistrationRepository(
+            CommonOAuth2Provider.GOOGLE.getBuilder("google").clientId("testcid").clientSecret("testsecret").build());
+
+    @SuppressWarnings("deprecation")
     private ApplicationContextRunner runner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(OAuth2SecurityAutoConfiguration.class));
+            /**
+             * bean to satisfy the dependency of
+             * {@link OAuth2Configuration#gatewayOverrideReactiveOAuth2AuthorizedClientManager()}
+             */
+            .withBean(ReactiveClientRegistrationRepository.class, () -> repo)
+            /**
+             * bean to satisfy the dependency of
+             * {@link OAuth2Configuration#gatewayOverrideReactiveOAuth2AuthorizedClientManager()}
+             */
+            .withBean(ServerOAuth2AuthorizedClientRepository.class,
+                    () -> new UnAuthenticatedServerOAuth2AuthorizedClientRepository())
+            .withConfiguration(AutoConfigurations.of(//
+                    OAuth2SecurityAutoConfiguration.class));
 
     @Test
     void testDisabledByDefault() {
