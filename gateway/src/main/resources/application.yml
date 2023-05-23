@@ -50,6 +50,12 @@ spring:
           xss-protection-header: 0
           referrer-policy: no-referrer
           #content-security-policy: script-src 'self' 'unsafe-eval'; object-src 'self';
+#      httpclient:
+#        wiretap: true
+#        proxy:
+#          host: proxy
+#          port: 8123
+#          non-proxy-hosts-pattern: '(localhost|gdi-.*|georchestra-.*|fibre3d.*)'
       #routes: ought to be loaded from gateway.yaml, preferrably from georchestra's datadir
 
 georchestra:
@@ -61,8 +67,8 @@ georchestra:
           enabled: false
           host: localhost
           port: 8000
-          username: jack
-          password: insecure
+          username:
+          password:
       ldap:
         # Multiple LDAP data sources are supported. The first key defines a simple
         # name for them. The `default` one here, disabled by default, is pre-configured
@@ -125,15 +131,17 @@ logging:
     '[org.springframework]': info
     '[org.springframework.cloud.gateway]': info
     '[org.springframework.security]': info
-    '[org.springframework.security.oauth2]': debug
-    '[reactor.netty.http ]': debug
+    '[org.springframework.security.oauth2]': info
+    '[reactor.netty.http ]': info
+    '[reactor.netty.http.client]': info
     '[org.georchestra.gateway]': info
-    '[org.georchestra.gateway.filter.headers]': debug
-    '[org.georchestra.gateway.config.security]': debug
-    '[org.georchestra.gateway.config.security.accessrules]': debug
-    '[org.georchestra.gateway.security.ldap]': debug
-    '[org.georchestra.gateway.security.oauth2]': debug
+    '[org.georchestra.gateway.filter.headers]': info
+    '[org.georchestra.gateway.config.security]': info
+    '[org.georchestra.gateway.config.security.accessrules]': info
+    '[org.georchestra.gateway.security.ldap]': info
+    '[org.georchestra.gateway.security.oauth2]': info
+    
 
 ---
 spring.config.activate.on-profile: dev
-spring.config.import: file:../datadir/default.properties,file:../datadir/gateway/gateway.yaml
+spring.config.import: file:./datadir/default.properties,file:./datadir/gateway/gateway.yaml

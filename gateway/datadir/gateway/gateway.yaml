@@ -138,6 +138,22 @@ georchestra:
         - intercept-url: /import/**
           anonymous: false
 
+logging:
+  level:
+    root: warn
+    '[org.springframework]': info
+    '[org.springframework.cloud.gateway]': info
+    '[org.springframework.security]': info
+    '[org.springframework.security.oauth2]': info
+    '[reactor.netty.http ]': debug
+    '[reactor.netty.http.client]': debug
+    '[org.georchestra.gateway]': info
+    '[org.georchestra.gateway.filter.headers]': info
+    '[org.georchestra.gateway.config.security]': info
+    '[org.georchestra.gateway.config.security.accessrules]': info
+    '[org.georchestra.gateway.security.ldap]': info
+    '[org.georchestra.gateway.security.oauth2]': info
+
 ---
 # docker profile, sets backend services target URLs to match default docker-compose host names and ports
 spring.config.activate.on-profile: docker
@@ -160,7 +176,6 @@ georchestra.gateway.services:
 spring.config.activate.on-profile: dev
 
 georchestra.gateway.security:
-  oauth2.enabled: false
   ldap:
     default:
       enabled: true
@@ -170,7 +185,7 @@ georchestra.gateway.security:
       url: ldap://localhost:3899
 
 georchestra.gateway.services:
-  header.target: http://localhost:10003/header/
+  header.target: http://header:8080/header/
   mapfishapp.target: http://localhost:10004/mapfishapp/
   extractorapp.target: http://localhost:10005/extractorapp/
   geoserver.target: http://localhost:10006/geoserver/
@@ -182,3 +197,17 @@ georchestra.gateway.services:
   import.target: http://localhost:10012/
   atlas.target: http://localhost:8080/atlas/
   geowebcache.target: http://localhost:8080/geowebcache/
+
+---
+spring.config.activate.on-profile: proxy
+
+georchestra:
+  gateway:
+    security:
+      oauth2:
+        proxy:
+          enabled: true
+          host: polipo
+          port: 8123
+
+  

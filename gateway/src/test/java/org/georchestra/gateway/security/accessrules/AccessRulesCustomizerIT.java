@@ -52,9 +52,9 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @SpringBootTest(classes = GeorchestraGatewayApplication.class, webEnvironment = WebEnvironment.MOCK, properties = {
-        "georchestra.datadir=../datadir"//
-        , "georchestra.gateway.security.ldap.default.enabled=false"//
-})
+        "georchestra.datadir=../datadir", //
+        "georchestra.gateway.security.ldap.default.enabled=false", //
+        "georchestra.gateway.security.oauth2.enabled=false" })
 @AutoConfigureWebTestClient(timeout = "PT20S")
 @ActiveProfiles("it")
 @Slf4j

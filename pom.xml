@@ -18,7 +18,7 @@
   </modules>
   <properties>
     <revision>22.1-SNAPSHOT</revision>
-    <spring-cloud.version>2021.0.1</spring-cloud.version>
+    <spring-cloud.version>2021.0.6</spring-cloud.version>
     <formatter-maven-plugin.version>2.10.0</formatter-maven-plugin.version>
     <fmt.skip>false</fmt.skip>
     <fmt.action>format</fmt.action>

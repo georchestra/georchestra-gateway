@@ -21,27 +21,34 @@ package org.georchestra.gateway.security.oauth2;
 import org.georchestra.gateway.security.ServerHttpSecurityCustomizer;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gateway.config.GatewayReactiveOAuth2AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity.OAuth2LoginSpec;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthorizationCodeReactiveAuthenticationManager;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.endpoint.ReactiveOAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.WebClientReactiveAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.WebClientReactiveRefreshTokenTokenResponseClient;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcReactiveOAuth2UserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2UserService;
+import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoderFactory;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import lombok.extern.slf4j.Slf4j;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.ProxyProvider;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({ OAuth2ProxyConfigProperties.class, OpenIdConnectCustomClaimsConfigProperties.class })
@@ -49,16 +56,92 @@ import reactor.netty.transport.ProxyProvider;
 public class OAuth2Configuration {
 
     public static final class OAuth2AuthenticationCustomizer implements ServerHttpSecurityCustomizer {
+        private WebClient oauth2WebClient;
+
+        public OAuth2AuthenticationCustomizer(WebClient oauth2WebClient) {
+            this.oauth2WebClient = oauth2WebClient;
+        }
 
         public @Override void customize(ServerHttpSecurity http) {
             log.info("Enabling authentication support using an OAuth 2.0 and/or OpenID Connect 1.0 Provider");
+
+//            http.oauth2Client();
+            http.oauth2Client(c -> {
+                c.authenticationManager(getClientAuthenticationManager());
+            });
             http.oauth2Login();
+        }
+
+        private ReactiveAuthenticationManager getClientAuthenticationManager() {
+            WebClientReactiveAuthorizationCodeTokenResponseClient accessTokenResponseClient = new WebClientReactiveAuthorizationCodeTokenResponseClient();
+            accessTokenResponseClient.setWebClient(oauth2WebClient);
+            return new OAuth2AuthorizationCodeReactiveAuthenticationManager(accessTokenResponseClient);
         }
     }
 
+    /*
+     * @Bean public WebClientCustomizer webClientCustomizer(ClientHttpConnector
+     * connector) { return builder -> builder.clientConnector(connector); }
+     * 
+     * @Bean HttpClientCustomizer httpClientCustomizer(OAuth2ProxyConfigProperties
+     * proxyConfig) { return httpClient -> { final String proxyHost =
+     * proxyConfig.getHost(); final Integer proxyPort = proxyConfig.getPort(); final
+     * String proxyUser = StringUtils.hasText(proxyConfig.getUsername()) ?
+     * proxyConfig.getUsername() : null; final String proxyPassword =
+     * StringUtils.hasText(proxyConfig.getPassword()) ? proxyConfig.getPassword() :
+     * null;
+     * 
+     * if (proxyConfig.isEnabled()) { if (proxyHost == null || proxyPort == null) {
+     * throw new
+     * IllegalStateException("HTTP proxy is enabled, but host and port not provided"
+     * ); } log.info("Default HTTP client will use proxy {}:{}", proxyHost,
+     * proxyPort); httpClient = httpClient.proxy(// proxy -> proxy//
+     * .type(ProxyProvider.Proxy.HTTP)// .host(proxyHost)// .port(proxyPort)//
+     * .nonProxyHosts("(localhost|gdi-.*|georchestra-.*|fibre3d.*)")//
+     * .username(proxyUser).password(user -> { return proxyPassword; })// ); } else
+     * { log.
+     * info("Default HTTP client will use proxy from System properties if provided"
+     * ); httpClient = httpClient.proxyWithSystemProperties(); }
+     * 
+     * httpClient = httpClient.doOnRequest( (req, conn) ->
+     * log.info("Default WebClient Performing proxied request to {}",
+     * req.resourceUrl())) .doOnResponse((resp, conn) ->
+     * log.info("Default WebClient proxied response: {}, url: {}", resp.status(),
+     * resp.resourceUrl()));
+     * 
+     * httpClient = httpClient.wiretap(true); return httpClient; }; }
+     * 
+     * @Primary
+     * 
+     * @Bean public ClientHttpConnector
+     * clientHttpConnector(OAuth2ProxyConfigProperties proxyConfig) { return new
+     * ReactorClientHttpConnector(); // // final String proxyHost =
+     * proxyConfig.getHost(); // final Integer proxyPort = proxyConfig.getPort(); //
+     * final String proxyUser = proxyConfig.getUsername(); // final String
+     * proxyPassword = proxyConfig.getPassword(); // // HttpClient httpClient =
+     * HttpClient.create(); // if (proxyConfig.isEnabled()) { // if (proxyHost ==
+     * null || proxyPort == null) { // throw new
+     * IllegalStateException("OAuth2 client HTTP proxy is enabled, but host and port not provided"
+     * ); // } // log.info("Oauth2 client will use HTTP proxy {}:{}", proxyHost,
+     * proxyPort); // httpClient = httpClient.proxy(proxy ->
+     * proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort) //
+     * .nonProxyHosts("(localhost|gdi-.*|georchestra-.*|fibre3d.*)") //
+     * .username(proxyUser).password(user -> { // return proxyPassword; // })); // }
+     * else { // log.
+     * info("Oauth2 client will use HTTP proxy from System properties if provided");
+     * // httpClient = httpClient.proxyWithSystemProperties(); // } // // httpClient
+     * = httpClient // .doOnRequest((req, conn) ->
+     * log.info("Default WebClient Performing proxied request to {}",
+     * req.resourceUrl())) // .doOnResponse( // (resp, conn) ->
+     * log.info("Default WebClient Proxied response: {}, url: {}", resp.status(),
+     * resp.resourceUrl())); // // httpClient = httpClient.wiretap(true); //
+     * ReactorClientHttpConnector conn = new ReactorClientHttpConnector(httpClient);
+     * // return conn; }
+     */
     @Bean
-    ServerHttpSecurityCustomizer oauth2LoginEnablingCustomizer() {
-        return new OAuth2AuthenticationCustomizer();
+    ServerHttpSecurityCustomizer oauth2LoginEnablingCustomizer(
+            @Qualifier("oauth2WebClient") WebClient oauth2WebClient) {
+        return new OAuth2AuthenticationCustomizer(oauth2WebClient);
     }
 
     @Bean
@@ -93,6 +176,42 @@ public class OAuth2Configuration {
         WebClientReactiveAuthorizationCodeTokenResponseClient client = new WebClientReactiveAuthorizationCodeTokenResponseClient();
         client.setWebClient(oauth2WebClient);
         return client;
+    }
+
+    /**
+     * Override the {@link ReactiveClientRegistrationRepository} set up on
+     * {@link GatewayReactiveOAuth2AutoConfiguration}
+     * 
+     * @return
+     */
+    @Primary
+    @Bean
+    public ReactiveOAuth2AuthorizedClientManager gatewayOverrideReactiveOAuth2AuthorizedClientManager(
+
+            ReactiveClientRegistrationRepository clientRegistrationRepository,
+
+            ServerOAuth2AuthorizedClientRepository authorizedClientRepository,
+
+            @Qualifier("oauth2WebClient") WebClient oauth2WebClient) {
+
+        WebClientReactiveRefreshTokenTokenResponseClient refreshTokenTokenResponseClient = new WebClientReactiveRefreshTokenTokenResponseClient();
+        refreshTokenTokenResponseClient.setWebClient(oauth2WebClient);
+
+        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider;
+
+        authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder//
+                .builder()//
+                .authorizationCode()//
+                .refreshToken(configurer -> configurer.accessTokenResponseClient(refreshTokenTokenResponseClient))//
+                .build();
+
+        DefaultReactiveOAuth2AuthorizedClientManager authorizedClientManager;
+        authorizedClientManager = new DefaultReactiveOAuth2AuthorizedClientManager(//
+                clientRegistrationRepository, //
+                authorizedClientRepository);
+        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+        return authorizedClientManager;
     }
 
     /**
@@ -142,31 +261,9 @@ public class OAuth2Configuration {
      *                    through System properties ({@literal http(s).proxyHost}
      *                    and {@literal http(s).proxyPort}), if any.
      */
+//    @Primary
     @Bean("oauth2WebClient")
     public WebClient oauth2WebClient(OAuth2ProxyConfigProperties proxyConfig) {
-        final String proxyHost = proxyConfig.getHost();
-        final Integer proxyPort = proxyConfig.getPort();
-        final String proxyUser = proxyConfig.getUsername();
-        final String proxyPassword = proxyConfig.getPassword();
-
-        HttpClient httpClient = HttpClient.create();
-        if (proxyConfig.isEnabled()) {
-            if (proxyHost == null || proxyPort == null) {
-                throw new IllegalStateException("OAuth2 client HTTP proxy is enabled, but host and port not provided");
-            }
-            log.info("Oauth2 client will use HTTP proxy {}:{}", proxyHost, proxyPort);
-            httpClient = httpClient.proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort)
-                    .username(proxyUser).password(user -> {
-                        return proxyPassword;
-                    }));
-        } else {
-            log.info("Oauth2 client will use HTTP proxy from System properties if provided");
-            httpClient = httpClient.proxyWithSystemProperties();
-        }
-        ReactorClientHttpConnector conn = new ReactorClientHttpConnector(httpClient);
-
-        WebClient webClient = WebClient.builder().clientConnector(conn).build();
-        return webClient;
+        return new ProxyAwareWebClient(proxyConfig);
     }
-
 }
