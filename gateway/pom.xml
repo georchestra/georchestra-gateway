@@ -32,6 +32,14 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>spring-boot-starter-logging</artifactId>
+          <!-- exclude transitive dep on logging to remove logback,
+			  we're using log4j2 bellow to use its json output -->
+          <groupId>org.springframework.boot</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -90,6 +98,16 @@
       <artifactId>spring-boot-devtools</artifactId>
       <scope>runtime</scope>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-layout-template-json</artifactId>
+      <version>2.20.0</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
