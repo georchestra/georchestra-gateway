@@ -15,7 +15,7 @@ server:
   ssl:
     enabled: false
     #TODO: configure SSL with a self-signed certificate
-    
+  
 spring:
   config:
     import: optional:file:${georchestra.datadir}/default.properties,optional:file:${georchestra.datadir}/gateway/gateway.yaml
@@ -128,13 +128,15 @@ management:
 logging:
   level:
     root: warn
+    '[reactor.netty.http ]': warn
+    '[reactor.netty.http.server.logging.AccessLog]': warn
+    '[reactor.netty.http.client]': warn
     '[org.springframework]': info
     '[org.springframework.cloud.gateway]': info
     '[org.springframework.security]': info
     '[org.springframework.security.oauth2]': info
-    '[reactor.netty.http ]': info
-    '[reactor.netty.http.client]': info
     '[org.georchestra.gateway]': info
+    '[org.georchestra.gateway.accesslog]': info
     '[org.georchestra.gateway.filter.headers]': info
     '[org.georchestra.gateway.config.security]': info
     '[org.georchestra.gateway.config.security.accessrules]': info

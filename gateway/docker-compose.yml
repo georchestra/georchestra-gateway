@@ -59,14 +59,14 @@ services:
       - 3891:389
 
   gateway:
-    image: georchestra/gateway:latest
+    image: georchestra/gateway:22.1-SNAPSHOT
     depends_on:
       - ldap
       - database
     volumes:
       - datadir:/etc/georchestra
     environment:
-      - JAVA_TOOL_OPTIONS=-Dgeorchestra.datadir=/etc/georchestra -Dspring.profiles.active=docker,icu,proxy -Xmx512M
+      - JAVA_TOOL_OPTIONS=-Dgeorchestra.datadir=/etc/georchestra -Dspring.profiles.active=docker,icu,proxy,jsonlogs -Xmx512M -Dreactor.netty.http.server.accessLogEnabled=true
       - GOOGLE_CLIENT_ID=539019376623-98bfblg8t9efd507ia4qv0v7r79afits.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=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
       - GITHUB_CLIENT_ID=500edcae13ce93734f87
@@ -88,8 +88,7 @@ services:
       - XMX=512M
     restart: always
     ports:
-      - 8080:8080
-      #- 10003:8080
+      - 10003:8080
 
   geoserver:
     image: georchestra/geoserver:latest
