@@ -114,7 +114,7 @@ management:
     health:
       enabled: true
       probes.enabled: true
-      show-details: always
+      show-details: when-authorized
   metrics:
     binders:
       processor.enabled: true
