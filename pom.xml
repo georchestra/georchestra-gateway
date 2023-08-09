@@ -42,60 +42,87 @@
         <artifactId>georchestra-ldap-account-management</artifactId>
         <version>23.1-SNAPSHOT</version>
       </dependency>
-    </dependencies>
-  </dependencyManagement>
-  <repositories>
-    <repository>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>spring-milestones</id>
-      <name>Spring Milestones</name>
-      <url>https://repo.spring.io/milestone</url>
-    </repository>
-  </repositories>
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.springframework.boot</groupId>
-          <artifactId>spring-boot-maven-plugin</artifactId>
-          <configuration>
-            <excludes>
-              <exclude>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-              </exclude>
-            </excludes>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>flatten-maven-plugin</artifactId>
-          <version>1.2.2</version>
-        </plugin>
-        <plugin>
-          <groupId>net.revelc.code.formatter</groupId>
-          <artifactId>formatter-maven-plugin</artifactId>
-          <version>${formatter-maven-plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>com.github.ekryd.sortpom</groupId>
-          <artifactId>sortpom-maven-plugin</artifactId>
-          <version>2.15.0</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
-  <profiles>
-    <profile>
-      <id>georchestra</id>
-      <activation><activeByDefault>true</activeByDefault></activation>
-      <modules>
-        <module>georchestra/commons</module>
-        <module>georchestra/testcontainers</module>
-        <module>georchestra/ldap-account-management</module>
-      </modules>
-    </profile>
-  </profiles>
+      <!--spring-security-oauth2 dependencies version forced to 5.6.2
+          since later version have issues when extracting users information
+          from token
+          Set<String> defaultScopes(OAuth2RefreshTokenGrantRequest grantRequest) {
+              return grantRequest.getAccessToken().getScopes();
+          }
+          changed to
+          Set<String> defaultScopes(T grantRequest) {
+              return Collections.emptySet();
+          }
+          which causes issues.
+      -->
+     <dependency>
+       <groupId>org.springframework.security</groupId>
+       <artifactId>spring-security-oauth2-client</artifactId>
+       <version>5.6.2</version>
+     </dependency>
+     <dependency>
+       <groupId>org.springframework.security</groupId>
+       <artifactId>spring-security-oauth2-core</artifactId>
+       <version>5.6.2</version>
+     </dependency>
+     <dependency>
+       <groupId>org.springframework.security</groupId>
+       <artifactId>spring-security-oauth2-jose</artifactId>
+       <version>5.6.2</version>
+     </dependency>
+   </dependencies>
+ </dependencyManagement>
+ <repositories>
+   <repository>
+     <snapshots>
+       <enabled>false</enabled>
+     </snapshots>
+     <id>spring-milestones</id>
+     <name>Spring Milestones</name>
+     <url>https://repo.spring.io/milestone</url>
+   </repository>
+ </repositories>
+ <build>
+   <pluginManagement>
+     <plugins>
+       <plugin>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-maven-plugin</artifactId>
+         <configuration>
+           <excludes>
+             <exclude>
+               <groupId>org.projectlombok</groupId>
+               <artifactId>lombok</artifactId>
+             </exclude>
+           </excludes>
+         </configuration>
+       </plugin>
+       <plugin>
+         <groupId>org.codehaus.mojo</groupId>
+         <artifactId>flatten-maven-plugin</artifactId>
+         <version>1.2.2</version>
+       </plugin>
+       <plugin>
+         <groupId>net.revelc.code.formatter</groupId>
+         <artifactId>formatter-maven-plugin</artifactId>
+         <version>${formatter-maven-plugin.version}</version>
+       </plugin>
+       <plugin>
+         <groupId>com.github.ekryd.sortpom</groupId>
+         <artifactId>sortpom-maven-plugin</artifactId>
+         <version>2.15.0</version>
+       </plugin>
+     </plugins>
+   </pluginManagement>
+ </build>
+ <profiles>
+   <profile>
+     <id>georchestra</id>
+     <activation><activeByDefault>true</activeByDefault></activation>
+     <modules>
+       <module>georchestra/commons</module>
+       <module>georchestra/testcontainers</module>
+       <module>georchestra/ldap-account-management</module>
+     </modules>
+   </profile>
+ </profiles>
 </project>
