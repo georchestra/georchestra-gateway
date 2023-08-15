@@ -26,8 +26,11 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.georchestra.gateway.model.GeorchestraUsers;
+import org.georchestra.security.model.GeorchestraUser;
 import org.slf4j.MDC;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -94,11 +97,19 @@ public class AccessLogFilter implements GlobalFilter {
         MDC.put("route-uri", String.valueOf(routeUri));
         MDC.put(RequestIdGlobalFilter.REQUEST_ID_HEADER, requestId);
         MDC.put("remoteAddress", remoteAddress);
-        MDC.put("auth-user", principal.getName());
+
+        Optional<GeorchestraUser> user = GeorchestraUsers.resolve(exchange);
+        user.ifPresentOrElse(gsu -> {
+            MDC.put("auth-user", gsu.getUsername());
+            MDC.put("auth-roles", gsu.getRoles().stream().collect(Collectors.joining(", ")));
+        }, () -> MDC.put("auth-user", "anonymous"));
+
         if (principal instanceof Authentication && principal != ANNON) {
             String roles = ((Authentication) principal).getAuthorities().stream().map(GrantedAuthority::getAuthority)
                     .collect(Collectors.joining(", "));
-            MDC.put("auth-roles", roles);
+
+            MDC.put("principal-name", principal.getName());
+            MDC.put("principal-authorities", roles);
         }
 
         log.info("{} {} {} ", request.getMethodValue(), response.getRawStatusCode(), uri);
