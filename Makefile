@@ -1,7 +1,11 @@
+.DEFAULT_GOAL := all
+
 all: deps install test docker
 
 deps:
-	./mvnw -f georchestra/ clean install -pl :georchestra-ldap-account-management -am -DskipTests -P-all -ntp
+	./mvnw clean install -f georchestra/commons -ntp -DskipTests && \
+	./mvnw clean install -f georchestra/testcontainers -ntp -DskipTests && \
+	./mvnw clean install -f georchestra/ldap-account-management -ntp -DskipTests
 
 install:
 	./mvnw clean install -pl :georchestra-gateway -ntp -DskipTests
