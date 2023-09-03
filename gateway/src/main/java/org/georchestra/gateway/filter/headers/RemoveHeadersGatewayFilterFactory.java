@@ -78,7 +78,7 @@ public class RemoveHeadersGatewayFilterFactory extends AbstractGatewayFilterFact
         return (exchange, chain) -> {
             final RegExConfig config = regexConfig;// == null ? DEFAULT_SECURITY_HEADERS_CONFIG : regexConfig;
             HttpHeaders incoming = exchange.getRequest().getHeaders();
-            if (config.anyMatches(incoming)) {
+            if (config.anyMatches(incoming) && !incoming.containsKey("sec-mellon-name-id")) {
                 ServerHttpRequest request = exchange.getRequest().mutate().headers(config::removeMatching).build();
                 exchange = exchange.mutate().request(request).build();
             }
