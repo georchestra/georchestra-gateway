@@ -178,7 +178,7 @@ class AccessRulesCustomizerTest {
         AuthorizeExchangeSpec spec = http.authorizeExchange();
 
         List<String> roles = List.of("ADMIN", "TESTER");
-        List<String> expected = List.of("ROLE_ADMIN", "ROLE_TESTER");
+        List<String> expected = List.of("ADMIN", "ROLE_ADMIN", "TESTER", "ROLE_TESTER");
         RoleBasedAccessRule rule = rule("/test/**", "/page1").setAllowedRoles(roles);
         customizer = spy(customizer);
         customizer.apply(spec, rule);

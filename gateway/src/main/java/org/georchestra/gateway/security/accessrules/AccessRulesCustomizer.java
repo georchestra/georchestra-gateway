@@ -123,7 +123,7 @@ public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
     }
 
     private List<String> resolveRoles(List<String> antPatterns, List<String> allowedRoles) {
-        return allowedRoles.stream().map(this::ensureRolePrefix).collect(Collectors.toList());
+        return allowedRoles.stream().map(this::ensureRolePrefix).flatMap(List::stream).collect(Collectors.toList());
     }
 
     @VisibleForTesting
@@ -146,7 +146,7 @@ public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
         access.denyAll();
     }
 
-    private String ensureRolePrefix(@NonNull String roleName) {
-        return roleName.startsWith("ROLE_") ? roleName : ("ROLE_" + roleName);
+    private List<String> ensureRolePrefix(@NonNull String roleName) {
+        return roleName.startsWith("ROLE_") ? List.of(roleName) : List.of(roleName, "ROLE_" + roleName);
     }
 }

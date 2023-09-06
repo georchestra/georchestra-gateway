@@ -271,7 +271,7 @@ class AccessRulesCustomizerIT {
      *     allowed-roles: SUPERUSER,ORGADMIN
      * }
      */
-    @WithMockUser(authorities = { "ROLE_USER", "ROLE_ORGADMIN" })
+    @WithMockUser(authorities = { "ROLE_ORGADMIN" })
     public @Test void testService_requires_specific_role_allowed_for_matching_roles() {
         mockService.stubFor(get(urlMatching("/analytics(/.*)?")).willReturn(ok()));
 
