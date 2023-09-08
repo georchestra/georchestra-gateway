@@ -19,6 +19,7 @@
 package org.georchestra.gateway.security.accessrules;
 
 import org.georchestra.gateway.model.GatewayConfigProperties;
+import org.georchestra.gateway.security.GeorchestraUserMapper;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,8 @@ import org.springframework.context.annotation.Configuration;
 public class AccessRulesConfiguration {
 
     @Bean
-    AccessRulesCustomizer georchestraAccessRulesCustomizer(GatewayConfigProperties config) {
-        return new AccessRulesCustomizer(config);
+    AccessRulesCustomizer georchestraAccessRulesCustomizer(GatewayConfigProperties config,
+            GeorchestraUserMapper userMapper) {
+        return new AccessRulesCustomizer(config, userMapper);
     }
 }
