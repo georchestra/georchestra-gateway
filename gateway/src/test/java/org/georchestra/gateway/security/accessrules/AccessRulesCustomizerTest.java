@@ -39,6 +39,7 @@ import java.util.Map;
 import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.georchestra.gateway.model.RoleBasedAccessRule;
 import org.georchestra.gateway.model.Service;
+import org.georchestra.gateway.security.GeorchestraUserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -58,14 +59,16 @@ class AccessRulesCustomizerTest {
     @BeforeEach
     void setUp() throws Exception {
         config = new GatewayConfigProperties();
-        customizer = new AccessRulesCustomizer(config);
+        customizer = new AccessRulesCustomizer(config, new GeorchestraUserMapper(List.of(), List.of()));
         http = spy(new ServerHttpSecurity() {
         });
     }
 
     @Test
     void testConstructorDoesNotAcceptNullConfig() {
-        assertThrows(NullPointerException.class, () -> new AccessRulesCustomizer(null));
+        assertThrows(NullPointerException.class,
+                () -> new AccessRulesCustomizer(null, new GeorchestraUserMapper(List.of(), List.of())));
+        assertThrows(NullPointerException.class, () -> new AccessRulesCustomizer(config, null));
     }
 
     @Test

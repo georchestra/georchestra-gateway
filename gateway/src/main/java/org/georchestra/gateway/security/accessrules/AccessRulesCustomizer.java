@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.georchestra.gateway.model.RoleBasedAccessRule;
 import org.georchestra.gateway.model.Service;
+import org.georchestra.gateway.security.GeorchestraUserMapper;
 import org.georchestra.gateway.security.ServerHttpSecurityCustomizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity.AuthorizeExchangeSpec;
@@ -54,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
 
     private final @NonNull GatewayConfigProperties config;
+    private final @NonNull GeorchestraUserMapper userMapper;
 
     @Override
     public void customize(ServerHttpSecurity http) {
@@ -133,7 +135,11 @@ public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
 
     @VisibleForTesting
     void hasAnyAuthority(Access access, List<String> roles) {
-        access.hasAnyAuthority(roles.toArray(String[]::new));
+        // Checks against the effective set of rules (both provided by the Authorization
+        // service and derived from roles mappings)
+        access.access(
+                GeorchestraUserRolesAuthorizationManager.hasAnyAuthority(userMapper, roles.toArray(String[]::new)));
+        // access.hasAnyAuthority(roles.toArray(String[]::new));
     }
 
     @VisibleForTesting
