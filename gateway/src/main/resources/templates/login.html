@@ -10,7 +10,6 @@
     <link rel="stylesheet" type="text/css" media="screen" href="/home/css/style.css">
     <link rel="stylesheet" type="text/css" media="screen" href="/home/css/contacts-style.css">
     <link rel="stylesheet" type="text/css" media="screen" href="/home/css/information-style.css">
-    <link rel="stylesheet" href="login_styles.css">
     <style>
         #placeholder {
             display: flex;
@@ -19,6 +18,7 @@
             width: 100%;
         }
         .main {
+            z-index:2;
             max-width:1230px;
             flex: 1 0 300px;
             width: 100%;
@@ -83,7 +83,7 @@
 
 <body style="display:flex; flex-direction:column;">
     <div id="placeholder"></div>
-    <header th:if="${header_url != null}">
+    <header th:if="${header_url != null}" style="z-index:1;">
         <iframe id="header" title="Header" th:src="${header_url} + '?noLoginButton=true'" th:style="'width:100%;height:'+${header_height}+'px;border:none;overflow:hidden;transition: all 0.3s ease 0s;'" scrolling="no"
                 frameborder="0"></iframe>
     </header>
