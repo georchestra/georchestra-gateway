@@ -10,43 +10,103 @@
     <link rel="stylesheet" type="text/css" media="screen" href="/home/css/style.css">
     <link rel="stylesheet" type="text/css" media="screen" href="/home/css/contacts-style.css">
     <link rel="stylesheet" type="text/css" media="screen" href="/home/css/information-style.css">
+    <link rel="stylesheet" href="login_styles.css">
+    <style>
+        #placeholder {
+            display: flex;
+            height: 120px;
+            min-height: 120px;
+            width: 100%;
+        }
+        .main {
+            max-width:1230px;
+            flex: 1 0 300px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0px;
+            padding: 0px;
+        }
+
+        #login-section {
+            display: flex;
+            justify-content: center; /* Center the items */
+
+        }
+
+        .login-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 30px 0px;
+            margin: 0 30px; /* Adjust as needed to ensure there's always some space between the items */
+
+            width: 200px;
+            height: 200px;
+            border-radius: 1rem;
+            background-color: #f2f2f2;
+        }
+
+        @media (max-width: 520px) {
+            #login-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            .login-box {
+                margin-bottom: 30px;
+            }
+        }
+
+        .login-logo {
+            height: 60px;
+            display: flex;
+            justify-content: center;
+        }
+        .login-button {
+            width: 100px;
+            border-radius: 0.5rem;
+            color: white;
+            text-align: center;
+        }
+
+        #button-telekom {
+            background-color: var(--color-telekom-magenta);
+            border-color: var(--color-telekom-magenta);
+        }
+
+        #button-gfp {
+            background-color: #263f5e;
+            border-color: #263f5e;
+        }
+    </style>
 </head>
 
-<body>
+<body style="display:flex; flex-direction:column;">
+    <div id="placeholder"></div>
     <header th:if="${header_url != null}">
         <iframe id="header" title="Header" th:src="${header_url} + '?noLoginButton=true'" th:style="'width:100%;height:'+${header_height}+'px;border:none;overflow:hidden;transition: all 0.3s ease 0s;'" scrolling="no"
                 frameborder="0"></iframe>
     </header>
-    <main style="margin-top: 150px;">
-        <div class="container-fluid">
-            <div class="welcome-session">
-                <form class="form-signin" method="post" action="/login" th:if="${ldapEnabled}">
-                    <h2 class="form-signin-heading">Please sign in: </h2>
-                    <p>
-                        <label for="username" class="sr-only">Username</label>
-                        <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
-                    </p>
-                    <p>
-                        <label for="password" class="sr-only">Password</label>
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
-                    </p>
-                    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-                </form>
-                <div th:if="${oauth2LoginLinks.size() != 0}" class="container">
-                    <h2 class="form-signin-heading">Telekom Business Login</h2>
-                    <table class="table table-striped">
-                        <tr th:each="oauth2Client : ${oauth2LoginLinks}">
-                            <td>
-                                <a th:href="${oauth2Client.key}" th:text="${oauth2Client.value == 'icu' ? 'anmelden' : oauth2Client.value}"></a>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
+    <main class="main">
+        <div class="row">
+            <p class="fw-light fs-2">
+                Login <span class="fw-bold fs-2">FibrePartners</span>
+            </p>
         </div>
+                <div th:if="${oauth2LoginLinks.size() != 0}">
+                    <div id="login-section">
+                        <div th:each="oauth2Client : ${oauth2LoginLinks}" th:if="${oauth2Client.value == 'icu' || oauth2Client.value == 'icu_gfp'}" class="login-box">
+                            <div class="login-logo">
+                                <img th:src="${oauth2Client.value == 'icu' ? '/T_logo_rgb_p.png' : '/GFP_logo.png'}" height="60px"/>
+                            </div>
+                            <div th:text="${oauth2Client.value == 'icu' ? 'Partner Telekom' : 'Glasfaserplus & Partner'}" class="fw-bold fs-6"></div>
+                            <a th:href="${oauth2Client.key}" th:id="${oauth2Client.value == 'icu' ? 'button-telekom' : 'button-gfp'}" type="button" class="login-button">Login</a>
+                        </div>
+                    </div>
+            </div>
     </main>
     <footer th:if="${footer_url != null}">
-        <iframe id="footer" th:src="${footer_url}" style="width:100%;border:none;overflow:hidden;" scrolling="no"
+        <iframe id="footer" th:src="${footer_url}" style="width:100%;border:none;overflow:hidden;height:90px" scrolling="no"
                 frameborder="0"></iframe>
     </footer>
 </body>
