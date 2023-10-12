@@ -93,25 +93,34 @@ public class AccessLogFilter implements GlobalFilter {
         InetSocketAddress addr = request.getRemoteAddress();
         String remoteAddress = addr == null ? "unknown" : addr.toString();
 
-        MDC.put("route-id", route.getId());
-        MDC.put("route-uri", String.valueOf(routeUri));
-        MDC.put(RequestIdGlobalFilter.REQUEST_ID_HEADER, requestId);
-        MDC.put("remoteAddress", remoteAddress);
+        mdcPut("route-id", route.getId());
+        mdcPut("route-uri", String.valueOf(routeUri));
+        mdcPut(RequestIdGlobalFilter.REQUEST_ID_HEADER, requestId);
+        mdcPut("remoteAddress", remoteAddress);
 
         Optional<GeorchestraUser> user = GeorchestraUsers.resolve(exchange);
         user.ifPresentOrElse(gsu -> {
-            MDC.put("auth-user", gsu.getUsername());
-            MDC.put("auth-roles", gsu.getRoles().stream().collect(Collectors.joining(", ")));
+            mdcPut("auth-user", gsu.getUsername());
+            mdcPut("auth-roles", gsu.getRoles().stream().collect(Collectors.joining(", ")));
         }, () -> MDC.put("auth-user", "anonymous"));
 
         if (principal instanceof Authentication && principal != ANNON) {
             String roles = ((Authentication) principal).getAuthorities().stream().map(GrantedAuthority::getAuthority)
                     .collect(Collectors.joining(", "));
 
-            MDC.put("principal-name", principal.getName());
-            MDC.put("principal-authorities", roles);
+            mdcPut("principal-name", principal.getName());
+            mdcPut("principal-authorities", roles);
         }
 
         log.info("{} {} {} ", request.getMethodValue(), response.getRawStatusCode(), uri);
+        mdcClear();
+    }
+
+    void mdcPut(String key, String value) {
+        MDC.put(key, value);
+    }
+
+    void mdcClear() {
+        MDC.clear();
     }
 }
