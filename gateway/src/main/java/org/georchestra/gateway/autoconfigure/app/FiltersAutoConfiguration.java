@@ -54,7 +54,6 @@ public class FiltersAutoConfiguration {
         return new ResolveTargetGlobalFilter(config);
     }
 
-
     @Bean
     LoginParamRedirectGatewayFilterFactory loginParamRedirectGatewayFilterFactory() {
         return new LoginParamRedirectGatewayFilterFactory();
