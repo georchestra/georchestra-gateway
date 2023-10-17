@@ -193,7 +193,7 @@ georchestra.gateway.security:
       url: ldap://localhost:3899
 
 georchestra.gateway.services:
-  header.target: http://header:10003/header/
+  header.target: http://localhost:10003/header/
   mapfishapp.target: http://localhost:10004/mapfishapp/
   extractorapp.target: http://localhost:10005/extractorapp/
   geoserver.target: http://localhost:10006/geoserver/
