@@ -78,6 +78,8 @@ class OAuth2SecurityAutoConfigurationTest {
                 "georchestra.gateway.security.oauth2.enabled: true" //
                 , "georchestra.gateway.security.oidc.claims.organization.path: $.PartyOrganisationID" //
                 , "georchestra.gateway.security.oidc.claims.roles.json.path: $.groups_json..['name']" //
+                , "georchestra.gateway.security.oidc.claims.roles.json.split: true" //
+                , "georchestra.gateway.security.oidc.claims.roles.json.split-on: ;" //
                 , "georchestra.gateway.security.oidc.claims.roles.uppercase: false" //
                 , "georchestra.gateway.security.oidc.claims.roles.normalize: false" //
                 , "georchestra.gateway.security.oidc.claims.roles.append: false" //
@@ -89,6 +91,9 @@ class OAuth2SecurityAutoConfigurationTest {
                     assertThat(claimsConfig.getOrganization().getPath()).isEqualTo(List.of("$.PartyOrganisationID"));
                     RolesMapping rolesMapping = claimsConfig.getRoles();
                     assertThat(rolesMapping.getJson().getPath()).isEqualTo(List.of("$.groups_json..['name']"));
+                    assertThat(rolesMapping.getJson().isSplit()).isTrue();
+                    assertThat(rolesMapping.getJson().getSplitOn()).isEqualTo(";");
+
                     assertThat(rolesMapping.isUppercase()).isFalse();
                     assertThat(rolesMapping.isNormalize()).isFalse();
                     assertThat(rolesMapping.isAppend()).isFalse();

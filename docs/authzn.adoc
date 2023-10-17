@@ -177,6 +177,15 @@ Both standard and non-standard claims can be used to set the `GeorchestraUser`'s
 | 
 |JSONPath expression to extract the user role names from the OIDC claims map
 
+|`georchestra.gateway.security.oidc.claims.roles.json.split`
+| false
+|Whether to split parsed strings into multiple strings using `${georchestra.gateway.security.oidc.claims.roles.json.split-on}` as separator.
+ For example, if the expression evaluates to `ROLE_1, ROLE_2`, split it into two roles `[ROLE_1, ROLE_2]`.
+
+|`georchestra.gateway.security.oidc.claims.roles.json.split-on`
+| `,` (comma)
+| String literal to use as separator for splitting string values evaluated by the JSONPath expression.
+
 |`georchestra.gateway.security.oidc.claims.roles.uppercase`
 | true
 |Whether to return mapped role names as upper-case.
@@ -209,6 +218,7 @@ Take as example the following claims provided by an OIDC ID Token:
         "GDI Planer",
         "GDI Editor (exten)"
     ],
+    "permission": "GDI Planner, GDI Admin"
     "PartyOrganisationID": "6007280321"
 }
 ----
@@ -253,10 +263,13 @@ georchestra:
               # }
               #
               # The resulting list of roles will be ["ORG_6007280321", "GDI_PLANER_EXTERN", "GDI_EDITOR_EXTERN"]
-              # and the request header will be `sec-roles: ROLE_ORG_6007280321;ROLE_GDI_PLANER;ROLE_GDI_EDITOR_EXTERN;ROLE_USER`
-              json.path:
-              - "$.concat(\"ORG_\", $.PartyOrganisationID)"
-              - "$.groups_json..['name']"
+              # and the request header will be `sec-roles: ROLE_ORG_6007280321;ROLE_GDI_PLANER;ROLE_GDI_EDITOR_EXTERN;ROLE_ADMIN;ROLE_USER`
+              json:
+                split: true
+                path:
+                - "$.concat(\"ORG_\", $.PartyOrganisationID)"
+                - "$.groups_json..['name']"
+                - "$.permission"
               uppercase: true
               normalize: true
               append: true
@@ -265,7 +278,7 @@ georchestra:
 Resulting in the following property values for the `GeorchestraUser` instance associated to the request:
 
 ```
-roles = ["ROLE_GDI_PLANER", "ROLE_GDI_EDITOR_EXTERN"]
+roles = ["ROLE_GDI_PLANER", "ROLE_GDI_EDITOR_EXTERN", "ROLE_GDI_ADMIN"]
 organization = "6007280321"
 ```
 
