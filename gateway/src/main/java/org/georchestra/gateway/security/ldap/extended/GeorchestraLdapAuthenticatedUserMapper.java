@@ -19,17 +19,12 @@
 
 package org.georchestra.gateway.security.ldap.extended;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.georchestra.gateway.security.GeorchestraUserMapperExtension;
 import org.georchestra.security.api.UsersApi;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.LdapUserDetails;
 
 import lombok.NonNull;
@@ -65,23 +60,6 @@ class GeorchestraLdapAuthenticatedUserMapper implements GeorchestraUserMapperExt
         final String ldapConfigName = token.getConfigName();
         final String username = principal.getUsername();
 
-        Optional<GeorchestraUser> user = users.findByUsername(ldapConfigName, username);
-        return user.map(u -> fixPrefixedRoleNames(u, token));
-    }
-
-    private GeorchestraUser fixPrefixedRoleNames(GeorchestraUser user,
-            GeorchestraUserNamePasswordAuthenticationToken token) {
-
-        // Fix role name mismatch between authority provider (adds ROLE_ prefix) and
-        // users api
-        Set<String> prefixedRoleNames = token.getAuthorities().stream().filter(SimpleGrantedAuthority.class::isInstance)
-                .map(GrantedAuthority::getAuthority).filter(role -> role.startsWith("ROLE_"))
-                .collect(Collectors.toSet());
-
-        List<String> roles = user.getRoles().stream()
-                .map(r -> prefixedRoleNames.contains("ROLE_" + r) ? "ROLE_" + r : r).collect(Collectors.toList());
-
-        user.setRoles(roles);
-        return user;
+        return users.findByUsername(ldapConfigName, username);
     }
 }

@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.georchestra.gateway.security.GeorchestraUserMapper;
+import org.georchestra.gateway.security.RolePrefixGeorchestraUserCustomizerExtension;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.security.authorization.AuthorityAuthorizationDecision;
 import org.springframework.security.authorization.AuthorityReactiveAuthorizationManager;
@@ -42,7 +43,7 @@ import reactor.core.publisher.Mono;
  * Variant of {@link AuthorityReactiveAuthorizationManager} that
  * {@link #check(Mono, Object) checks} access based on the effectively resolved
  * set of role names in a {@link GeorchestraUser}, as opposed to only on the
- * {@link Authentication#getAuthorities() Authenticateion authorities}.
+ * {@link Authentication#getAuthorities() Authentication authorities}.
  * <p>
  * This is so because the authorization provider (e.g. OAuth2/OIDC) returns an
  * {@link Authentication} object from which {@link GeorchestraUserMapper} will
@@ -58,10 +59,10 @@ class GeorchestraUserRolesAuthorizationManager<T> implements ReactiveAuthorizati
     private final Set<String> authorityFilter;
     private final AuthorityAuthorizationDecision unauthorized;
 
-    GeorchestraUserRolesAuthorizationManager(GeorchestraUserMapper userMapper, String... authorities) {
+    GeorchestraUserRolesAuthorizationManager(GeorchestraUserMapper userMapper, String... roles) {
         this.userMapper = userMapper;
-        this.authorities = AuthorityUtils.createAuthorityList(authorities);
-        this.authorityFilter = Set.of(authorities);
+        this.authorities = AuthorityUtils.createAuthorityList(roles);
+        this.authorityFilter = Set.of(roles);
         this.unauthorized = new AuthorityAuthorizationDecision(false, this.authorities);
     }
 
@@ -94,7 +95,7 @@ class GeorchestraUserRolesAuthorizationManager<T> implements ReactiveAuthorizati
      * @param <T>       the type of object being authorized
      * @return the new instance
      */
-    public static <T> GeorchestraUserRolesAuthorizationManager<T> hasAuthority(GeorchestraUserMapper userMapper,
+    private static <T> GeorchestraUserRolesAuthorizationManager<T> hasAuthority(GeorchestraUserMapper userMapper,
             String authority) {
         Assert.notNull(authority, "authority cannot be null");
         return new GeorchestraUserRolesAuthorizationManager<>(userMapper, authority);
@@ -108,7 +109,7 @@ class GeorchestraUserRolesAuthorizationManager<T> implements ReactiveAuthorizati
      * @param <T>         the type of object being authorized
      * @return the new instance
      */
-    public static <T> GeorchestraUserRolesAuthorizationManager<T> hasAnyAuthority(GeorchestraUserMapper userMapper,
+    private static <T> GeorchestraUserRolesAuthorizationManager<T> hasAnyAuthority(GeorchestraUserMapper userMapper,
             String... authorities) {
         Assert.notNull(authorities, "authorities cannot be null");
         for (String authority : authorities) {
@@ -121,21 +122,21 @@ class GeorchestraUserRolesAuthorizationManager<T> implements ReactiveAuthorizati
      * Creates an instance of {@link GeorchestraUserRolesAuthorizationManager} with
      * the provided authority.
      * 
-     * @param role the authority to check for prefixed with "ROLE_"
+     * @param role the authority to check for prefixed with {@literal ROLE_}
      * @param <T>  the type of object being authorized
      * @return the new instance
      */
     public static <T> GeorchestraUserRolesAuthorizationManager<T> hasRole(GeorchestraUserMapper userMapper,
             String role) {
         Assert.notNull(role, "role cannot be null");
-        return hasAuthority(userMapper, "ROLE_" + role);
+        return hasAuthority(userMapper, RolePrefixGeorchestraUserCustomizerExtension.toRole(role));
     }
 
     /**
      * Creates an instance of {@link GeorchestraUserRolesAuthorizationManager} with
      * the provided authorities.
      * 
-     * @param roles the authorities to check for prefixed with "ROLE_"
+     * @param roles the authorities to check for prefixed with {@literal ROLE_}
      * @param <T>   the type of object being authorized
      * @return the new instance
      */
@@ -149,11 +150,6 @@ class GeorchestraUserRolesAuthorizationManager<T> implements ReactiveAuthorizati
     }
 
     private static String[] toNamedRolesArray(String... roles) {
-        String[] result = new String[roles.length];
-        for (int i = 0; i < roles.length; i++) {
-            result[i] = "ROLE_" + roles[i];
-        }
-        return result;
+        return Stream.of(roles).map(RolePrefixGeorchestraUserCustomizerExtension::toRole).toArray(String[]::new);
     }
-
 }

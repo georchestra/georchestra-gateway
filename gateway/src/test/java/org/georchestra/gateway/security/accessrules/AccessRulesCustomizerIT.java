@@ -26,14 +26,24 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
 import java.net.URI;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
+import org.georchestra.gateway.security.GeorchestraUserMapperExtension;
+import org.georchestra.security.model.GeorchestraUser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.ldap.userdetails.LdapUserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -51,14 +61,45 @@ import lombok.extern.slf4j.Slf4j;
  * the default {@literal gateway.yml} config file.
  *
  */
-@SpringBootTest(classes = GeorchestraGatewayApplication.class, webEnvironment = WebEnvironment.MOCK, properties = {
-        "georchestra.datadir=../datadir", //
-        "georchestra.gateway.security.ldap.default.enabled=false", //
-        "georchestra.gateway.security.oauth2.enabled=false" })
-@AutoConfigureWebTestClient(timeout = "PT20S")
+@SpringBootTest(classes = { GeorchestraGatewayApplication.class,
+        AccessRulesCustomizerIT.TestUserMapperConfiguration.class }, webEnvironment = WebEnvironment.MOCK, properties = {
+                "georchestra.datadir=../datadir", //
+                "georchestra.gateway.security.ldap.default.enabled=false", //
+                "georchestra.gateway.security.oauth2.enabled=false" })
+@AutoConfigureWebTestClient(timeout = "PT120S")
 @ActiveProfiles("it")
 @Slf4j
 class AccessRulesCustomizerIT {
+
+    /**
+     * Catch and convert {@link Authentication}s created by {@literal @WithMockUser}
+     */
+    static @Configuration class TestUserMapperConfiguration {
+
+        @Bean
+        TestUserMapper testUserMapper() {
+            return new TestUserMapper();
+        }
+
+        static class TestUserMapper implements GeorchestraUserMapperExtension {
+            public @Override Optional<GeorchestraUser> resolve(Authentication authToken) {
+                return Optional.ofNullable(authToken)//
+                        .filter(UsernamePasswordAuthenticationToken.class::isInstance)
+                        .map(UsernamePasswordAuthenticationToken.class::cast)//
+                        .filter(token -> !(token.getPrincipal() instanceof LdapUserDetails))//
+                        .filter(token -> token
+                                .getPrincipal() instanceof org.springframework.security.core.userdetails.User)
+                        .map(t -> {
+                            GeorchestraUser user = new GeorchestraUser();
+                            user.setUsername(t.getName());
+                            user.setRoles(t.getAuthorities().stream().map(GrantedAuthority::getAuthority)
+                                    .collect(Collectors.toList()));
+                            return user;
+                        });
+            }
+
+        }
+    }
 
     @RegisterExtension
     static WireMockExtension mockService = WireMockExtension.newInstance()
@@ -179,7 +220,7 @@ class AccessRulesCustomizerIT {
      *     anonymous: true
      * }
      */
-    @WithMockUser(authorities = { "ROLE_USER" })
+    @WithMockUser(authorities = { "USER" })
     public @Test void testMapfishApp_ogproxy_access_denied_to_authenticated_user() {
         mockService.stubFor(get(urlMatching("/mapfishapp/ogcproxy(/.*)?")).willReturn(ok()));
         mockService.stubFor(get(urlMatching("/mapfishapp(/.*)?")).willReturn(ok()));
@@ -227,7 +268,7 @@ class AccessRulesCustomizerIT {
      *     anonymous: false
      * }
      */
-    @WithMockUser(authorities = { "ROLE_DOESNTMATTER" })
+    @WithMockUser(authorities = { "DOESNTMATTER" })
     public @Test void testService_requires_any_authenticated_user() {
         mockService.stubFor(get(urlMatching("/import(/.*)?")).willReturn(ok()));
 
@@ -249,7 +290,7 @@ class AccessRulesCustomizerIT {
      *     allowed-roles: SUPERUSER,ORGADMIN
      * }
      */
-    @WithMockUser(authorities = { "ROLE_USER", "ROLE_EDITOR" })
+    @WithMockUser(authorities = { "USER", "EDITOR" })
     public @Test void testService_requires_specific_role_forbidden_for_non_matching_roles() {
         mockService.stubFor(get(urlMatching("/analytics(/.*)?")).willReturn(ok()));
 
@@ -271,7 +312,7 @@ class AccessRulesCustomizerIT {
      *     allowed-roles: SUPERUSER,ORGADMIN
      * }
      */
-    @WithMockUser(authorities = { "ROLE_ORGADMIN" })
+    @WithMockUser(authorities = { "ORGADMIN" })
     public @Test void testService_requires_specific_role_allowed_for_matching_roles() {
         mockService.stubFor(get(urlMatching("/analytics(/.*)?")).willReturn(ok()));
 
