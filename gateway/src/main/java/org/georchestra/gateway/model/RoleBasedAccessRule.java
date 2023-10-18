@@ -20,6 +20,7 @@ package org.georchestra.gateway.model;
 
 import java.util.List;
 
+import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -64,7 +65,13 @@ public class RoleBasedAccessRule {
     /**
      * Role names that the authenticated user must be part of to be granted access
      * to the intercepted URIs. The ROLE_ prefix is optional. For example, the role
-     * set [ROLE_USER, ROLE_AUDITOR] is equivalent to [USER, AUDITOR]
+     * set [ROLE_USER, ROLE_AUDITOR] is equivalent to [USER, AUDITOR]. The check
+     * will be performed against the {@link GeorchestraUser#getRoles()} list, as the
+     * effectively resolved role names, which will always be prefixed with
+     * {@literal ROLE_}, as opposed to
+     * {@link org.springframework.security.core.Authentication#getAuthorities()},
+     * where {@link GrantedAuthority} names are preserved as provided by the
+     * authentication manager that produced them.
      */
     private List<String> allowedRoles = List.of();
 }

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Map;
 
+import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomClaimsConfigProperties.JsonPathExtractor;
 import org.georchestra.security.model.GeorchestraUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -128,7 +129,7 @@ class OpenIdConnectUserMapperTest {
         GeorchestraUser target = new GeorchestraUser();
         mapper.applyNonStandardClaims(claims, target);
 
-        List<String> expected = List.of("GDI_PLANER_EXTERN", "GDI_EDITOR_EXTERN");
+        List<String> expected = List.of("GDI_EDITOR_EXTERN", "GDI_PLANER_EXTERN");
         List<String> actual = target.getRoles();
         assertEquals(expected, actual);
     }
@@ -160,7 +161,61 @@ class OpenIdConnectUserMapperTest {
         GeorchestraUser target = new GeorchestraUser();
         mapper.applyNonStandardClaims(claims, target);
 
-        List<String> expected = List.of("ORG_6007280321", "GDI_PLANER_EXTERN", "GDI_EDITOR_EXTERN");
+        List<String> expected = List.of("GDI_EDITOR_EXTERN", "GDI_PLANER_EXTERN", "ORG_6007280321");
+        List<String> actual = target.getRoles();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void applyNonStandardClaims_jsonPath_comma_separated_values_to_roles() throws ParseException {
+
+        final String jsonPath = "$.permission";
+        final String groupsJsonPath = "$.groups_json..['name']";
+
+        JsonPathExtractor jsonpathConfig = nonStandardClaimsConfig.getRoles().getJson();
+        jsonpathConfig.getPath().add(jsonPath);
+        jsonpathConfig.getPath().add(groupsJsonPath);
+        jsonpathConfig.setSplit(true);
+
+        // duplicate values in .$groups_json..['name'] and .$permission should be
+        // deduplicated. Note "GDI.Editor (extern)" and "GDI Editor (extern)" should
+        // both be mapped to GDI_EDITOR_EXTERN
+        final String json = //
+                "{" //
+                        + "'groups_json': [ [ " //
+                        + "  {'name': 'GDI Planer (extern)'}, " //
+                        + "  {'name': 'GDI.Editor (extern)'} " //
+                        + "] ] " //
+                        + ",'permission': 'GDI Planer (extern), GDI Editor (extern), GDI admin'" //
+                        + ",'PartyOrganisationID': '6007280321'"//
+                        + "}";
+
+        Map<String, Object> claims = sampleClaims(json);
+
+        GeorchestraUser target = new GeorchestraUser();
+        mapper.applyNonStandardClaims(claims, target);
+
+        List<String> expected = List.of("GDI_ADMIN", "GDI_EDITOR_EXTERN", "GDI_PLANER_EXTERN");
+        List<String> actual = target.getRoles();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void applyNonStandardClaims_jsonPath_multiple_jsonpaths_deduplicates() throws ParseException {
+
+        final String jsonPath = "$.permission";
+        nonStandardClaimsConfig.getRoles().getJson().getPath().add(jsonPath);
+        nonStandardClaimsConfig.getRoles().getJson().setSplit(true);
+
+        final String json = //
+                "{'permission': 'GDI Planer (extern), GDI Planer (extern), GDI Editor (extern), GDI Editor (extern)'}";
+
+        Map<String, Object> claims = sampleClaims(json);
+
+        GeorchestraUser target = new GeorchestraUser();
+        mapper.applyNonStandardClaims(claims, target);
+
+        List<String> expected = List.of("GDI_EDITOR_EXTERN", "GDI_PLANER_EXTERN");
         List<String> actual = target.getRoles();
         assertEquals(expected, actual);
     }

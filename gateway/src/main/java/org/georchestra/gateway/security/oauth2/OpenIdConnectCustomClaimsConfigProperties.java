@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,6 +34,7 @@ import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.StringUtils;
 
+import com.google.common.base.Splitter;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
@@ -71,7 +74,8 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
         private boolean uppercase = true;
 
         /**
-         * Whether to remove special characters and replace spaces by underscores
+         * Whether to remove special characters and replace spaces and dots by
+         * underscores
          */
         private boolean normalize = true;
 
@@ -89,17 +93,17 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
 
             json().ifPresent(json -> {
                 List<String> rawValues = json.extract(claims);
-                List<String> roles = rawValues.stream().map(this::applyTransforms)
+                Set<String> roles = rawValues.stream().map(this::applyTransforms)
                         // make sure the resulting list is mutable, Stream.toList() is not
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toCollection(TreeSet::new));
                 if (roles.isEmpty()) {
                     return;
                 }
                 if (append) {
-                    target.getRoles().addAll(0, roles);
-                } else {
-                    target.setRoles(roles);
+                    roles.addAll(target.getRoles());
                 }
+                target.getRoles().clear();
+                target.getRoles().addAll(roles);
             });
         }
 
@@ -120,7 +124,8 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
             normalized = normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 
             // replace all whitespace groups by a single underscore
-            normalized = value.replaceAll("\\s+", "_");
+            normalized = normalized.replaceAll("\\s+", "_");
+            normalized = normalized.replaceAll("\\.", "_");
 
             // remove remaining characters like parenthesis, commas, etc
             normalized = normalized.replaceAll("[^a-zA-Z0-9_]", "");
@@ -159,6 +164,14 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
         private List<String> path = new ArrayList<>();
 
         /**
+         * Whether to first interpret each value as a comma-separated value and split it
+         * to an array
+         */
+        private boolean split = true;
+
+        private String splitOn = ",";
+
+        /**
          * @param claims
          * @return
          */
@@ -166,7 +179,7 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
             return this.path.stream()//
                     .map(jsonPathExpression -> this.extract(jsonPathExpression, claims))//
                     .flatMap(List::stream)//
-                    .collect(Collectors.toList());
+                    .sorted().distinct().collect(Collectors.toList());
         }
 
         private List<String> extract(final String jsonPathExpression, Map<String, Object> claims) {
@@ -193,7 +206,7 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
                     .mapToObj(list::get)//
                     .filter(Objects::nonNull)//
                     .map(value -> validateValueIsString(jsonPathExpression, value))//
-                    .collect(Collectors.toList());
+                    .map(this::split).flatMap(List::stream).collect(Collectors.toList());
 
             return values;
         }
@@ -206,6 +219,11 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
                     jsonPathExpression, v.getClass().getCanonicalName(), v);
             throw new IllegalStateException(msg);
 
+        }
+
+        private List<String> split(@NonNull String value) {
+            String separator = null == splitOn ? "," : splitOn;
+            return Splitter.on(separator).trimResults().omitEmptyStrings().splitToList(value);
         }
     }
 }
