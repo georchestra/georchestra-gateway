@@ -26,6 +26,7 @@ import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.georchestra.gateway.model.RoleBasedAccessRule;
 import org.georchestra.gateway.model.Service;
 import org.georchestra.gateway.security.GeorchestraUserMapper;
+import org.georchestra.gateway.security.RolePrefixGeorchestraUserCustomizerExtension;
 import org.georchestra.gateway.security.ServerHttpSecurityCustomizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity.AuthorizeExchangeSpec;
@@ -115,9 +116,9 @@ public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
             log.debug("Granting access to any authenticated user for {}", antPatterns);
             requireAuthenticatedUser(access);
         } else {
-            List<String> roles = resolveRoles(antPatterns, allowedRoles);
+            List<String> roles = resolveRoles(allowedRoles);
             log.debug("Granting access to roles {} for {}", roles, antPatterns);
-            hasAnyAuthority(access, roles);
+            hasAnyRole(access, roles);
         }
     }
 
@@ -136,8 +137,9 @@ public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
         return authorizeExchange.pathMatchers(antPatterns.toArray(String[]::new));
     }
 
-    private List<String> resolveRoles(List<String> antPatterns, List<String> allowedRoles) {
-        return allowedRoles.stream().map(this::ensureRolePrefix).collect(Collectors.toList());
+    private List<String> resolveRoles(List<String> allowedRoles) {
+        return allowedRoles.stream().map(RolePrefixGeorchestraUserCustomizerExtension::toRole)
+                .collect(Collectors.toList());
     }
 
     @VisibleForTesting
@@ -146,12 +148,11 @@ public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
     }
 
     @VisibleForTesting
-    void hasAnyAuthority(Access access, List<String> roles) {
-        // Checks against the effective set of rules (both provided by the Authorization
-        // service and derived from roles mappings)
-        access.access(
-                GeorchestraUserRolesAuthorizationManager.hasAnyAuthority(userMapper, roles.toArray(String[]::new)));
-        // access.hasAnyAuthority(roles.toArray(String[]::new));
+    void hasAnyRole(Access access, List<String> roles) {
+        // Checks against the effective set of rules (in GeorchestraUser.getRoles(),
+        // i.e. both provided by the Authorization service and derived from roles
+        // mappings)
+        access.access(GeorchestraUserRolesAuthorizationManager.hasAnyRole(userMapper, roles.toArray(String[]::new)));
     }
 
     @VisibleForTesting
@@ -162,9 +163,5 @@ public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
     @VisibleForTesting
     void denyAll(Access access) {
         access.denyAll();
-    }
-
-    private String ensureRolePrefix(@NonNull String roleName) {
-        return roleName.startsWith("ROLE_") ? roleName : ("ROLE_" + roleName);
     }
 }

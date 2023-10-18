@@ -131,4 +131,8 @@ public class GatewaySecurityConfiguration {
         return new RolesMappingsUserCustomizer(rolesMappings);
     }
 
+    @Bean
+    RolePrefixGeorchestraUserCustomizerExtension rolePrefixGeorchestraUserCustomizerExtension() {
+        return new RolePrefixGeorchestraUserCustomizerExtension();
+    }
 }

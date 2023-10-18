@@ -44,28 +44,28 @@ class GeorchestraUserRolesAuthorizationManagerTest {
         user = new GeorchestraUser();
         when(userMapper.resolve(any())).thenReturn(Optional.of(user));
 
-        authManager = GeorchestraUserRolesAuthorizationManager.hasAnyAuthority(userMapper, "GDI_ADMIN", "SUPERUSER",
+        authManager = GeorchestraUserRolesAuthorizationManager.hasAnyRole(userMapper, "GDI_ADMIN", "SUPERUSER",
                 "ROLE_ADMIN");
     }
 
-    private TestingAuthenticationToken authentication(String... roles) {
-        return new TestingAuthenticationToken("gabe", null, roles);
+    private TestingAuthenticationToken authentication(String... authorities) {
+        return new TestingAuthenticationToken("gabe", null, authorities);
     }
 
     @Test
-    void hasAnyAuthority_notAuthenticated() {
+    void hasAnyRole_notAuthenticated() {
         TestingAuthenticationToken authentication = authentication();
         authentication.setAuthenticated(false);
         assertThat(authManager.authorize(authentication)).isFalse();
     }
 
     @Test
-    void hasAnyAuthority() {
+    void hasAnyRole() {
         TestingAuthenticationToken authentication = authentication("ROLE_USER");
-        user.setRoles(List.of("ROLE_USER", "GDI_ADMIN"));
+        user.setRoles(List.of("ROLE_USER", "ROLE_GDI_ADMIN"));
         assertThat(authManager.authorize(authentication)).isTrue();
 
-        user.setRoles(List.of("ROLE_USER", "SUPERUSER"));
+        user.setRoles(List.of("ROLE_USER", "ROLE_SUPERUSER"));
         assertThat(authManager.authorize(authentication)).isTrue();
 
         user.setRoles(List.of("ROLE_USER", "ROLE_ADMIN"));
@@ -76,14 +76,14 @@ class GeorchestraUserRolesAuthorizationManagerTest {
     }
 
     @Test
-    void hasAnyAuthority_joins_user_and_authentication_authorities() {
-        TestingAuthenticationToken authentication = authentication("GDI_ADMIN");
+    void hasAnyRole_joins_user_and_authentication_authorities() {
+        TestingAuthenticationToken authentication = authentication("ROLE_GDI_ADMIN");
         user.setRoles(List.of("ROLE_USER"));
         assertThat(authManager.authorize(authentication)).isTrue();
     }
 
     @Test
-    void hasAnyAuthority_noResolvedUser_nor_grantedAuthorities() {
+    void hasAnyRole_noResolvedUser_nor_grantedAuthorities() {
         TestingAuthenticationToken authentication = authentication();
         when(userMapper.resolve(any())).thenReturn(Optional.empty());
 
@@ -91,8 +91,8 @@ class GeorchestraUserRolesAuthorizationManagerTest {
     }
 
     @Test
-    void hasAnyAuthority_noResolvedUser_resolved_grantedAuthorities() {
-        TestingAuthenticationToken authentication = authentication("GDI_ADMIN");
+    void hasAnyRole_noResolvedUser_resolved_grantedAuthorities() {
+        TestingAuthenticationToken authentication = authentication("ROLE_GDI_ADMIN");
         when(userMapper.resolve(any())).thenReturn(Optional.empty());
 
         assertThat(authManager.authorize(authentication)).isTrue();

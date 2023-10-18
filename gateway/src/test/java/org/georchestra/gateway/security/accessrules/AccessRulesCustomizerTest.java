@@ -148,7 +148,7 @@ class AccessRulesCustomizerTest {
         verify(customizer, times(1)).authorizeExchange(same(spec), eq(List.of("/test/**", "/page1")));
         verify(customizer, times(1)).permitAll(any());
         verify(customizer, times(0)).requireAuthenticatedUser(any());
-        verify(customizer, times(0)).hasAnyAuthority(any(), any());
+        verify(customizer, times(0)).hasAnyRole(any(), any());
     }
 
     @Test
@@ -173,7 +173,7 @@ class AccessRulesCustomizerTest {
         customizer.apply(spec, rule);
 
         verify(customizer, times(1)).authorizeExchange(same(spec), eq(List.of("/test/**", "/page1")));
-        verify(customizer, times(1)).hasAnyAuthority(any(), eq(roles));
+        verify(customizer, times(1)).hasAnyRole(any(), eq(roles));
     }
 
     @Test
@@ -187,7 +187,7 @@ class AccessRulesCustomizerTest {
         customizer.apply(spec, rule);
 
         verify(customizer, times(1)).authorizeExchange(same(spec), eq(List.of("/test/**", "/page1")));
-        verify(customizer, times(1)).hasAnyAuthority(any(), eq(expected));
+        verify(customizer, times(1)).hasAnyRole(any(), eq(expected));
     }
 
     @Test
@@ -199,7 +199,7 @@ class AccessRulesCustomizerTest {
 
         verify(customizer, times(1)).denyAll(any());
         verify(customizer, never()).requireAuthenticatedUser(any());
-        verify(customizer, never()).hasAnyAuthority(any(), any());
+        verify(customizer, never()).hasAnyRole(any(), any());
         verify(customizer, never()).permitAll(any());
     }
 

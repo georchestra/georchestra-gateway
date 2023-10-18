@@ -19,18 +19,12 @@
 
 package org.georchestra.gateway.security.ldap.extended;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.georchestra.gateway.security.GeorchestraUserMapperExtension;
 import org.georchestra.security.api.UsersApi;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.LdapUserDetails;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsImpl;
 
@@ -62,8 +56,8 @@ class GeorchestraLdapAuthenticatedUserMapper implements GeorchestraUserMapperExt
                 .flatMap(this::map);
     }
 
-    Optional<GeorchestraUser> map(GeorchestraUserNamePasswordAuthenticationToken token) {
-        final LdapUserDetails principal = (LdapUserDetails) token.getPrincipal();
+    Optional<ExtendedGeorchestraUser> map(GeorchestraUserNamePasswordAuthenticationToken token) {
+        final LdapUserDetailsImpl principal = (LdapUserDetailsImpl) token.getPrincipal();
         final String ldapConfigName = token.getConfigName();
         final String username = principal.getUsername();
 
@@ -72,36 +66,15 @@ class GeorchestraLdapAuthenticatedUserMapper implements GeorchestraUserMapperExt
             user = users.findByEmail(ldapConfigName, username);
         }
 
-        return user.map(u -> fixPrefixedRoleNames(u, token));
-    }
-
-    private GeorchestraUser fixPrefixedRoleNames(GeorchestraUser user,
-            GeorchestraUserNamePasswordAuthenticationToken token) {
-
-        final LdapUserDetailsImpl principal = (LdapUserDetailsImpl) token.getPrincipal();
-
-        // Fix role name mismatch between authority provider (adds ROLE_ prefix) and
-        // users api
-        Stream<String> authorityRoleNames = token.getAuthorities().stream()
-                .filter(SimpleGrantedAuthority.class::isInstance).map(GrantedAuthority::getAuthority)
-                .map(this::normalize);
-
-        Stream<String> userRoles = user.getRoles().stream().map(this::normalize);
-
-        List<String> roles = Stream.concat(authorityRoleNames, userRoles).distinct().collect(Collectors.toList());
-
-        user.setRoles(roles);
-        if (principal.getTimeBeforeExpiration() < Integer.MAX_VALUE) {
-            user.setLdapWarn(true);
-            user.setLdapRemainingDays(String.valueOf(principal.getTimeBeforeExpiration() / (60 * 60 * 24)));
-        } else {
-            user.setLdapWarn(false);
-        }
+        user.ifPresent(u -> {
+            if (principal.getTimeBeforeExpiration() < Integer.MAX_VALUE) {
+                u.setLdapWarn(true);
+                u.setLdapRemainingDays(String.valueOf(principal.getTimeBeforeExpiration() / (60 * 60 * 24)));
+            } else {
+                u.setLdapWarn(false);
+            }
+        });
 
         return user;
-    }
-
-    private String normalize(String role) {
-        return role.startsWith("ROLE_") ? role : "ROLE_" + role;
     }
 }
