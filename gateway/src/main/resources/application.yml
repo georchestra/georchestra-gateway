@@ -83,12 +83,27 @@ georchestra:
           password: ${rabbitmqPassword}
       oauth2:
         enabled: false
+        roles:
+          uppercase: true
+          normalize: true
         proxy:
           enabled: false
           host: localhost
           port: 8000
           username: jack
           password: insecure
+        oidc:
+          claims:
+            id.path: "$.sub"
+            organization.path:
+            roles:
+              uppercase: true
+              normalize: true
+              append: true
+              json:
+                split: true
+                # path:
+                # - "$.concat(\"ORG_\", $.PartyOrganisationID)"
       ldap:
         # Multiple LDAP data sources are supported. The first key defines a simple
         # name for them. The `default` one here, disabled by default, is pre-configured

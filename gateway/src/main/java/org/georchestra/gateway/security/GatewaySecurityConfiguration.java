@@ -18,11 +18,7 @@
  */
 package org.georchestra.gateway.security;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
+import lombok.extern.slf4j.Slf4j;
 import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,13 +28,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity.LogoutSpec;
-import org.springframework.security.oauth2.client.oidc.web.server.logout.OidcClientInitiatedServerLogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 
-import lombok.extern.slf4j.Slf4j;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * {@link Configuration} to initialize the Gateway's
@@ -55,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Configuration(proxyBeanMethods = false)
 @EnableWebFluxSecurity
-@EnableConfigurationProperties({ GatewayConfigProperties.class })
+@EnableConfigurationProperties(GatewayConfigProperties.class)
 @Slf4j(topic = "org.georchestra.gateway.security")
 public class GatewaySecurityConfiguration {
 
@@ -76,18 +73,16 @@ public class GatewaySecurityConfiguration {
      * {@link ServerHttpSecurity#build build} the {@link SecurityWebFilterChain}.
      */
     @Bean
-    SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
             List<ServerHttpSecurityCustomizer> customizers) throws Exception {
 
         log.info("Initializing security filter chain...");
+        // disable csrf and cors or the websocket connection gets a 403 Forbidden.
+        // Revisit.
+        log.info("CSRF and CORS disabled. Revisit how they interfer with Websockets proxying.");
+        http.csrf().disable().cors().disable();
 
-        // disable CSRF protection, considering it will be managed
-        // by proxified webapps, not the gateway.
-        http.csrf().disable();
-
-        http.formLogin()
-                .authenticationFailureHandler(new ExtendedRedirectServerAuthenticationFailureHandler("login?error"))
-                .loginPage("/login");
+        http.formLogin().loginPage("/login");
 
         sortedCustomizers(customizers).forEach(customizer -> {
             log.debug("Applying security customizer {}", customizer.getName());
@@ -109,14 +104,12 @@ public class GatewaySecurityConfiguration {
         return customizers.stream().sorted((c1, c2) -> Integer.compare(c1.getOrder(), c2.getOrder()));
     }
 
-    @Bean
-    GeorchestraUserMapper georchestraUserResolver(List<GeorchestraUserMapperExtension> resolvers,
+    public @Bean GeorchestraUserMapper georchestraUserResolver(List<GeorchestraUserMapperExtension> resolvers,
             List<GeorchestraUserCustomizerExtension> customizers) {
         return new GeorchestraUserMapper(resolvers, customizers);
     }
 
-    @Bean
-    ResolveGeorchestraUserGlobalFilter resolveGeorchestraUserGlobalFilter(GeorchestraUserMapper resolver) {
+    public @Bean ResolveGeorchestraUserGlobalFilter resolveGeorchestraUserGlobalFilter(GeorchestraUserMapper resolver) {
         return new ResolveGeorchestraUserGlobalFilter(resolver);
     }
 
@@ -124,8 +117,7 @@ public class GatewaySecurityConfiguration {
      * Extension to make {@link GeorchestraUserMapper} append user roles based on
      * {@link GatewayConfigProperties#getRolesMappings()}
      */
-    @Bean
-    RolesMappingsUserCustomizer rolesMappingsUserCustomizer(GatewayConfigProperties config) {
+    public @Bean RolesMappingsUserCustomizer rolesMappingsUserCustomizer(GatewayConfigProperties config) {
         Map<String, List<String>> rolesMappings = config.getRolesMappings();
         log.info("Creating {}", RolesMappingsUserCustomizer.class.getSimpleName());
         return new RolesMappingsUserCustomizer(rolesMappings);

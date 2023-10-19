@@ -18,15 +18,7 @@
  */
 package org.georchestra.gateway.app;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-
+import lombok.extern.slf4j.Slf4j;
 import org.georchestra.gateway.security.GeorchestraUserMapper;
 import org.georchestra.gateway.security.ldap.LdapConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
@@ -36,52 +28,49 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gateway.route.RouteLocator;
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.reactive.result.view.Rendering;
 import org.springframework.web.server.ServerWebExchange;
-
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.util.*;
 
 @Controller
 @Slf4j
 @SpringBootApplication
-@EnableConfigurationProperties(LdapConfigProperties.class)
 public class GeorchestraGatewayApplication {
 
     private @Autowired RouteLocator routeLocator;
     private @Autowired GeorchestraUserMapper userMapper;
 
     private @Autowired(required = false) LdapConfigProperties ldapConfigProperties;
-
-    private boolean ldapEnabled = false;
-
     private @Autowired(required = false) OAuth2ClientProperties oauth2ClientConfig;
-    private @Value("${georchestra.gateway.headerEnabled:true}") boolean headerEnabled;
+    private boolean ldapEnabled = false;
+    private @Value("${georchestra.gateway.headerUrl:/header/}") String georchestraHeaderUrl;
+    private @Value("${georchestra.gateway.headerHeight:90}") String georchestraHeaderHeight;
     private @Value("${georchestra.gateway.footerUrl:#{null}}") String georchestraFooterUrl;
-    private @Value("${spring.messages.basename:}") String messagesBasename;
-
-    public static void main(String[] args) {
-        SpringApplication.run(GeorchestraGatewayApplication.class, args);
-    }
 
     @PostConstruct
     void initialize() {
         if (ldapConfigProperties != null) {
             ldapEnabled = ldapConfigProperties.getLdap().values().stream().anyMatch((server -> server.isEnabled()));
         }
+    }
+
+    public static void main(String[] args) {
+        SpringApplication.run(GeorchestraGatewayApplication.class, args);
     }
 
     @GetMapping(path = "/whoami", produces = "application/json")
@@ -100,30 +89,26 @@ public class GeorchestraGatewayApplication {
         // Mono.just(Map.of(principal.getClass().getCanonicalName(), principal));
     }
 
-    @GetMapping(path = "/logout")
-    public String logout(Model mdl) {
-        mdl.addAttribute("header_enabled", headerEnabled);
-        return "logout";
-    }
-
     @GetMapping(path = "/login")
-    public String loginPage(@RequestParam Map<String, String> allRequestParams, Model mdl) {
+    public String loginPage(Model mdl) {
         Map<String, String> oauth2LoginLinks = new HashMap<String, String>();
         if (oauth2ClientConfig != null) {
             oauth2ClientConfig.getRegistration().forEach((k, v) -> {
-                String clientName = Optional.ofNullable(v.getClientName()).orElse(k);
-                oauth2LoginLinks.put("/oauth2/authorization/" + k, clientName);
+                oauth2LoginLinks.put("/oauth2/authorization/" + k, v.getClientName());
             });
         }
-        mdl.addAttribute("header_enabled", headerEnabled);
+        mdl.addAttribute("header_url", georchestraHeaderUrl);
+        mdl.addAttribute("header_height", georchestraHeaderHeight);
         mdl.addAttribute("footer_url", georchestraFooterUrl);
         mdl.addAttribute("ldapEnabled", ldapEnabled);
         mdl.addAttribute("oauth2LoginLinks", oauth2LoginLinks);
-        boolean expired = "expired_password".equals(allRequestParams.get("error"));
-        mdl.addAttribute("passwordExpired", expired);
-        boolean invalidCredentials = "invalid_credentials".equals(allRequestParams.get("error"));
-        mdl.addAttribute("invalidCredentials", invalidCredentials);
+
         return "login";
+    }
+
+    @GetMapping(path = "/logout", produces = "text/html")
+    public Mono<Rendering.Builder<?>> logout(Authentication principal, ServerWebExchange exchange) {
+        return Mono.just(Rendering.view("logout"));
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -152,13 +137,4 @@ public class GeorchestraGatewayApplication {
                 routeCount, instanceId, cpus, maxMem);
     }
 
-    @Bean
-    public MessageSource messageSource() {
-        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasenames(("classpath:messages/login," + messagesBasename).split(","));
-        messageSource.setCacheSeconds(600);
-        messageSource.setUseCodeAsDefaultMessage(true);
-        messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
-        return messageSource;
-    }
 }

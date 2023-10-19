@@ -19,19 +19,23 @@
 
 package org.georchestra.gateway.security.oauth2;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.georchestra.gateway.security.ldap.LdapConfigProperties;
+import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OpenIdConnectCustomClaimsConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
 import org.slf4j.Logger;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.Ordered;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.AddressStandardClaim;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
@@ -42,7 +46,6 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import com.google.common.annotations.VisibleForTesting;
 
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -130,12 +133,13 @@ import lombok.extern.slf4j.Slf4j;
  * to {@code true}.
  * </ul>
  */
-@RequiredArgsConstructor
 @EnableConfigurationProperties({ LdapConfigProperties.class })
 @Slf4j(topic = "org.georchestra.gateway.security.oauth2")
 public class OpenIdConnectUserMapper extends OAuth2UserMapper {
 
-    private final @NonNull OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig;
+    public OpenIdConnectUserMapper(@NonNull OAuth2ConfigurationProperties config) {
+        super(config);
+    }
 
     protected @Override Predicate<OAuth2AuthenticationToken> tokenFilter() {
         return token -> token.getPrincipal() instanceof OidcUser;
@@ -159,6 +163,18 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
         return Optional.of(user);
     }
 
+    @Override
+    protected List<String> resolveRoles(Collection<? extends GrantedAuthority> authorities) {
+        List<String> roles = authorities.stream().map(GrantedAuthority::getAuthority).filter(scope -> {
+            if (scope.startsWith("ROLE_SCOPE_") || scope.startsWith("SCOPE_")) {
+                logger().debug("Excluding granted authority {}", scope);
+                return false;
+            }
+            return true;
+        }).map(config.getOidc().getClaims().getRoles()::applyTransforms).collect(Collectors.toList());
+        return roles;
+    }
+
     /**
      * @param claims OpenId Connect merged claims from {@link OidcUserInfo} and
      *               {@link OidcIdToken}
@@ -166,6 +182,8 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
      */
     @VisibleForTesting
     void applyNonStandardClaims(Map<String, Object> claims, GeorchestraUser target) {
+
+        OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig = super.config.getOidc().getClaims();
 
         nonStandardClaimsConfig.id().map(jsonEvaluator -> jsonEvaluator.extract(claims))//
                 .map(List::stream)//

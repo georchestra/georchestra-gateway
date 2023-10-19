@@ -35,6 +35,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -56,8 +58,11 @@ import lombok.extern.slf4j.Slf4j;
  * {@literal ROLE_SCOPE_} or {@code SCOPE_}.
  * </ul>
  */
+@RequiredArgsConstructor
 @Slf4j(topic = "org.georchestra.gateway.security.oauth2")
 public class OAuth2UserMapper implements GeorchestraUserMapperExtension {
+
+    protected final @NonNull OAuth2ConfigurationProperties config;
 
     @Override
     public Optional<GeorchestraUser> resolve(Authentication authToken) {
@@ -81,7 +86,6 @@ public class OAuth2UserMapper implements GeorchestraUserMapperExtension {
         final String oAuth2ProviderId = String.format("%s;%s", token.getAuthorizedClientRegistrationId(),
                 token.getName());
         user.setOAuth2ProviderId(oAuth2ProviderId);
-
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         List<String> roles = resolveRoles(oAuth2User.getAuthorities());
@@ -101,14 +105,8 @@ public class OAuth2UserMapper implements GeorchestraUserMapperExtension {
     }
 
     protected List<String> resolveRoles(Collection<? extends GrantedAuthority> authorities) {
-        List<String> roles = authorities.stream().map(GrantedAuthority::getAuthority).filter(scope -> {
-            if (scope.startsWith("ROLE_SCOPE_") || scope.startsWith("SCOPE_")) {
-                logger().debug("Excluding granted authority {}", scope);
-                return false;
-            }
-            return true;
-        }).collect(Collectors.toList());
-        return roles;
+        return authorities.stream().map(GrantedAuthority::getAuthority).map(config.getRoles()::applyTransforms)
+                .collect(Collectors.toList());
     }
 
     protected void apply(Consumer<String> setter, String... candidates) {

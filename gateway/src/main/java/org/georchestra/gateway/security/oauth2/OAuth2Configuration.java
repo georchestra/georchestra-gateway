@@ -18,105 +18,82 @@
  */
 package org.georchestra.gateway.security.oauth2;
 
-import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collections;
-
-import javax.crypto.spec.SecretKeySpec;
-
 import org.georchestra.gateway.security.ServerHttpSecurityCustomizer;
-import org.georchestra.gateway.security.ldap.LdapConfigProperties;
+import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OAuth2ProxyConfigProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gateway.config.GatewayReactiveOAuth2AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity.OAuth2LoginSpec;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthorizationCodeReactiveAuthenticationManager;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.endpoint.ReactiveOAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.WebClientReactiveAuthorizationCodeTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.WebClientReactiveRefreshTokenTokenResponseClient;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcReactiveOAuth2UserService;
-import org.springframework.security.oauth2.client.oidc.web.server.logout.OidcClientInitiatedServerLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2UserService;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.BadJwtException;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoderFactory;
-import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTParser;
-
 import lombok.extern.slf4j.Slf4j;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.transport.ProxyProvider;
-
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({ OAuth2ProxyConfigProperties.class, OpenIdConnectCustomClaimsConfigProperties.class,
-        LdapConfigProperties.class, ExtendedOAuth2ClientProperties.class })
+@EnableConfigurationProperties({ OAuth2ConfigurationProperties.class })
 @Slf4j(topic = "org.georchestra.gateway.security.oauth2")
 public class OAuth2Configuration {
 
     public static final class OAuth2AuthenticationCustomizer implements ServerHttpSecurityCustomizer {
+        private WebClient oauth2WebClient;
+
+        public OAuth2AuthenticationCustomizer(WebClient oauth2WebClient) {
+            this.oauth2WebClient = oauth2WebClient;
+        }
 
         public @Override void customize(ServerHttpSecurity http) {
             log.info("Enabling authentication support using an OAuth 2.0 and/or OpenID Connect 1.0 Provider");
+
+//            http.oauth2Client();
+            http.oauth2Client(c -> {
+                c.authenticationManager(getClientAuthenticationManager());
+            });
             http.oauth2Login();
+        }
+
+        private ReactiveAuthenticationManager getClientAuthenticationManager() {
+            WebClientReactiveAuthorizationCodeTokenResponseClient accessTokenResponseClient = new WebClientReactiveAuthorizationCodeTokenResponseClient();
+            accessTokenResponseClient.setWebClient(oauth2WebClient);
+            return new OAuth2AuthorizationCodeReactiveAuthenticationManager(accessTokenResponseClient);
         }
     }
 
     @Bean
-    @Profile("!test")
-    ServerLogoutSuccessHandler oidcLogoutSuccessHandler(
-            InMemoryReactiveClientRegistrationRepository clientRegistrationRepository,
-            ExtendedOAuth2ClientProperties properties) {
-        clientRegistrationRepository.forEach(client -> {
-            if (client.getProviderDetails().getConfigurationMetadata().isEmpty()
-                    && properties.getProvider().get(client.getRegistrationId()) != null
-                    && properties.getProvider().get(client.getRegistrationId()).getEndSessionUri() != null) {
-                try {
-                    Field field = ClientRegistration.ProviderDetails.class.getDeclaredField("configurationMetadata");
-                    field.setAccessible(true);
-                    field.set(client.getProviderDetails(), Collections.singletonMap("end_session_endpoint",
-                            properties.getProvider().get(client.getRegistrationId()).getEndSessionUri()));
-                } catch (NoSuchFieldException | IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-        OidcClientInitiatedServerLogoutSuccessHandler oidcLogoutSuccessHandler = new OidcClientInitiatedServerLogoutSuccessHandler(
-                clientRegistrationRepository);
-        oidcLogoutSuccessHandler.setPostLogoutRedirectUri("{baseUrl}/login?logout");
-        return oidcLogoutSuccessHandler;
+    ServerHttpSecurityCustomizer oauth2LoginEnablingCustomizer(
+            @Qualifier("oauth2WebClient") WebClient oauth2WebClient) {
+        return new OAuth2AuthenticationCustomizer(oauth2WebClient);
     }
 
     @Bean
-    ServerHttpSecurityCustomizer oauth2LoginEnablingCustomizer() {
-        return new OAuth2AuthenticationCustomizer();
+    OAuth2UserMapper oAuth2GeorchestraUserUserMapper(OAuth2ConfigurationProperties config) {
+        return new OAuth2UserMapper(config);
     }
 
     @Bean
-    OAuth2UserMapper oAuth2GeorchestraUserUserMapper() {
-        return new OAuth2UserMapper();
-    }
-
-    @Bean
-    OpenIdConnectUserMapper openIdConnectGeorchestraUserUserMapper(
-            OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig) {
-        return new OpenIdConnectUserMapper(nonStandardClaimsConfig);
+    OpenIdConnectUserMapper openIdConnectGeorchestraUserUserMapper(OAuth2ConfigurationProperties config) {
+        return new OpenIdConnectUserMapper(config);
     }
 
     /**
@@ -143,43 +120,57 @@ public class OAuth2Configuration {
     }
 
     /**
+     * Override the {@link ReactiveClientRegistrationRepository} set up on
+     * {@link GatewayReactiveOAuth2AutoConfiguration}
+     * 
+     * @return
+     */
+    @Primary
+    @Bean
+    public ReactiveOAuth2AuthorizedClientManager gatewayOverrideReactiveOAuth2AuthorizedClientManager(
+
+            ReactiveClientRegistrationRepository clientRegistrationRepository,
+
+            ServerOAuth2AuthorizedClientRepository authorizedClientRepository,
+
+            @Qualifier("oauth2WebClient") WebClient oauth2WebClient) {
+
+        WebClientReactiveRefreshTokenTokenResponseClient refreshTokenTokenResponseClient = new WebClientReactiveRefreshTokenTokenResponseClient();
+        refreshTokenTokenResponseClient.setWebClient(oauth2WebClient);
+
+        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider;
+
+        authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder//
+                .builder()//
+                .authorizationCode()//
+                .refreshToken(configurer -> configurer.accessTokenResponseClient(refreshTokenTokenResponseClient))//
+                .build();
+
+        DefaultReactiveOAuth2AuthorizedClientManager authorizedClientManager;
+        authorizedClientManager = new DefaultReactiveOAuth2AuthorizedClientManager(//
+                clientRegistrationRepository, //
+                authorizedClientRepository);
+        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+        return authorizedClientManager;
+    }
+
+    /**
      * Custom JWT decoder factory to use the web client that can be set up to go
      * through an HTTP proxy
      */
     @Bean
     public ReactiveJwtDecoderFactory<ClientRegistration> idTokenDecoderFactory(
             @Qualifier("oauth2WebClient") WebClient oauth2WebClient) {
-        return (clientRegistration) -> (token) -> {
-            try {
-                JWT parsedJwt = JWTParser.parse(token);
-                MacAlgorithm macAlgorithm = MacAlgorithm.from(parsedJwt.getHeader().getAlgorithm().getName());
-                NimbusReactiveJwtDecoder jwtDecoder;
-                if (macAlgorithm != null) {
-                    var secretKey = clientRegistration.getClientSecret().getBytes(StandardCharsets.UTF_8);
-                    if (secretKey.length < 64) {
-                        secretKey = Arrays.copyOf(secretKey, 64);
-                    }
-                    SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey, macAlgorithm.getName());
-                    jwtDecoder = NimbusReactiveJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(macAlgorithm)
-                            .build();
-                } else {
-                    jwtDecoder = NimbusReactiveJwtDecoder
-                            .withJwkSetUri(clientRegistration.getProviderDetails().getJwkSetUri())
-                            .webClient(oauth2WebClient).build();
-                }
-                return jwtDecoder.decode(token).map(jwt -> new Jwt(jwt.getTokenValue(), jwt.getIssuedAt(),
-                        jwt.getExpiresAt(), jwt.getHeaders(), removeNullClaims(jwt.getClaims())));
-            } catch (ParseException exception) {
-                throw new BadJwtException(
-                        "An error occurred while attempting to decode the Jwt: " + exception.getMessage(), exception);
-            }
+        return (clientRegistration) -> {
+            ProviderDetails providerDetails = clientRegistration.getProviderDetails();
+            String jwkSetUri = providerDetails.getJwkSetUri();
+            return NimbusReactiveJwtDecoder//
+                    .withJwkSetUri(jwkSetUri)//
+                    .jwsAlgorithm(SignatureAlgorithm.RS256)//
+                    .webClient(oauth2WebClient)//
+                    .build();
         };
-    }
-
-    // Some IDPs return claims with null value but Spring does not handle them
-    private Map<String, Object> removeNullClaims(Map<String, Object> claims) {
-        return claims.entrySet().stream().filter(entry -> entry.getValue() != null)
-                .collect(Collectors.toMap((entry) -> entry.getKey(), (entry) -> entry.getValue()));
     }
 
     @Bean
@@ -211,31 +202,9 @@ public class OAuth2Configuration {
      *                    through System properties ({@literal http(s).proxyHost}
      *                    and {@literal http(s).proxyPort}), if any.
      */
+//    @Primary
     @Bean("oauth2WebClient")
-    public WebClient oauth2WebClient(OAuth2ProxyConfigProperties proxyConfig) {
-        final String proxyHost = proxyConfig.getHost();
-        final Integer proxyPort = proxyConfig.getPort();
-        final String proxyUser = proxyConfig.getUsername();
-        final String proxyPassword = proxyConfig.getPassword();
-
-        HttpClient httpClient = HttpClient.create();
-        if (proxyConfig.isEnabled()) {
-            if (proxyHost == null || proxyPort == null) {
-                throw new IllegalStateException("OAuth2 client HTTP proxy is enabled, but host and port not provided");
-            }
-            log.info("Oauth2 client will use HTTP proxy {}:{}", proxyHost, proxyPort);
-            httpClient = httpClient.proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP).host(proxyHost).port(proxyPort)
-                    .username(proxyUser).password(user -> {
-                        return proxyPassword;
-                    }));
-        } else {
-            log.info("Oauth2 client will use HTTP proxy from System properties if provided");
-            httpClient = httpClient.proxyWithSystemProperties();
-        }
-        ReactorClientHttpConnector conn = new ReactorClientHttpConnector(httpClient);
-
-        WebClient webClient = WebClient.builder().clientConnector(conn).build();
-        return webClient;
+    public WebClient oauth2WebClient(OAuth2ConfigurationProperties config) {
+        return new ProxyAwareWebClient(config.getProxy());
     }
-
 }

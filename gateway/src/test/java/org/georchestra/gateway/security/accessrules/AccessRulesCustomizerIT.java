@@ -28,6 +28,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import java.net.URI;
 
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
+import org.georchestra.gateway.security.MockUserGeorchestraUserMapperConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,10 +52,11 @@ import lombok.extern.slf4j.Slf4j;
  * the default {@literal gateway.yml} config file.
  *
  */
-@SpringBootTest(classes = GeorchestraGatewayApplication.class, webEnvironment = WebEnvironment.MOCK, properties = {
-        "georchestra.datadir=../datadir"//
-        , "georchestra.gateway.security.ldap.default.enabled=false"//
-})
+@SpringBootTest(classes = { GeorchestraGatewayApplication.class,
+        MockUserGeorchestraUserMapperConfiguration.class }, webEnvironment = WebEnvironment.MOCK, properties = {
+                "georchestra.datadir=../datadir", //
+                "georchestra.gateway.security.ldap.default.enabled=false", //
+                "georchestra.gateway.security.oauth2.enabled=false" })
 @AutoConfigureWebTestClient(timeout = "PT20S")
 @ActiveProfiles("it")
 @Slf4j
@@ -67,7 +69,7 @@ class AccessRulesCustomizerIT {
     /**
      * Configure the target service mappings to call the {@link #mockService} at its
      * dynamically allocated port
-     *
+     * 
      * @see #mockServiceTarget
      */
     @DynamicPropertySource
@@ -76,14 +78,14 @@ class AccessRulesCustomizerIT {
                 mockService.getRuntimeInfo().getHttpBaseUrl());
 
         mockServiceTarget(registry, "header", "/header");
+        mockServiceTarget(registry, "mapfishapp", "/mapfishapp");
         mockServiceTarget(registry, "geoserver", "/geoserver");
         mockServiceTarget(registry, "console", "/console");
         mockServiceTarget(registry, "analytics", "/analytics");
         mockServiceTarget(registry, "datafeeder", "/datafeeder");
         mockServiceTarget(registry, "import", "/import");
+        mockServiceTarget(registry, "atlas", "/atlas");
         mockServiceTarget(registry, "geowebcache", "/geowebcache");
-        mockServiceTarget(registry, "geonetwork", "/geonetwork");
-        mockServiceTarget(registry, "mapstore", "/mapstore");
     }
 
     /**
@@ -94,11 +96,11 @@ class AccessRulesCustomizerIT {
      * For example, if the Wiremock service is at port 7654, for the
      * {@literal header} service with {@literal /header} target URI, the config
      * property would be:
-     *
+     * 
      * <pre>
      * {@code georchestra.gateway.services.header.target=http://localhost:7654/header}
      * </pre>
-     *
+     * 
      * @param registry      the dynamic property source to contribute to the
      *                      application context's environment
      * @param serviceName   the name of the service for a
@@ -138,9 +140,69 @@ class AccessRulesCustomizerIT {
     }
 
     /**
+     * Revisit: not sure how to force a 403 (Forbidden) instead of a redirect to the
+     * login page when not yet authenticated
+     * 
      * <pre>
      * {@code
-     * georchestra.gateway.services.import:
+     * georchestra.gateway.services.mapfishapp: 
+     *   access-rules:
+     *   - intercept-url: /mapfishapp/ogcproxy/**
+     *     forbidden: true
+     *   - intercept-url: /**
+     *     anonymous: true
+     * }
+     */
+    public @Test void testMapfishApp_ogproxy_access_denied_to_anonymous() {
+        mockService.stubFor(get(urlMatching("/mapfishapp/ogcproxy(/.*)?")).willReturn(ok()));
+        mockService.stubFor(get(urlMatching("/mapfishapp(/.*)?")).willReturn(ok()));
+
+        testClient.get().uri("/mapfishapp/ogcproxy")//
+                .exchange()//
+                .expectHeader().location("/login");
+
+        testClient.get().uri("/mapfishapp/ogcproxy/somethingprivate")//
+                .exchange()//
+                .expectHeader().location("/login");
+
+        testClient.get().uri("/mapfishapp/somethingpublic")//
+                .exchange()//
+                .expectStatus().isOk();
+    }
+
+    /**
+     * <pre>
+     * {@code
+     * georchestra.gateway.services.mapfishapp: 
+     *   access-rules:
+     *   - intercept-url: /mapfishapp/ogcproxy/**
+     *     forbidden: true
+     *   - intercept-url: /**
+     *     anonymous: true
+     * }
+     */
+    @WithMockUser(authorities = { "USER" })
+    public @Test void testMapfishApp_ogproxy_access_denied_to_authenticated_user() {
+        mockService.stubFor(get(urlMatching("/mapfishapp/ogcproxy(/.*)?")).willReturn(ok()));
+        mockService.stubFor(get(urlMatching("/mapfishapp(/.*)?")).willReturn(ok()));
+
+        testClient.get().uri("/mapfishapp/ogcproxy")//
+                .exchange()//
+                .expectStatus().isForbidden();
+
+        testClient.get().uri("/mapfishapp/ogcproxy/test")//
+                .exchange()//
+                .expectStatus().isForbidden();
+
+        testClient.get().uri("/mapfishapp/should_be_ok")//
+                .exchange()//
+                .expectStatus().isOk();
+    }
+
+    /**
+     * <pre>
+     * {@code
+     * georchestra.gateway.services.import: 
      *   access-rules:
      *   - intercept-url: /import/**
      *     anonymous: false
@@ -151,23 +213,23 @@ class AccessRulesCustomizerIT {
 
         testClient.get().uri("/import")//
                 .exchange()//
-                .expectStatus().isFound();
+                .expectHeader().location("/login");
 
         testClient.get().uri("/import/any/thing")//
                 .exchange()//
-                .expectStatus().isFound();
+                .expectHeader().location("/login");
     }
 
     /**
      * <pre>
      * {@code
-     * georchestra.gateway.services.import:
+     * georchestra.gateway.services.import: 
      *   access-rules:
      *   - intercept-url: /import/**
      *     anonymous: false
      * }
      */
-    @WithMockUser(authorities = { "ROLE_DOESNTMATTER" })
+    @WithMockUser(authorities = { "DOESNTMATTER" })
     public @Test void testService_requires_any_authenticated_user() {
         mockService.stubFor(get(urlMatching("/import(/.*)?")).willReturn(ok()));
 
@@ -183,13 +245,13 @@ class AccessRulesCustomizerIT {
     /**
      * <pre>
      * {@code
-     * georchestra.gateway.services.analytics:
+     * georchestra.gateway.services.analytics: 
      *   access-rules:
      *   - intercept-url: /analytics/**
      *     allowed-roles: SUPERUSER,ORGADMIN
      * }
      */
-    @WithMockUser(authorities = { "ROLE_USER", "ROLE_EDITOR" })
+    @WithMockUser(authorities = { "USER", "EDITOR" })
     public @Test void testService_requires_specific_role_forbidden_for_non_matching_roles() {
         mockService.stubFor(get(urlMatching("/analytics(/.*)?")).willReturn(ok()));
 
@@ -205,13 +267,13 @@ class AccessRulesCustomizerIT {
     /**
      * <pre>
      * {@code
-     * georchestra.gateway.services.analytics:
+     * georchestra.gateway.services.analytics: 
      *   access-rules:
      *   - intercept-url: /analytics/**
      *     allowed-roles: SUPERUSER,ORGADMIN
      * }
      */
-    @WithMockUser(authorities = { "ROLE_USER", "ROLE_ORGADMIN" })
+    @WithMockUser(authorities = { "ORGADMIN" })
     public @Test void testService_requires_specific_role_allowed_for_matching_roles() {
         mockService.stubFor(get(urlMatching("/analytics(/.*)?")).willReturn(ok()));
 
@@ -227,7 +289,7 @@ class AccessRulesCustomizerIT {
     /**
      * <pre>
      * {@code
-     * georchestra.gateway.services.analytics:
+     * georchestra.gateway.services.analytics: 
      *   access-rules:
      *   - intercept-url: /analytics/**
      *     allowed-roles: SUPERUSER,ORGADMIN
@@ -238,11 +300,11 @@ class AccessRulesCustomizerIT {
 
         testClient.get().uri("/analytics")//
                 .exchange()//
-                .expectStatus().isFound();
+                .expectHeader().location("/login");
 
         testClient.get().uri("/analytics/any/thing")//
                 .exchange()//
-                .expectStatus().isFound();
+                .expectHeader().location("/login");
     }
 
     /**
@@ -254,47 +316,20 @@ class AccessRulesCustomizerIT {
      * 	      - /**
      * 	      anonymous: true
      * 	    services:
-     * 	      mapstore:
-     * 	        target: http://mapstore:8080/mapstore/
+     * 	      atlas: 
+     * 	        target: http://atlas:8080/atlas/
      * }
      * </pre>
      */
     @Test
     void testGlobalAccessRule() {
-        mockService.stubFor(get(urlMatching("/mapstore(/.*)?")).willReturn(ok()));
+        mockService.stubFor(get(urlMatching("/atlas(/.*)?")).willReturn(ok()));
 
-        testClient.get().uri("/mapstore")//
+        testClient.get().uri("/atlas")//
                 .exchange()//
                 .expectStatus().isOk();
 
-        testClient.get().uri("/mapstore/any/thing")//
-                .exchange()//
-                .expectStatus().isOk();
-    }
-
-    @Test
-    void testQueryParamAuthentication_forbidden_when_anonymous() {
-        mockService.stubFor(get(urlMatching("/header(.*)?")).willReturn(ok()));
-
-        testClient.get().uri("/header?login")//
-                .exchange()//
-                .expectStatus().is3xxRedirection();
-
-        testClient.get().uri("/header")//
-                .exchange()//
-                .expectStatus().isOk();
-    }
-
-    @Test
-    @WithMockUser(authorities = { "ROLE_USER" })
-    void testQueryParamAuthentication_authorized_if_logged_in() {
-        mockService.stubFor(get(urlMatching("/header(.*)?")).willReturn(ok()));
-
-        testClient.get().uri("/header?login")//
-                .exchange()//
-                .expectStatus().isOk();
-
-        testClient.get().uri("/header")//
+        testClient.get().uri("/atlas/any/thing")//
                 .exchange()//
                 .expectStatus().isOk();
     }
