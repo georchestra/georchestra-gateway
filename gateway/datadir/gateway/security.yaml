@@ -8,6 +8,9 @@ georchestra:
         # if enabled, make sure to have at least one OAuth2 client
         # set up at spring.security.oauth2.client below 
         enabled: false
+        roles:
+          uppercase: true
+          normalize: true
         proxy:
           # If the OAuht2 clients need to go through an HTTP Proxy, enable and configure.
           enabled: false
@@ -15,20 +18,20 @@ georchestra:
           port: 8000
           username:
           password:
-      oidc:
-        claims:
-          id.path: "$.icuid"
-          organization.path: "$.PartyOrganisationID"
-          roles:
+        oidc:
+          claims:
+            id.path: "$.icuid"
+            organization.path: "$.PartyOrganisationID"
+            roles:
+              uppercase: true
+              normalize: true
+              append: true
               json:
                 split: true
                 path:
                 - "$.concat(\"ORG_\", $.PartyOrganisationID)"
                 - "$.groups_json..['name']"
                 - "$.permission"
-              uppercase: true
-              normalize: true
-              append: true
       ldap:
         # Multiple LDAP data sources are supported. The first key defines a simple
         # name for them. The `default` one here, disabled by default, is pre-configured

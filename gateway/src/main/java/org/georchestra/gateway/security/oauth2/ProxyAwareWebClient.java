@@ -19,6 +19,7 @@
 
 package org.georchestra.gateway.security.oauth2;
 
+import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OAuth2ProxyConfigProperties;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -34,7 +35,7 @@ class ProxyAwareWebClient implements WebClient {
     @Delegate
     private final @NonNull WebClient delegate;
 
-    public ProxyAwareWebClient(OAuth2ProxyConfigProperties proxyConfig) {
+    public ProxyAwareWebClient(@NonNull OAuth2ProxyConfigProperties proxyConfig) {
         final String proxyHost = proxyConfig.getHost();
         final Integer proxyPort = proxyConfig.getPort();
         final String proxyUser = proxyConfig.getUsername();
