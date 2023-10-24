@@ -32,9 +32,8 @@
  
 georchestra:
   gateway:
-    user-mappings:
-      'gabriel.roldan@gmail.com':
-        - ROLE_ADMINISTRATOR
+    username-mappings:
+      '[gabriel.roldan@gmail.com]': ROLE_ADMINISTRATOR, ROLE_TEST
     roles-mappings:
       '[ROLE_GP.GDI.*]':
         - ROLE_USER

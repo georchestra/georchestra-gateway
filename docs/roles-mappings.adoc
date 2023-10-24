@@ -32,6 +32,12 @@ to be interpreted correctly.
 ----
 georchestra:
   gateway:
+    username-mappings:
+      ['user@example.com']:
+        - ROLE_ADMINISTRATOR
+      ['*@mydomain.com']:
+        - ROLE_1
+        - ROLE_2
     role-mappings:
       '[ROLE_GP.GDI.*]'
         - ROLE_USER

@@ -93,12 +93,11 @@ public class GatewaySecurityConfiguration {
 
     /**
      * Extension to make {@link GeorchestraUserMapper} append user roles based on
-     * {@link GatewayConfigProperties#getRolesMappings()}
+     * {@link GatewayConfigProperties#getRolesMappings()} and
+     * {@link GatewayConfigProperties#getUsernameMappings()}
      */
     public @Bean RolesMappingsUserCustomizer rolesMappingsUserCustomizer(GatewayConfigProperties config) {
-        Map<String, List<String>> rolesMappings = config.getRolesMappings();
-        log.info("Creating {}", RolesMappingsUserCustomizer.class.getSimpleName());
-        return new RolesMappingsUserCustomizer(rolesMappings);
+        return new RolesMappingsUserCustomizer(config.getUsernameMappings(), config.getRolesMappings());
     }
 
     /**
