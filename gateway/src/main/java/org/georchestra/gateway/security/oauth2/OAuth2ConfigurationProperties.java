@@ -97,10 +97,9 @@ public @Data class OAuth2ConfigurationProperties {
 
             // replace all whitespace groups by a single underscore
             normalized = normalized.replaceAll("\\s+", "_");
-            normalized = normalized.replaceAll("\\.", "_");
 
             // remove remaining characters like parenthesis, commas, etc
-            normalized = normalized.replaceAll("[^a-zA-Z0-9_]", "");
+            normalized = normalized.replaceAll("[^a-zA-Z0-9_.]", "");
             return normalized;
         }
     }

@@ -85,31 +85,31 @@ class RolesMappingsUserCustomizerIT {
         testClient.get().uri("/whoami").exchange()//
                 .expectStatus().isOk()//
                 .expectBody()//
-//		.consumeWith(e -> System.err.println(new String(e.getResponseBodyContent())))
+//                .consumeWith(e -> System.err.println(new String(e.getResponseBodyContent())))
                 .json(expected);
 
     }
 
-    @WithMockUser(authorities = { "GP.TEST.SAMPLE" })
+    @WithMockUser(authorities = { "GP.TEST SAMPLE" })
     public @Test void role_prefix_added_but_role_name_not_changed_if_token_is_not_oauth() {
 
-        verifyMappedUser("{\"GeorchestraUser\":{\"roles\":[\"ROLE_GP.TEST.SAMPLE\"]}}");
+        verifyMappedUser("{\"GeorchestraUser\":{\"roles\":[\"ROLE_GP.TEST SAMPLE\"]}}");
     }
 
-    @WithMockOAuth2User(authorities = { "GP.TEST.SAMPLE", "OAuth2 Sample Authority" })
+    @WithMockOAuth2User(authorities = { "GP.TEST SAMPLE", "OAuth2 Sample Authority" })
     public @Test void oauth2_provided_authorities_are_normalized_and_prefixed() {
 
         verifyMappedUser("{\"GeorchestraUser\":{\"username\":\"test-user\","
-                + "\"roles\":[\"ROLE_GP_TEST_SAMPLE\",\"ROLE_OAUTH2_SAMPLE_AUTHORITY\"]}}");
+                + "\"roles\":[\"ROLE_GP.TEST_SAMPLE\",\"ROLE_OAUTH2_SAMPLE_AUTHORITY\"]}}");
     }
 
-    @WithMockOAuth2User(authorities = { "GP.TEST.SAMPLE", "OAuth2 Sample Authority" })
+    @WithMockOAuth2User(authorities = { "GP.TEST SAMPLE", "OAuth2 Sample Authority" })
     public @Test void oauth2_provided_authorities_are_prefixed_but_not_normalized() {
         config.getRoles().setNormalize(false);
         config.getRoles().setUppercase(false);
 
         verifyMappedUser("{\"GeorchestraUser\":{\"username\":\"test-user\","
-                + "\"roles\":[\"ROLE_GP.TEST.SAMPLE\",\"ROLE_OAuth2 Sample Authority\"]}}");
+                + "\"roles\":[\"ROLE_GP.TEST SAMPLE\",\"ROLE_OAuth2 Sample Authority\"]}}");
     }
 
     /**
@@ -120,28 +120,28 @@ class RolesMappingsUserCustomizerIT {
      * {@code georchestra.gateway.security.oidc.roles.json.path.*})
      * 
      */
-    @WithMockOidcUser(authorities = { "GP.OIDC.ROLE1" })
+    @WithMockOidcUser(authorities = { "GP.OIDC ROLE1" })
     public @Test void oidc_provided_authorities_are_normalized_and_prefixed() {
 
         config.getOidc().getClaims().getRoles().setNormalize(true);
         config.getOidc().getClaims().getRoles().setUppercase(true);
 
-        verifyMappedUser("{\"GeorchestraUser\":{\"roles\":[\"ROLE_GP_OIDC_ROLE1\"]}}");
+        verifyMappedUser("{\"GeorchestraUser\":{\"roles\":[\"ROLE_GP.OIDC_ROLE1\"]}}");
     }
 
-    @WithMockOidcUser(authorities = { "GP.OIDC.ROLE1" })
+    @WithMockOidcUser(authorities = { "GP.OIDC role1" })
     public @Test void oidc_provided_authorities_are_prefixed_but_not_normalized() {
 
         config.getOidc().getClaims().getRoles().setNormalize(false);
         config.getOidc().getClaims().getRoles().setUppercase(false);
 
-        verifyMappedUser("{\"GeorchestraUser\":{\"roles\":[\"ROLE_GP.OIDC.ROLE1\"]}}");
+        verifyMappedUser("{\"GeorchestraUser\":{\"roles\":[\"ROLE_GP.OIDC role1\"]}}");
     }
 
     @WithMockOidcUser(//
             authorities = { "AUTHORITY_1" }, //
             nonStandardClaims = { //
-                    "permission=GP.OIDC.ROLE 1, GP.OIDC.ROLE 2"//
+                    "permission=GP.OIDC.role 1, GP.OIDC.role 2"//
             })
     public @Test void oidc_roles_from_non_standard_claims_normalized_and_role_prefix_added() {
 
@@ -152,7 +152,7 @@ class RolesMappingsUserCustomizerIT {
         oidcRolesMappingConfig.setUppercase(true);
 
         verifyMappedUser("{\"GeorchestraUser\":{\"username\":\"user\","
-                + "\"roles\":[\"ROLE_AUTHORITY_1\",\"ROLE_GP_OIDC_ROLE_1\",\"ROLE_GP_OIDC_ROLE_2\"]}}");
+                + "\"roles\":[\"ROLE_AUTHORITY_1\",\"ROLE_GP.OIDC.ROLE_1\",\"ROLE_GP.OIDC.ROLE_2\"]}}");
     }
 
     @WithMockOidcUser(//
