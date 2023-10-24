@@ -188,7 +188,7 @@ class OpenIdConnectUserMapperTest {
                         + "  {'name': 'GDI Planer (extern)'}, " //
                         + "  {'name': 'GDI.Editor (extern)'} " //
                         + "] ] " //
-                        + ",'permission': 'GDI Planer (extern), GDI Editor (extern), GDI admin'" //
+                        + ",'permission': 'GDI Planer (extern), GDI.Editor (extern), GDI admin'" //
                         + ",'PartyOrganisationID': '6007280321'"//
                         + "}";
 
@@ -197,7 +197,7 @@ class OpenIdConnectUserMapperTest {
         GeorchestraUser target = new GeorchestraUser();
         mapper.applyNonStandardClaims(claims, target);
 
-        List<String> expected = List.of("GDI_ADMIN", "GDI_EDITOR_EXTERN", "GDI_PLANER_EXTERN");
+        List<String> expected = List.of("GDI.EDITOR_EXTERN", "GDI_ADMIN", "GDI_PLANER_EXTERN");
         List<String> actual = target.getRoles();
         assertEquals(expected, actual);
     }
