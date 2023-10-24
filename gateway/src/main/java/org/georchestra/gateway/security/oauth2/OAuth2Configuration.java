@@ -19,6 +19,7 @@
 package org.georchestra.gateway.security.oauth2;
 
 import org.georchestra.gateway.security.ServerHttpSecurityCustomizer;
+import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OAuth2ProxyConfigProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gateway.config.GatewayReactiveOAuth2AutoConfiguration;
@@ -51,7 +52,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import lombok.extern.slf4j.Slf4j;
 
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties({ OAuth2ProxyConfigProperties.class, OpenIdConnectCustomClaimsConfigProperties.class })
+@EnableConfigurationProperties({ OAuth2ConfigurationProperties.class })
 @Slf4j(topic = "org.georchestra.gateway.security.oauth2")
 public class OAuth2Configuration {
 
@@ -145,14 +146,13 @@ public class OAuth2Configuration {
     }
 
     @Bean
-    OAuth2UserMapper oAuth2GeorchestraUserUserMapper() {
-        return new OAuth2UserMapper();
+    OAuth2UserMapper oAuth2GeorchestraUserUserMapper(OAuth2ConfigurationProperties config) {
+        return new OAuth2UserMapper(config);
     }
 
     @Bean
-    OpenIdConnectUserMapper openIdConnectGeorchestraUserUserMapper(
-            OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig) {
-        return new OpenIdConnectUserMapper(nonStandardClaimsConfig);
+    OpenIdConnectUserMapper openIdConnectGeorchestraUserUserMapper(OAuth2ConfigurationProperties config) {
+        return new OpenIdConnectUserMapper(config);
     }
 
     /**
@@ -263,7 +263,7 @@ public class OAuth2Configuration {
      */
 //    @Primary
     @Bean("oauth2WebClient")
-    public WebClient oauth2WebClient(OAuth2ProxyConfigProperties proxyConfig) {
-        return new ProxyAwareWebClient(proxyConfig);
+    public WebClient oauth2WebClient(OAuth2ConfigurationProperties config) {
+        return new ProxyAwareWebClient(config.getProxy());
     }
 }

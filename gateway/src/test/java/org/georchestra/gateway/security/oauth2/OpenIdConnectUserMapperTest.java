@@ -27,7 +27,8 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Map;
 
-import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomClaimsConfigProperties.JsonPathExtractor;
+import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OpenIdConnectCustomClaimsConfigProperties;
+import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OpenIdConnectCustomClaimsConfigProperties.JsonPathExtractor;
 import org.georchestra.security.model.GeorchestraUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,8 +51,9 @@ class OpenIdConnectUserMapperTest {
      */
     @BeforeEach
     void setUp() throws Exception {
-        nonStandardClaimsConfig = new OpenIdConnectCustomClaimsConfigProperties();
-        mapper = new OpenIdConnectUserMapper(nonStandardClaimsConfig);
+        OAuth2ConfigurationProperties config = new OAuth2ConfigurationProperties();
+        nonStandardClaimsConfig = config.getOidc().getClaims();
+        mapper = new OpenIdConnectUserMapper(config);
     }
 
     @Test

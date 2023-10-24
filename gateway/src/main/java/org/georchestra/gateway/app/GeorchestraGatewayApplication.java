@@ -18,7 +18,14 @@
  */
 package org.georchestra.gateway.app;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.File;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+
 import org.georchestra.gateway.security.GeorchestraUserMapper;
 import org.georchestra.gateway.security.ldap.LdapConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
@@ -32,8 +39,6 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.unit.DataSize;
@@ -41,11 +46,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.reactive.result.view.Rendering;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
-import java.io.File;
-import java.util.*;
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Controller
 @Slf4j

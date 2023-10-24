@@ -21,7 +21,6 @@ package org.georchestra.gateway.filter.headers.providers;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.georchestra.gateway.filter.headers.HeaderContributor;
 import org.georchestra.gateway.model.GeorchestraTargetConfig;

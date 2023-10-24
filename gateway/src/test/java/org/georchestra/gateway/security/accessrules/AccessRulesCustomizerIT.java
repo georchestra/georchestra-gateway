@@ -26,24 +26,15 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
 import java.net.URI;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
-import org.georchestra.gateway.security.GeorchestraUserMapperExtension;
-import org.georchestra.security.model.GeorchestraUser;
+import org.georchestra.gateway.security.MockUserGeorchestraUserMapperConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.ldap.userdetails.LdapUserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -62,44 +53,14 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @SpringBootTest(classes = { GeorchestraGatewayApplication.class,
-        AccessRulesCustomizerIT.TestUserMapperConfiguration.class }, webEnvironment = WebEnvironment.MOCK, properties = {
+        MockUserGeorchestraUserMapperConfiguration.class }, webEnvironment = WebEnvironment.MOCK, properties = {
                 "georchestra.datadir=../datadir", //
                 "georchestra.gateway.security.ldap.default.enabled=false", //
                 "georchestra.gateway.security.oauth2.enabled=false" })
-@AutoConfigureWebTestClient(timeout = "PT120S")
+@AutoConfigureWebTestClient(timeout = "PT20S")
 @ActiveProfiles("it")
 @Slf4j
 class AccessRulesCustomizerIT {
-
-    /**
-     * Catch and convert {@link Authentication}s created by {@literal @WithMockUser}
-     */
-    static @Configuration class TestUserMapperConfiguration {
-
-        @Bean
-        TestUserMapper testUserMapper() {
-            return new TestUserMapper();
-        }
-
-        static class TestUserMapper implements GeorchestraUserMapperExtension {
-            public @Override Optional<GeorchestraUser> resolve(Authentication authToken) {
-                return Optional.ofNullable(authToken)//
-                        .filter(UsernamePasswordAuthenticationToken.class::isInstance)
-                        .map(UsernamePasswordAuthenticationToken.class::cast)//
-                        .filter(token -> !(token.getPrincipal() instanceof LdapUserDetails))//
-                        .filter(token -> token
-                                .getPrincipal() instanceof org.springframework.security.core.userdetails.User)
-                        .map(t -> {
-                            GeorchestraUser user = new GeorchestraUser();
-                            user.setUsername(t.getName());
-                            user.setRoles(t.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-                                    .collect(Collectors.toList()));
-                            return user;
-                        });
-            }
-
-        }
-    }
 
     @RegisterExtension
     static WireMockExtension mockService = WireMockExtension.newInstance()
