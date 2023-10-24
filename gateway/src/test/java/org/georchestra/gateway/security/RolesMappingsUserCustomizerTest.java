@@ -34,22 +34,22 @@ import org.georchestra.security.model.GeorchestraUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import lombok.NonNull;
+
 /**
  * Test suite for {@link RolesMappingsUserCustomizer}
  */
 class RolesMappingsUserCustomizerTest {
 
     private GeorchestraUser user;
-    private Map<String, List<String>> config;
+    private RolesMappingsUserCustomizer customizer;
 
     @BeforeEach
     void setUp() {
-        config = new HashMap<>();
         user = new GeorchestraUser();
-    }
-
-    private void addConfig(String role, String... additionalRoles) {
-        config.put(role, List.of(additionalRoles));
+        Map<String, List<String>> usernameMappings = Map.of();
+        Map<String, List<String>> roleMappings = Map.of();
+        customizer = new RolesMappingsUserCustomizer(usernameMappings, roleMappings);
     }
 
     @Test
@@ -63,11 +63,19 @@ class RolesMappingsUserCustomizerTest {
         pattern = RolesMappingsUserCustomizer.toPattern("ROLE.*.*.ADMIN");
         assertTrue(pattern.matcher("ROLE.GDI.GS.ADMIN").matches());
         assertFalse(pattern.matcher("ROLE.GDI.GS.USER").matches());
+
+        pattern = RolesMappingsUserCustomizer.toPattern("test.user@example.com");
+        assertTrue(pattern.matcher("test.user@example.com").matches());
+        assertFalse(pattern.matcher("test2.user@example.com").matches());
+
+        pattern = RolesMappingsUserCustomizer.toPattern("*.user@example.com");
+        assertTrue(pattern.matcher("test.user@example.com").matches());
+        assertTrue(pattern.matcher("test2.user@example.com").matches());
+        assertFalse(pattern.matcher("test2.users@example.com").matches());
     }
 
     @Test
     void emptyConfig() {
-        RolesMappingsUserCustomizer customizer = new RolesMappingsUserCustomizer(config);
         user.setRoles(List.of("ROLE_USER"));
         GeorchestraUser customized = customizer.apply(user);
         assertSame(user, customized);
@@ -75,11 +83,10 @@ class RolesMappingsUserCustomizerTest {
     }
 
     @Test
-    void matchesLiteralMappings() {
-        addConfig("ROLE_USER", "ROLE_EDITOR", "ROLE_USER", "ROLE_GUEST");
-        addConfig("ROLE_ADMIN", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR");
+    void matchesLiteralMappings_based_on_roles() {
+        customizer.addRoleMappings("ROLE_USER", "ROLE_EDITOR", "ROLE_USER", "ROLE_GUEST");
+        customizer.addRoleMappings("ROLE_ADMIN", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR");
 
-        RolesMappingsUserCustomizer customizer = new RolesMappingsUserCustomizer(config);
         GeorchestraUser customized;
 
         user.setRoles(List.of("ROLE_USER"));
@@ -98,11 +105,10 @@ class RolesMappingsUserCustomizerTest {
     }
 
     @Test
-    void matchesRegexMappings() {
-        addConfig("ROLE.*.USER", "ROLE_USER", "ROLE_GUEST");
-        addConfig("ROLE.*.ADMIN", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR");
+    void matchesRegexMappings_based_on_roles() {
+        customizer.addRoleMappings("ROLE.*.USER", "ROLE_USER", "ROLE_GUEST");
+        customizer.addRoleMappings("ROLE.*.ADMIN", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR");
 
-        RolesMappingsUserCustomizer customizer = new RolesMappingsUserCustomizer(config);
         GeorchestraUser customized;
 
         user.setRoles(List.of("ROLE_USER"));
@@ -122,5 +128,71 @@ class RolesMappingsUserCustomizerTest {
         customized = customizer.apply(user);
         assertEquals(Set.of("ROLE.TEST.ADMIN", "ROLE.GDI.USER", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR", "ROLE_USER",
                 "ROLE_GUEST"), Set.copyOf(customized.getRoles()));
+    }
+
+    @Test
+    void matchesLiteralMappings_based_on_username() {
+        customizer.addUsernameMappings("test1@user.com", "ROLE_EDITOR", "ROLE_GUEST");
+        customizer.addUsernameMappings("test2@user.com", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR");
+
+        GeorchestraUser customized;
+
+        user.setUsername("test1@user.com");
+        user.setRoles(List.of("ROLE_USER"));
+        customized = customizer.apply(user);
+        assertEquals(Set.of("ROLE_EDITOR", "ROLE_USER", "ROLE_GUEST"), Set.copyOf(customized.getRoles()));
+
+        user.setUsername("test2@user.com");
+        user.setRoles(List.of("ROLE_USER"));
+        customized = customizer.apply(user);
+        assertEquals(Set.of("ROLE_USER", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR"), Set.copyOf(customized.getRoles()));
+    }
+
+    @Test
+    void matchesRegexMappings_based_on_username() {
+        customizer.addUsernameMappings("*@user.com", "ROLE_USER", "ROLE_GUEST");
+        customizer.addUsernameMappings("test2*", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR");
+
+        GeorchestraUser customized;
+
+        user.setUsername("test1@user.com");
+        user.setRoles(List.of("ROLE_USER"));
+        customized = customizer.apply(user);
+        assertEquals(Set.of("ROLE_USER", "ROLE_GUEST"), Set.copyOf(customized.getRoles()));
+
+        user.setUsername("another.test.user@user.com");
+        user.setRoles(List.of("ROLE_USER"));
+        customized = customizer.apply(user);
+        assertEquals(Set.of("ROLE_USER", "ROLE_GUEST"), Set.copyOf(customized.getRoles()));
+
+        user.setUsername("test2");
+        user.setRoles(List.of("ROLE_USER"));
+        customized = customizer.apply(user);
+        assertEquals(Set.of("ROLE_USER", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR"), Set.copyOf(customized.getRoles()));
+
+        user.setUsername("test2@example.com");
+        user.setRoles(List.of("ROLE_USER"));
+        customized = customizer.apply(user);
+        assertEquals(Set.of("ROLE_USER", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR"), Set.copyOf(customized.getRoles()));
+
+        user.setUsername("test2@user.com");
+        user.setRoles(List.of("ROLE_USER"));
+        customized = customizer.apply(user);
+        assertEquals(Set.of("ROLE_USER", "ROLE_GUEST", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR"),
+                Set.copyOf(customized.getRoles()));
+    }
+
+    @Test
+    void matches_both_user_and_roles_mappings() {
+        customizer.addUsernameMappings("*@user.com", "ROLE_USER", "ROLE_GUEST");
+        customizer.addRoleMappings("ROLE_MAP_ME", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR");
+
+        GeorchestraUser customized;
+
+        user.setUsername("some.test.name@user.com");
+        user.setRoles(List.of("ROLE_MAP_ME"));
+        customized = customizer.apply(user);
+        assertEquals(Set.of("ROLE_MAP_ME", "ROLE_USER", "ROLE_GUEST", "ROLE_GN_ADMIN", "ROLE_ADMINISTRATOR"),
+                Set.copyOf(customized.getRoles()));
     }
 }

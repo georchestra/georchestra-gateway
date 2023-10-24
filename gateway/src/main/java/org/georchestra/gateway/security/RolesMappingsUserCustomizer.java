@@ -19,30 +19,27 @@
 
 package org.georchestra.gateway.security;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.georchestra.security.model.GeorchestraUser;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Authenticated user customizer extension to expand the set of role names
  * assigned to a user by the actual authentication provider
  */
-@Slf4j
 public class RolesMappingsUserCustomizer implements GeorchestraUserCustomizerExtension {
 
     @RequiredArgsConstructor
@@ -50,8 +47,8 @@ public class RolesMappingsUserCustomizer implements GeorchestraUserCustomizerExt
         private final @NonNull Pattern pattern;
         private final @NonNull @Getter List<String> extraRoles;
 
-        public boolean matches(String role) {
-            return pattern.matcher(role).matches();
+        public boolean matches(String input) {
+            return pattern.matcher(input).matches();
         }
 
         public @Override String toString() {
@@ -59,56 +56,67 @@ public class RolesMappingsUserCustomizer implements GeorchestraUserCustomizerExt
         }
     }
 
+    private final List<Matcher> usernameMappings;
+    private final List<Matcher> roleMappings;
+
+    public RolesMappingsUserCustomizer(@NonNull Map<String, List<String>> usernameMappings,
+            @NonNull Map<String, List<String>> rolesMappings) {
+        this.usernameMappings = keysToRegularExpressions(usernameMappings);
+        this.roleMappings = keysToRegularExpressions(rolesMappings);
+    }
+
     @VisibleForTesting
-    final List<Matcher> rolesMappings;
+    RolesMappingsUserCustomizer addRoleMappings(String roleGlob, String... additionalRoles) {
+        roleMappings.add(matcher(roleGlob, Arrays.asList(additionalRoles)));
+        return this;
+    }
 
-    private final Cache<String, List<String>> byRoleNameCache = CacheBuilder.newBuilder().maximumSize(1_000).build();
-
-    public RolesMappingsUserCustomizer(@NonNull Map<String, List<String>> rolesMappings) {
-        this.rolesMappings = keysToRegularExpressions(rolesMappings);
+    @VisibleForTesting
+    RolesMappingsUserCustomizer addUsernameMappings(String usernameGlob, String... additionalRoles) {
+        usernameMappings.add(matcher(usernameGlob, Arrays.asList(additionalRoles)));
+        return this;
     }
 
     private @NonNull List<Matcher> keysToRegularExpressions(Map<String, List<String>> mappings) {
         return mappings.entrySet()//
                 .stream()//
-                .map(e -> new Matcher(toPattern(e.getKey()), e.getValue()))//
-                .peek(m -> log.info("Loaded role mapping {}", m))//
+                .map(e -> matcher(e.getKey(), e.getValue()))//
                 .collect(Collectors.toList());
     }
 
-    static Pattern toPattern(String role) {
-        String regex = role.replace(".", "(\\.)").replace("*", "(.*)");
+    private Matcher matcher(String inputGlob, List<String> additionalRoles) {
+        return new Matcher(toPattern(inputGlob), additionalRoles);
+    }
+
+    static Pattern toPattern(String glob) {
+        String regex = glob.replace(".", "(\\.)").replace("*", "(.*)");
         return Pattern.compile(regex);
     }
 
     @Override
     public GeorchestraUser apply(GeorchestraUser user) {
 
-        Set<String> additionalRoles = computeAdditionalRoles(user.getRoles());
+        Set<String> additionalRoles = computeAdditionalRoles(user);
         if (!additionalRoles.isEmpty()) {
-            additionalRoles.addAll(user.getRoles());
-            user.setRoles(new ArrayList<>(additionalRoles));
+            List<String> roles = Stream.concat(user.getRoles().stream(), additionalRoles.stream()).distinct()
+                    .collect(Collectors.toList());
+            user.setRoles(roles);
         }
         return user;
     }
 
-    /**
-     * @param authenticatedRoles the role names extracted from the authentication
-     *                           provider
-     * @return the additional role names for the user
-     */
-    private Set<String> computeAdditionalRoles(List<String> authenticatedRoles) {
-        final ConcurrentMap<String, List<String>> cache = byRoleNameCache.asMap();
-        return authenticatedRoles.stream().map(role -> cache.computeIfAbsent(role, this::computeAdditionalRoles))
-                .flatMap(List::stream).collect(Collectors.toSet());
+    private Set<String> computeAdditionalRoles(GeorchestraUser user) {
+        String username = user.getUsername();
+        List<String> roles = user.getRoles();
+        Stream<String> usernameMatches = null == username ? Stream.empty()
+                : computeAdditionalRoles(username, usernameMappings);
+        Stream<String> roleMatches = roles.stream().map(role -> computeAdditionalRoles(role, roleMappings))
+                .flatMap(Function.identity());
+        return Stream.concat(usernameMatches, roleMatches).collect(Collectors.toSet());
     }
 
-    private List<String> computeAdditionalRoles(@NonNull String authenticatedRole) {
+    private Stream<String> computeAdditionalRoles(@NonNull String input, @NonNull List<Matcher> mappings) {
 
-        List<String> roles = rolesMappings.stream().filter(m -> m.matches(authenticatedRole))
-                .map(Matcher::getExtraRoles).flatMap(List::stream).collect(Collectors.toList());
-
-        log.info("Computed additional roles for {}: {}", authenticatedRole, roles);
-        return roles;
+        return mappings.stream().filter(m -> m.matches(input)).map(Matcher::getExtraRoles).flatMap(List::stream);
     }
 }

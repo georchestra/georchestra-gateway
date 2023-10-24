@@ -38,6 +38,7 @@ import lombok.Generated;
 @ConfigurationProperties("georchestra.gateway")
 public class GatewayConfigProperties {
 
+    private Map<String, List<String>> usernameMappings = Map.of();
     private Map<String, List<String>> rolesMappings = Map.of();
 
     /**
