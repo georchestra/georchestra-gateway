@@ -50,6 +50,12 @@ jobs:
       if: github.ref != 'refs/heads/main' && github.repository == 'georchestra/georchestra-gateway'
       run: docker push georchestra/gateway:${{ steps.version.outputs.VERSION }}
 
+    - name: "Push image attached to commit id to docker.io"
+      if: github.ref == 'refs/heads/main' && github.repository == 'georchestra/georchestra-gateway'
+      run: |
+        docker tag georchestra/gateway:latest georchestra/gateway:commit-${{ github.sha }}
+        docker push georchestra/gateway:commit-${{ github.sha }}
+
     - name: "Remove SNAPSHOT jars from repository"
       run: |
         find .m2/repository -name "*SNAPSHOT*" -type d | xargs rm -rf {}
