@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.georchestra.ds.DataServiceException;
 import org.georchestra.ds.DuplicatedCommonNameException;
 import org.georchestra.ds.orgs.Org;
@@ -153,7 +154,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
 
     private void ensureOrgExists(@NonNull Account newAccount) {
         String orgId = newAccount.getOrg();
-        if (null == orgId)
+        if (StringUtils.isEmpty(orgId))
             return;
         try { // account created, add org
             Org org;
