@@ -23,6 +23,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
+import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.security.model.GeorchestraUser;
 
 import lombok.NonNull;
@@ -37,7 +38,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
     protected final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     @Override
-    public GeorchestraUser getOrCreate(@NonNull GeorchestraUser mappedUser) {
+    public GeorchestraUser getOrCreate(@NonNull GeorchestraUser mappedUser) throws DuplicatedEmailFoundException {
         return find(mappedUser).orElseGet(() -> createIfMissing(mappedUser));
     }
 
@@ -57,7 +58,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
         return findByUsername(mappedUser.getUsername());
     }
 
-    GeorchestraUser createIfMissing(GeorchestraUser mapped) {
+    GeorchestraUser createIfMissing(GeorchestraUser mapped) throws DuplicatedEmailFoundException {
         lock.writeLock().lock();
         try {
             GeorchestraUser existing = findInternal(mapped).orElse(null);
