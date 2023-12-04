@@ -123,6 +123,8 @@ public class GeorchestraGatewayApplication {
         mdl.addAttribute("passwordExpired", expired);
         boolean invalidCredentials = "invalid_credentials".equals(allRequestParams.get("error"));
         mdl.addAttribute("invalidCredentials", invalidCredentials);
+        boolean duplicateAccount = "duplicate_account".equals(allRequestParams.get("error"));
+        mdl.addAttribute("duplicateAccount", duplicateAccount);
         return "login";
     }
 

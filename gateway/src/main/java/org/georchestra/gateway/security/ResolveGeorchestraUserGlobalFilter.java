@@ -42,6 +42,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * A {@link GlobalFilter} that resolves the {@link GeorchestraUser} from the
@@ -64,7 +65,7 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
 
     private ServerRedirectStrategy redirectStrategy = new DefaultServerRedirectStrategy();
 
-    private static String EXPIRED_PASSWORD = "expired_password";
+    private static String DUPLICATE_ACCOUNT = "duplicate_account";
 
     /**
      * @return a lower precedence than {@link RouteToRequestUrlFilter}'s, in order
@@ -82,7 +83,6 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
      * chain.
      */
     public @Override Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-
         Mono<Void> res = exchange.getPrincipal()//
                 .doOnNext(p -> log.debug("resolving user from {}", p.getClass().getName()))//
                 .filter(Authentication.class::isInstance)//
@@ -91,12 +91,16 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                     try {
                         return resolver.resolve(auth);
                     } catch (DuplicatedEmailFoundException exp) {
-                        GeorchestraUser user = new GeorchestraUser();
-                        user.setId("0");
-                        return Optional.of(user);
+                        Optional<GeorchestraUser> op = Optional.empty();
+                        return op;
                     }
                 })//
-                .filter(user -> !((GeorchestraUser) user.get()).getId().equals("0")).map(user -> {
+                .map(user -> {
+                    if (user.isEmpty()) {
+                        return this.redirectStrategy.sendRedirect(exchange, URI
+                                .create("https://georchestra-127-0-1-1.traefik.me/login?error=" + DUPLICATE_ACCOUNT));
+                    }
+
                     GeorchestraUser usr = user.orElse(null);
                     GeorchestraUsers.store(exchange, usr);
                     if (usr != null && usr instanceof ExtendedGeorchestraUser) {
@@ -104,14 +108,14 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                         Organization org = eu.getOrg();
                         GeorchestraOrganizations.store(exchange, org);
                     }
-                    return exchange;
+                    return chain.filter(exchange);
                 })//
-                .defaultIfEmpty(exchange)//
-                .flatMap(chain::filter);
+                .defaultIfEmpty(chain.filter(exchange))//
+                .flatMap(Function.identity());
 
         System.out.println(res);
         return res;
-        return this.redirectStrategy.sendRedirect(exchange, URI.create("login?error=" + EXPIRED_PASSWORD));
+//        return this.redirectStrategy.sendRedirect(exchange, URI.create("login?error=" + DUPLICATE_ACCOUNT));
     }
 
 }
