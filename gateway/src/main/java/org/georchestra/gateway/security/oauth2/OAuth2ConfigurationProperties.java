@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import com.jayway.jsonpath.PathNotFoundException;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.StringUtils;
@@ -221,7 +222,15 @@ public @Data class OAuth2ConfigurationProperties {
                 // JsonPath works fine with it though, as it's designed
                 // to work on POJOS, JSONObject is a Map and JSONArray is a List so it's ok
                 DocumentContext context = JsonPath.parse(claims);
-                Object matched = context.read(jsonPathExpression);
+
+                Object matched = null;
+                try {
+                    matched = context.read(jsonPathExpression);
+                } catch (PathNotFoundException e) {
+                    log.warn("The expected JSONPath expession {} has not been found in the payload",
+                            jsonPathExpression);
+                    return List.of();
+                }
 
                 if (null == matched) {
                     log.warn("The JSONPath expession {} evaluates to null", jsonPathExpression);

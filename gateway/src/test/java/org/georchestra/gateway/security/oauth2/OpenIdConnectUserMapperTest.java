@@ -203,6 +203,35 @@ class OpenIdConnectUserMapperTest {
     }
 
     @Test
+    void applyNonStandardClaims_jsonPath_no_match() throws ParseException {
+
+        final String jsonPath = "$.permission";
+        final String groupsJsonPath = "$.groups_json..['name']";
+
+        JsonPathExtractor jsonpathConfig = nonStandardClaimsConfig.getRoles().getJson();
+        jsonpathConfig.getPath().add(jsonPath);
+        jsonpathConfig.getPath().add(groupsJsonPath);
+        jsonpathConfig.setSplit(true);
+
+        final String json = //
+                "{" //
+                        + "'groups_json': [ [ " //
+                        + "  {'name': 'GDI Planer (extern)'} " //
+                        + "] ] " //
+                        + ",'PartyOrganisationID': '1337'"//
+                        + "}";
+
+        Map<String, Object> claims = sampleClaims(json);
+
+        GeorchestraUser target = new GeorchestraUser();
+        mapper.applyNonStandardClaims(claims, target);
+
+        List<String> expected = List.of("GDI_PLANER_EXTERN");
+        List<String> actual = target.getRoles();
+        assertEquals(expected, actual);
+    }
+
+    @Test
     void applyNonStandardClaims_jsonPath_multiple_jsonpaths_deduplicates() throws ParseException {
 
         final String jsonPath = "$.permission";
