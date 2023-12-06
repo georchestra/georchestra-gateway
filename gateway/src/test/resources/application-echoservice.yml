@@ -1,0 +1,20 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: echo
+          uri: http://${httpEchoHost:localhost}:${httpEchoPort:9095}
+          predicates:
+            - Path=/echo/**
+georchestra:
+  gateway:
+    services:
+      echo:
+        target: http://${httpEchoHost}:${httpEchoPort}
+        access-rules:
+          - intercept-url: /echo/administrator
+            allowed-roles: ADMINISTRATOR
+          - intercept-url: /echo/connected
+            anonymous: false
+          - intercept-url: /echo/anonymous
+            anonymous: true

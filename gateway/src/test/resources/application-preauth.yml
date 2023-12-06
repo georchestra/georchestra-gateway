@@ -56,3 +56,16 @@ spring:
         - AddSecHeaders
       httpclient.wiretap: true
       httpserver.wiretap: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "preauth-with-testcontainer-ldap"
+georchestra:
+  gateway:
+    security:
+      ldap:
+        default:
+          enabled: true
+          url: ldap://${ldapHost}:${ldapPort}/
