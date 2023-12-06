@@ -158,10 +158,12 @@ class AccessRulesCustomizerIT {
         mockService.stubFor(get(urlMatching("/mapfishapp(/.*)?")).willReturn(ok()));
 
         testClient.get().uri("/mapfishapp/ogcproxy")//
+                .header("accept", "text/html")//
                 .exchange()//
                 .expectHeader().location("/login");
 
         testClient.get().uri("/mapfishapp/ogcproxy/somethingprivate")//
+                .header("accept", "text/html")//
                 .exchange()//
                 .expectHeader().location("/login");
 
@@ -212,11 +214,12 @@ class AccessRulesCustomizerIT {
         mockService.stubFor(get(urlMatching("/import(/.*)?")).willReturn(noContent()));
 
         testClient.get().uri("/import")//
+                .header("Accept", "text/html")//
                 .exchange()//
                 .expectHeader().location("/login");
 
         testClient.get().uri("/import/any/thing")//
-                .exchange()//
+                .header("Accept", "text/html").exchange()//
                 .expectHeader().location("/login");
     }
 
@@ -299,10 +302,12 @@ class AccessRulesCustomizerIT {
         mockService.stubFor(get(urlMatching("/analytics(/.*)?")).willReturn(ok()));
 
         testClient.get().uri("/analytics")//
+                .header("Accept", "text/html")//
                 .exchange()//
                 .expectHeader().location("/login");
 
         testClient.get().uri("/analytics/any/thing")//
+                .header("Accept", "text/html")//
                 .exchange()//
                 .expectHeader().location("/login");
     }

@@ -29,7 +29,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -45,6 +48,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Controller
@@ -61,6 +65,7 @@ public class GeorchestraGatewayApplication {
     private @Value("${georchestra.gateway.headerUrl:/header/}") String georchestraHeaderUrl;
     private @Value("${georchestra.gateway.headerHeight:90}") String georchestraHeaderHeight;
     private @Value("${georchestra.gateway.footerUrl:#{null}}") String georchestraFooterUrl;
+    private @Value("${spring.messages.basename:}") String messagesBasename;
 
     @PostConstruct
     void initialize() {
@@ -135,6 +140,16 @@ public class GeorchestraGatewayApplication {
         Long routeCount = routeLocator.getRoutes().count().block();
         log.info("{} ready. Data dir: {}. Routes: {}. Instance-id: {}, cpus: {}, max memory: {}", app, datadir,
                 routeCount, instanceId, cpus, maxMem);
+    }
+
+    @Bean
+    public MessageSource messageSource() {
+        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasenames(("classpath:messages/login," + messagesBasename).split(","));
+        messageSource.setCacheSeconds(600);
+        messageSource.setUseCodeAsDefaultMessage(true);
+        messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
+        return messageSource;
     }
 
 }

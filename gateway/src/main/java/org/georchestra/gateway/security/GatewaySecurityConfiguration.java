@@ -27,12 +27,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.config.web.server.ServerHttpSecurity.LogoutSpec;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -61,12 +58,6 @@ public class GatewaySecurityConfiguration {
 
     private @Value("${georchestra.gateway.logoutUrl:/?logout}") String georchestraLogoutUrl;
 
-//	@Primary
-//	@Bean
-//	ReactiveAuthenticationManager authManagerDelegator(List<ReactiveAuthenticationManager> managers) {
-//		return new DelegatingReactiveAuthenticationManager(managers);
-//	}
-
     /**
      * Relies on available {@link ServerHttpSecurityCustomizer} extensions to
      * configure the different aspects of the {@link ServerHttpSecurity} used to
@@ -77,12 +68,13 @@ public class GatewaySecurityConfiguration {
             List<ServerHttpSecurityCustomizer> customizers) throws Exception {
 
         log.info("Initializing security filter chain...");
-        // disable csrf and cors or the websocket connection gets a 403 Forbidden.
-        // Revisit.
-        log.info("CSRF and CORS disabled. Revisit how they interfer with Websockets proxying.");
-        http.csrf().disable().cors().disable();
+        // disable CSRF protection, considering it will be managed
+        // by proxified webapps, not the gateway.
+        http.csrf().disable();
 
-        http.formLogin().loginPage("/login");
+        http.formLogin()
+                .authenticationFailureHandler(new ExtendedRedirectServerAuthenticationFailureHandler("login?error"))
+                .loginPage("/login");
 
         sortedCustomizers(customizers).forEach(customizer -> {
             log.debug("Applying security customizer {}", customizer.getName());
@@ -91,11 +83,12 @@ public class GatewaySecurityConfiguration {
 
         log.info("Security filter chain initialized");
 
-        RedirectServerLogoutSuccessHandler defaultRedirect = new RedirectServerLogoutSuccessHandler();
-        defaultRedirect.setLogoutSuccessUrl(URI.create(georchestraLogoutUrl));
 
-        LogoutSpec logoutUrl = http.formLogin().loginPage("/login").and().logout().logoutUrl("/logout")
-                .logoutSuccessHandler(oidcLogoutSuccessHandler != null ? oidcLogoutSuccessHandler : defaultRedirect);
+        ServerHttpSecurity.LogoutSpec logoutUrl = http.formLogin().loginPage("/login").and().logout()
+                .logoutUrl("/logout");
+        if (oidcLogoutSuccessHandler != null) {
+            logoutUrl = logoutUrl.logoutSuccessHandler(oidcLogoutSuccessHandler);
+        }
 
         return logoutUrl.and().build();
     }
