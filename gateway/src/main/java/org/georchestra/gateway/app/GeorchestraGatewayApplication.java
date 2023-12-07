@@ -28,6 +28,7 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 
 import org.georchestra.gateway.security.GeorchestraUserMapper;
+import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.gateway.security.ldap.LdapConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,10 +88,15 @@ public class GeorchestraGatewayApplication {
     @GetMapping(path = "/whoami", produces = "application/json")
     @ResponseBody
     public Mono<Map<String, Object>> whoami(Authentication principal, ServerWebExchange exchange) {
-        GeorchestraUser user = Optional.ofNullable(principal).flatMap(userMapper::resolve).orElse(null);
+        GeorchestraUser user = null;
+        try {
+            user = Optional.ofNullable(principal).flatMap(userMapper::resolve).orElse(null);
+        } catch (DuplicatedEmailFoundException e) {
+        }
+
         Map<String, Object> ret = new LinkedHashMap<>();
         ret.put("GeorchestraUser", user);
-        if (principal == null) {
+        if ((user == null) || (principal == null)) {
             ret.put("Authentication", null);
         } else {
             ret.put(principal.getClass().getCanonicalName(), principal);
