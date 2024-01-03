@@ -102,17 +102,4 @@
       </plugins>
     </pluginManagement>
   </build>
-  <profiles>
-    <profile>
-      <id>georchestra</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>georchestra/commons</module>
-        <module>georchestra/testcontainers</module>
-        <module>georchestra/ldap-account-management</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>

@@ -12,15 +12,10 @@ COPY .mvn .mvn
 # which is used by the actuator/info endpoint
 COPY .git .git
 
-RUN mvn install -DskipTests -f georchestra/pom.xml --non-recursive && \
-    mvn install -DskipTests -f georchestra/commons && \
-    mvn install -DskipTests -f georchestra/testcontainers && \
-    mvn install -DskipTests -f georchestra/ldap-account-management
-
 COPY gateway gateway
 COPY pom.xml pom.xml
 
-RUN mvn package -P-georchestra
+RUN mvn package
 
 FROM mtr.devops.telekom.de/geo-hub/zulu-openjdk:11
 
