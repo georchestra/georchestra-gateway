@@ -5,7 +5,6 @@ ARG REPO_PW
 ARG REPO_URL
 
 WORKDIR /build
-COPY georchestra georchestra
 COPY .mvn .mvn
 # copy the .git directory for the git-commit-id-maven-plugin
 # to be able of resolving the git info and write ./target/classes/git.properties
