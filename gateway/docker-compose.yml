@@ -59,7 +59,7 @@ services:
       - 3891:389
 
   gateway:
-    image: georchestra/gateway:22.1-SNAPSHOT
+    image: georchestra/gateway:23.1-SNAPSHOT
     depends_on:
       - ldap
       - database
