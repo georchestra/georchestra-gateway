@@ -31,9 +31,11 @@ import org.springframework.cloud.gateway.filter.RouteToRequestUrlFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.core.Ordered;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.server.DefaultServerRedirectStrategy;
 import org.springframework.security.web.server.ServerRedirectStrategy;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebSession;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -97,8 +99,10 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                 })//
                 .map(user -> {
                     if (user.isEmpty()) {
-                        return this.redirectStrategy.sendRedirect(exchange, URI
-                                .create("https://georchestra-127-0-1-1.traefik.me/login?error=" + DUPLICATE_ACCOUNT));
+                        SecurityContextHolder.getContext();
+                        return this.redirectStrategy //
+                                .sendRedirect(exchange, URI.create("/login?error=" + DUPLICATE_ACCOUNT)) //
+                                .then(exchange.getSession().flatMap(WebSession::invalidate));
                     }
 
                     GeorchestraUser usr = user.orElse(null);
@@ -110,8 +114,8 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                     }
                     return chain.filter(exchange);
                 })//
-                .defaultIfEmpty(chain.filter(exchange))//
-                .flatMap(Function.identity());
+                .flatMap(Function.identity()) //
+                .switchIfEmpty(Mono.fromRunnable(() -> chain.filter(exchange)));
 
         System.out.println(res);
         return res;
