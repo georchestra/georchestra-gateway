@@ -33,7 +33,7 @@ import org.georchestra.security.model.GeorchestraUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.core.oidc.AddressStandardClaim;
-import org.springframework.security.oauth2.core.oidc.StandardClaimAccessor;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.util.JSONUtils;
@@ -58,7 +58,7 @@ class OpenIdConnectUserMapperTest {
 
     @Test
     void applyStandardClaims() {
-        StandardClaimAccessor standardClaims = mock(StandardClaimAccessor.class);
+        OidcUser standardClaims = mock(OidcUser.class);
         when(standardClaims.getSubject()).thenReturn("b7f3dd13-f9cc-4573-8482-b4fccf8e1977");
         when(standardClaims.getPreferredUsername()).thenReturn("tesuser");
         when(standardClaims.getGivenName()).thenReturn("John");

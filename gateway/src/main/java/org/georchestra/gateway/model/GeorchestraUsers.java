@@ -22,13 +22,15 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.georchestra.security.model.GeorchestraUser;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.server.ServerWebExchange;
 
 import lombok.NonNull;
 
 public class GeorchestraUsers {
 
-    static final String GEORCHESTRA_USER_KEY = GeorchestraUsers.class.getCanonicalName();
+    private static final String AUTHENTICATION_KEY = Authentication.class.getName();
+    private static final String GEORCHESTRA_USER_KEY = GeorchestraUsers.class.getCanonicalName();
 
     public static Optional<GeorchestraUser> resolve(ServerWebExchange exchange) {
         return Optional.ofNullable(exchange.getAttributes().get(GEORCHESTRA_USER_KEY)).map(GeorchestraUser.class::cast);
@@ -42,5 +44,19 @@ public class GeorchestraUsers {
             attributes.put(GEORCHESTRA_USER_KEY, user);
         }
         return exchange;
+    }
+
+    public static Optional<Authentication> resolveAuth(ServerWebExchange exchange) {
+        return Optional.ofNullable(exchange.getAttributes().get(AUTHENTICATION_KEY)).map(Authentication.class::cast);
+    }
+
+    public static Authentication store(@NonNull ServerWebExchange exchange, Authentication auth) {
+        Map<String, Object> attributes = exchange.getAttributes();
+        if (auth == null) {
+            attributes.remove(AUTHENTICATION_KEY);
+        } else {
+            attributes.put(AUTHENTICATION_KEY, auth);
+        }
+        return auth;
     }
 }

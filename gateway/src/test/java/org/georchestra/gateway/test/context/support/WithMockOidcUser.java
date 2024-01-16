@@ -143,6 +143,13 @@ public @interface WithMockOidcUser {
      * 
      * @return
      */
+    String[] claims() default {};
+
+    /**
+     * List of key/value pairs of non-standard claims
+     * 
+     * @return
+     */
     String[] nonStandardClaims() default {};
 
     /**

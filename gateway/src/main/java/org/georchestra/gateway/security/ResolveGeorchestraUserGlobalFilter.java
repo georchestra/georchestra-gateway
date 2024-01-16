@@ -74,6 +74,7 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                 .doOnNext(p -> log.debug("resolving user from {}", p.getClass().getName()))//
                 .filter(Authentication.class::isInstance)//
                 .map(Authentication.class::cast)//
+                .map(auth -> GeorchestraUsers.store(exchange, auth))//
                 .map(resolver::resolve)//
                 .map(user -> GeorchestraUsers.store(exchange, user.orElse(null)))//
                 .defaultIfEmpty(exchange)//

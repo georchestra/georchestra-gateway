@@ -19,6 +19,7 @@
 
 package org.georchestra.gateway.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -94,7 +95,8 @@ class ResolveGeorchestraUserGlobalFilterTest {
 
     @Test
     void testFilter_NoUseResolved() {
-        Mono<Principal> principal = Mono.just(mock(Authentication.class));
+        Authentication authentication = mock(Authentication.class);
+        Mono<Principal> principal = Mono.just(authentication);
         ServerWebExchange exchange = this.exchange.mutate().principal(principal).build();
 
         filter.filter(exchange, mockChain).block();
@@ -103,6 +105,9 @@ class ResolveGeorchestraUserGlobalFilterTest {
         verify(mockMapper, times(1)).resolve(any());
 
         assertTrue(GeorchestraUsers.resolve(exchange).isEmpty());
+
+        Optional<Authentication> auth = GeorchestraUsers.resolveAuth(exchange);
+        assertThat(auth).get().isSameAs(authentication);
     }
 
     @Test
@@ -119,6 +124,9 @@ class ResolveGeorchestraUserGlobalFilterTest {
         verify(mockMapper, times(1)).resolve(any());
 
         Optional<GeorchestraUser> resolved = GeorchestraUsers.resolve(exchange);
-        assertSame(user1, resolved.orElseThrow());
+        assertThat(resolved).get().isSameAs(user1);
+
+        Optional<Authentication> auth = GeorchestraUsers.resolveAuth(exchange);
+        assertThat(auth).get().isSameAs(auth1);
     }
 }
