@@ -19,6 +19,7 @@
 package org.georchestra.gateway.test.context.support;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,6 +89,24 @@ class WithMockOidcSecurityContextFactory implements WithSecurityContextFactory<W
                 .claim("phone_number_verified", withUser.phone_number_verified())
 //		.claim("address", withUser.address())
                 .claim("updated_at", withUser.updated_at());
+
+        Map<String, String> claims = parseClaims(withUser.claims());
+        claims.forEach(builder::claim);
     }
 
+    private Map<String, String> parseClaims(String[] kvpClaims) {
+        if (null == kvpClaims)
+            return Map.of();
+        return Stream.of(kvpClaims).peek(kvp -> {
+            if (!kvp.matches("(.*)=(.*)")) {
+                throw new IllegalArgumentException(
+                        "non standard claims have to be provided as key=value pairs, got " + kvp);
+            }
+        }).map(kvp -> kvp.split("="))
+                .peek(arr -> Assert.isTrue(arr.length == 2,
+                        "non standard claims have to be provided as key=value pairs, got "
+                                + Stream.of(arr).collect(Collectors.joining("="))))
+                .collect(Collectors.toMap(a -> a[0].trim(), a -> a[1].trim()));
+
+    }
 }

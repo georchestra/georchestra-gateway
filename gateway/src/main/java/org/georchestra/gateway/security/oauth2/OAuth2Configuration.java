@@ -155,6 +155,11 @@ public class OAuth2Configuration {
         return new OpenIdConnectUserMapper(config);
     }
 
+    @Bean
+    OpenIdConnectClaimsHeaderContributor openIdConnectClaimsHeaderContributor() {
+        return new OpenIdConnectClaimsHeaderContributor();
+    }
+
     /**
      * Configures the OAuth2 client to use the HTTP proxy if enabled, by means of
      * {@linkplain #oauth2WebClient}

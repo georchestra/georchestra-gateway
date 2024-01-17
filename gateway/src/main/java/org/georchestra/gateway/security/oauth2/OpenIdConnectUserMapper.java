@@ -36,6 +36,7 @@ import org.springframework.core.Ordered;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.oidc.AddressStandardClaim;
+import org.springframework.security.oauth2.core.oidc.IdTokenClaimAccessor;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.StandardClaimAccessor;
@@ -153,7 +154,7 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
 
         OidcUser oidcUser = (OidcUser) token.getPrincipal();
         try {
-            applyStandardClaims((StandardClaimAccessor) oidcUser, user);
+            applyStandardClaims(oidcUser, user);
             applyNonStandardClaims(oidcUser.getClaims(), user);
         } catch (Exception e) {
             log.error("Error mapping non-standard OIDC claims for authenticated user", e);
@@ -197,7 +198,7 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
     }
 
     @VisibleForTesting
-    void applyStandardClaims(StandardClaimAccessor standardClaims, GeorchestraUser target) {
+    void applyStandardClaims(IdTokenClaimAccessor standardClaims, GeorchestraUser target) {
         String subjectId = standardClaims.getSubject();
         String preferredUsername = standardClaims.getPreferredUsername();
         String givenName = standardClaims.getGivenName();

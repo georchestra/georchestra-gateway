@@ -29,6 +29,7 @@ import org.georchestra.gateway.security.oauth2.OAuth2Configuration.OAuth2Authent
 import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OAuth2ProxyConfigProperties;
 import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OpenIdConnectCustomClaimsConfigProperties;
 import org.georchestra.gateway.security.oauth2.OAuth2ConfigurationProperties.OpenIdConnectCustomClaimsConfigProperties.OidcRolesMappingConfig;
+import org.georchestra.gateway.security.oauth2.OpenIdConnectClaimsHeaderContributor;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -95,6 +96,7 @@ class OAuth2SecurityAutoConfigurationTest {
                     assertThat(context).hasBean("oauth2WebClient");
                     assertThat(context).hasBean("oAuth2GeorchestraUserUserMapper");
                     assertThat(context).hasBean("openIdConnectGeorchestraUserUserMapper");
+                    assertThat(context).hasSingleBean(OpenIdConnectClaimsHeaderContributor.class);
                 });
         ;
     }
