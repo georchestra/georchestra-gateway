@@ -114,8 +114,8 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                     }
                     return chain.filter(exchange);
                 })//
-                .flatMap(Function.identity()) //
-                .switchIfEmpty(Mono.fromRunnable(() -> chain.filter(exchange)));
+                .defaultIfEmpty(chain.filter(exchange))//
+                .flatMap(Function.identity());
 
         System.out.println(res);
         return res;

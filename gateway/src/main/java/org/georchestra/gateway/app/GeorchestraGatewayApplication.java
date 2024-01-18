@@ -96,7 +96,7 @@ public class GeorchestraGatewayApplication {
 
         Map<String, Object> ret = new LinkedHashMap<>();
         ret.put("GeorchestraUser", user);
-        if ((user == null) || (principal == null)) {
+        if (principal == null) {
             ret.put("Authentication", null);
         } else {
             ret.put(principal.getClass().getCanonicalName(), principal);
