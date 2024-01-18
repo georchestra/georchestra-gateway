@@ -119,7 +119,6 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
 
         System.out.println(res);
         return res;
-//        return this.redirectStrategy.sendRedirect(exchange, URI.create("login?error=" + DUPLICATE_ACCOUNT));
     }
 
 }

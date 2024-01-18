@@ -102,8 +102,6 @@ public class GeorchestraGatewayApplication {
             ret.put(principal.getClass().getCanonicalName(), principal);
         }
         return Mono.just(ret);
-        // return principal == null ? Mono.empty() :
-        // Mono.just(Map.of(principal.getClass().getCanonicalName(), principal));
     }
 
     @GetMapping(path = "/logout")
