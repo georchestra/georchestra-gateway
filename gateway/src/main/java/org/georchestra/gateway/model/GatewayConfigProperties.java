@@ -44,14 +44,14 @@ public class GatewayConfigProperties {
     /**
      * Configures the global security headers to append to all proxied http requests
      */
-    private HeaderMappings defaultHeaders;
+    private HeaderMappings defaultHeaders = new HeaderMappings();
 
     /**
      * Incoming request URI pattern matching for requests that don't match any of
      * the service-specific rules under
      * {@literal georchestra.gateway.services.[service].access-rules}
      */
-    private List<RoleBasedAccessRule> globalAccessRules;
+    private List<RoleBasedAccessRule> globalAccessRules = List.of();
 
     /**
      * Maps a logical service name to its back-end service URL and security settings
