@@ -22,11 +22,30 @@ import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.Map;
 
+import org.springframework.boot.autoconfigure.web.reactive.error.ErrorWebFluxAutoConfiguration;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
+import org.springframework.boot.web.reactive.error.ErrorAttributes;
+import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
+/**
+ * Maps connection exceptions to HTTP 503 status code instead of 500
+ * <p>
+ * In the event that a route exists and the downstream service is not available,
+ * usually the Gateway returns a 503 status code as expected.
+ * <p>
+ * On a dynamic environment though, such as k8s and docker compose, the
+ * underlying error results from a DNS lookup failure, and the default error is
+ * 500 instead.
+ * <p>
+ * This {@link ErrorAttributes} overrides the {@link DefaultErrorAttributes}
+ * configured in {@link ErrorWebFluxAutoConfiguration} and injected to the
+ * {@link ErrorWebExceptionHandler}, and translates
+ * {@link java.net.UnknownHostException} and {@link java.net.ConnectException}
+ * to {@link HttpStatus#SERVICE_UNAVAILABLE}
+ */
 class CustomErrorAttributes extends DefaultErrorAttributes {
 
     @Override
