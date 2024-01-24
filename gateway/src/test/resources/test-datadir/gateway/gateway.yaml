@@ -7,6 +7,10 @@ spring:
         uri: http://test.com
         predicates:
         - Path=/test
+      - id: unknownHostRoute
+        uri: http://not.a.valid.host
+        predicates:
+        - Path=/path/to/unavailable/service
 georchestra:
   test-datadir: true #used to verify the config is loaded from the datadir
   gateway:
@@ -24,3 +28,7 @@ georchestra:
         - ROLE_ADMINISTRATOR
         - ROLE_GN_ADMIN
         - ROLE_GP.GDI.ADMINISTRATOR
+    global-access-rules:
+    - intercept-url:
+      - /**
+      anonymous: true
