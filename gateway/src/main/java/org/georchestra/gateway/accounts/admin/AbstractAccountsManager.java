@@ -50,8 +50,8 @@ public abstract class AbstractAccountsManager implements AccountManager {
     }
 
     protected Optional<GeorchestraUser> findInternal(GeorchestraUser mappedUser) {
-        if (null != mappedUser.getOAuth2ProviderId()) {
-            return findByOAuth2ProviderId(mappedUser.getOAuth2ProviderId());
+        if ((null != mappedUser.getOAuth2Provider()) && (null != mappedUser.getOAuth2Uid())) {
+            return findByOAuth2Uid(mappedUser.getOAuth2Provider(), mappedUser.getOAuth2Uid());
         }
         return findByUsername(mappedUser.getUsername());
     }
@@ -73,7 +73,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
         }
     }
 
-    protected abstract Optional<GeorchestraUser> findByOAuth2ProviderId(String oauth2ProviderId);
+    protected abstract Optional<GeorchestraUser> findByOAuth2Uid(String oauth2Provider, String oauth2Uid);
 
     protected abstract Optional<GeorchestraUser> findByUsername(String username);
 

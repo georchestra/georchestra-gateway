@@ -44,23 +44,28 @@ public class RabbitmqAccountCreatedEventSender {
     @EventListener(AccountCreated.class)
     public void on(AccountCreated event) {
         GeorchestraUser user = event.getUser();
-        final String oAuth2ProviderId = user.getOAuth2ProviderId();
-        if (null != oAuth2ProviderId) {
+        final String oAuth2Provider = user.getOAuth2Provider();
+        if (null != oAuth2Provider) {
             String fullName = user.getFirstName() + " " + user.getLastName();
+            String localUid = user.getUsername();
             String email = user.getEmail();
-            String provider = oAuth2ProviderId;
-            sendNewOAuthAccountMessage(fullName, email, provider);
+            String organization = user.getOrganization();
+            String oAuth2Uid = user.getOAuth2Uid();
+            sendNewOAuthAccountMessage(fullName, localUid, email, organization, oAuth2Provider, oAuth2Uid);
         }
     }
 
-    public void sendNewOAuthAccountMessage(String fullName, String email, String provider) {
-        // beans getting a reference to the sender
+    public void sendNewOAuthAccountMessage(String fullName, String localUid, String email, String organization,
+            String providerName, String providerUid) {
         JSONObject jsonObj = new JSONObject();
         jsonObj.put("uid", UUID.randomUUID());
         jsonObj.put("subject", OAUTH2_ACCOUNT_CREATION);
-        jsonObj.put("username", fullName); // bean
-        jsonObj.put("email", email); // bean
-        jsonObj.put("provider", provider); // bean
+        jsonObj.put("fullName", fullName);
+        jsonObj.put("localUid", localUid);
+        jsonObj.put("email", email);
+        jsonObj.put("organization", organization);
+        jsonObj.put("providerName", providerName);
+        jsonObj.put("providerUid", providerUid);
         eventTemplate.convertAndSend("routing-gateway", jsonObj.toString());// send
     }
 }

@@ -151,7 +151,7 @@ class RolesMappingsUserCustomizerIT {
         oidcRolesMappingConfig.setNormalize(true);
         oidcRolesMappingConfig.setUppercase(true);
 
-        verifyMappedUser("{\"GeorchestraUser\":{\"username\":\"user\","
+        verifyMappedUser("{\"GeorchestraUser\":{\"username\":\"testclient_user\","
                 + "\"roles\":[\"ROLE_AUTHORITY_1\",\"ROLE_GP.OIDC.ROLE_1\",\"ROLE_GP.OIDC.ROLE_2\"]}}");
     }
 
@@ -168,7 +168,7 @@ class RolesMappingsUserCustomizerIT {
         oidcRolesMappingConfig.getJson().setSplit(true);
         oidcRolesMappingConfig.getJson().getPath().add("$.permission");
 
-        verifyMappedUser("{\"GeorchestraUser\":{\"username\":\"user\","
+        verifyMappedUser("{\"GeorchestraUser\":{\"username\":\"testclient_user\","
                 + "\"roles\":[\"ROLE_AUTHORITY_1\",\"ROLE_GP.OIDC.ROLE 1\",\"ROLE_GP.OIDC.ROLE 2\"]}}");
     }
 }

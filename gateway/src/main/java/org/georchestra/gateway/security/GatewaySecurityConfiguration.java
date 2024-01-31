@@ -83,7 +83,6 @@ public class GatewaySecurityConfiguration {
 
         log.info("Security filter chain initialized");
 
-
         ServerHttpSecurity.LogoutSpec logoutUrl = http.formLogin().loginPage("/login").and().logout()
                 .logoutUrl("/logout");
         if (oidcLogoutSuccessHandler != null) {

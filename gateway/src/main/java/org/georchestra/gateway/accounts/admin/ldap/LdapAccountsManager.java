@@ -73,8 +73,8 @@ class LdapAccountsManager extends AbstractAccountsManager {
     }
 
     @Override
-    protected Optional<GeorchestraUser> findByOAuth2ProviderId(@NonNull String oauth2ProviderId) {
-        return usersApi.findByOAuth2ProviderId(oauth2ProviderId).map(this::ensureRolesPrefixed);
+    protected Optional<GeorchestraUser> findByOAuth2Uid(@NonNull String oAuth2Provider, @NonNull String oAuth2Uid) {
+        return usersApi.findByOAuth2Uid(oAuth2Provider, oAuth2Uid).map(this::ensureRolesPrefixed);
     }
 
     @Override
@@ -145,10 +145,11 @@ class LdapAccountsManager extends AbstractAccountsManager {
         String phone = "";
         String title = "";
         String description = "";
-        final @javax.annotation.Nullable String oAuth2ProviderId = preAuth.getOAuth2ProviderId();
+        final @javax.annotation.Nullable String oAuth2Provider = preAuth.getOAuth2Provider();
+        final @javax.annotation.Nullable String oAuth2Uid = preAuth.getOAuth2Uid();
 
         Account newAccount = AccountFactory.createBrief(username, password, firstName, lastName, email, phone, title,
-                description, oAuth2ProviderId);
+                description, oAuth2Provider, oAuth2Uid);
         newAccount.setPending(false);
         if (StringUtils.isEmpty(org) && !StringUtils.isBlank(defaultOrganization)) {
             newAccount.setOrg(defaultOrganization);

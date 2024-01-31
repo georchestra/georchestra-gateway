@@ -83,9 +83,8 @@ public class OAuth2UserMapper implements GeorchestraUserMapperExtension {
 
         OAuth2User oAuth2User = token.getPrincipal();
         GeorchestraUser user = new GeorchestraUser();
-        final String oAuth2ProviderId = String.format("%s;%s", token.getAuthorizedClientRegistrationId(),
-                token.getName());
-        user.setOAuth2ProviderId(oAuth2ProviderId);
+        user.setOAuth2Provider(token.getAuthorizedClientRegistrationId());
+        user.setOAuth2Uid(token.getName());
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
         List<String> roles = resolveRoles(oAuth2User.getAuthorities());

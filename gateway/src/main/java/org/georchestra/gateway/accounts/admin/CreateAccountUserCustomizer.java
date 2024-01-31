@@ -61,7 +61,7 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
         final boolean isOauth2 = auth instanceof OAuth2AuthenticationToken;
         final boolean isPreAuth = auth instanceof PreAuthenticatedAuthenticationToken;
         if (isOauth2) {
-            Objects.requireNonNull(mappedUser.getOAuth2ProviderId(), "GeorchestraUser.oAuth2ProviderId is null");
+            Objects.requireNonNull(mappedUser.getOAuth2Uid(), "GeorchestraUser.oAuth2ProviderId is null");
         }
         if (isPreAuth) {
             Objects.requireNonNull(mappedUser.getUsername(), "GeorchestraUser.username is null");
