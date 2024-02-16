@@ -32,6 +32,12 @@ spring:
     - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
   cloud:
     gateway:
+      x-forwarded:
+        for-enabled: false
+        host-enabled: false
+        port-enabled: false
+        proto-enabled: false
+        prefix-enabled: false
       enabled: true
       global-filter.websocket-routing.enabled: true
       metrics.enabled: true
@@ -52,6 +58,7 @@ spring:
       - RemoveSecurityHeaders
       # AddSecHeaders appends sec-* headers to proxied requests based on the currently authenticated user
       - AddSecHeaders
+      - PreserveHostHeader
       global-filter:
         websocket-routing:
           enabled: true
