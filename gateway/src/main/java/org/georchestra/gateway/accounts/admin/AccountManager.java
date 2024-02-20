@@ -38,7 +38,8 @@ public interface AccountManager {
      * @param mappedUser the user {@link ResolveGeorchestraUserGlobalFilter}
      *                   resolved by calling
      *                   {@link GeorchestraUserMapper#resolve(Authentication)}
-     * @return the stored version of the user if it exists, otherwise an empty Optional
+     * @return the stored version of the user if it exists, otherwise an empty
+     *         Optional
      */
     Optional<GeorchestraUser> find(GeorchestraUser mappedUser);
 

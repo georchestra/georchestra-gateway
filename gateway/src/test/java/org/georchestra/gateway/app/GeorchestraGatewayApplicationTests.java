@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.georchestra.gateway.autoconfigure.app.CustomErrorAttributes;
 import org.georchestra.gateway.autoconfigure.app.ErrorCustomizerAutoConfiguration;
 import org.georchestra.gateway.security.ldap.extended.GeorchestraUserNamePasswordAuthenticationToken;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -57,6 +59,8 @@ class GeorchestraGatewayApplicationTests {
 
     private @Autowired GeorchestraGatewayApplication application;
     private @Autowired WebTestClient testClient;
+
+    private @Autowired ApplicationContext context;
 
     @Test
     void contextLoadsFromDatadir() {
@@ -108,12 +112,13 @@ class GeorchestraGatewayApplicationTests {
     void errorCustomizerReturnsServiceUnavailableInsteadOfServerError() {
         Map<String, Route> routesById = routeLocator.getRoutes()
                 .collect(Collectors.toMap(Route::getId, Function.identity())).block();
-
+        assertThat(context.getBean(CustomErrorAttributes.class)).isNotNull();
         Route testRoute = routesById.get("unknownHostRoute");
         assertNotNull(testRoute);
         assertThat(testRoute.getUri()).isEqualTo(URI.create("http://not.a.valid.host:80"));
 
-        testClient.get().uri("/path/to/unavailable/service").exchange().expectStatus()
-                .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        testClient.get().uri("/path/to/unavailable/service")//
+                .header("Host", "localhost")//
+                .exchange().expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 }
