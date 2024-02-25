@@ -28,6 +28,7 @@ import org.springframework.boot.web.reactive.error.DefaultErrorAttributes;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.reactive.function.server.ServerRequest;
 
 /**
@@ -55,6 +56,9 @@ class CustomErrorAttributes extends DefaultErrorAttributes {
         if (error instanceof UnknownHostException || error instanceof ConnectException) {
             attributes.put("status", HttpStatus.SERVICE_UNAVAILABLE.value());
             attributes.put("error", HttpStatus.SERVICE_UNAVAILABLE.getReasonPhrase());
+        } else if (error instanceof AccessDeniedException) {
+            attributes.put("status", HttpStatus.FORBIDDEN.value());
+            attributes.put("error", HttpStatus.FORBIDDEN.getReasonPhrase());
         }
         return attributes;
     }
