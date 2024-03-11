@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.georchestra.ds.orgs.OrgsDao;
 import org.georchestra.ds.users.AccountDao;
-import org.georchestra.gateway.security.ldap.LdapConfigProperties;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.annotation.UserConfigurations;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 
 public class GeorchestraLdapAccessConfigurationTest {
 
-    @EnableConfigurationProperties(LdapConfigProperties.class)
+    @EnableConfigurationProperties(GeorchestraGatewaySecurityConfigProperties.class)
     static @Configuration class EnableConfigProps {
     }
 

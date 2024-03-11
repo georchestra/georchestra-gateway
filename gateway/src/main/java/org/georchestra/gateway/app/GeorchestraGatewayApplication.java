@@ -28,7 +28,7 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 
 import org.georchestra.gateway.security.GeorchestraUserMapper;
-import org.georchestra.gateway.security.ldap.LdapConfigProperties;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,13 +58,13 @@ import reactor.core.publisher.Mono;
 @Controller
 @Slf4j
 @SpringBootApplication
-@EnableConfigurationProperties(LdapConfigProperties.class)
+@EnableConfigurationProperties(GeorchestraGatewaySecurityConfigProperties.class)
 public class GeorchestraGatewayApplication {
 
     private @Autowired RouteLocator routeLocator;
     private @Autowired GeorchestraUserMapper userMapper;
 
-    private @Autowired(required = false) LdapConfigProperties ldapConfigProperties;
+    private @Autowired(required = false) GeorchestraGatewaySecurityConfigProperties georchestraGatewaySecurityConfigProperties;
 
     private boolean ldapEnabled = false;
 
@@ -79,8 +79,9 @@ public class GeorchestraGatewayApplication {
 
     @PostConstruct
     void initialize() {
-        if (ldapConfigProperties != null) {
-            ldapEnabled = ldapConfigProperties.getLdap().values().stream().anyMatch((server -> server.isEnabled()));
+        if (georchestraGatewaySecurityConfigProperties != null) {
+            ldapEnabled = georchestraGatewaySecurityConfigProperties.getLdap().values().stream()
+                    .anyMatch((server -> server.isEnabled()));
         }
     }
 

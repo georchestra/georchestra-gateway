@@ -22,7 +22,7 @@ import static java.util.Optional.ofNullable;
 
 import java.util.Optional;
 
-import org.georchestra.gateway.security.ldap.LdapConfigProperties.Server;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties.Server;
 import org.georchestra.gateway.security.ldap.basic.LdapServerConfig;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapConfig;
 import org.springframework.util.StringUtils;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  */
 @Slf4j
-class LdapConfigBuilder {
+public class LdapConfigBuilder {
 
     public LdapServerConfig asBasicLdapConfig(String name, Server config) {
         String searchFilter = usersSearchFilter(name, config);

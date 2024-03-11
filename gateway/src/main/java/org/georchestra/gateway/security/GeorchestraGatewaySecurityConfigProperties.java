@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License along with
  * geOrchestra.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.georchestra.gateway.security.ldap;
+package org.georchestra.gateway.security;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
+import org.georchestra.gateway.security.ldap.LdapConfigBuilder;
+import org.georchestra.gateway.security.ldap.LdapConfigPropertiesValidations;
 import org.georchestra.gateway.security.ldap.basic.LdapServerConfig;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -61,9 +63,11 @@ import lombok.experimental.Accessors;
 @Validated
 @Accessors(chain = true)
 @ConfigurationProperties(prefix = "georchestra.gateway.security")
-public class LdapConfigProperties implements Validator {
+public class GeorchestraGatewaySecurityConfigProperties implements Validator {
 
     private boolean createNonExistingUsersInLDAP = true;
+
+    private String defaultOrganization = "";
 
     @Valid
     private Map<String, Server> ldap = Map.of();
@@ -182,12 +186,12 @@ public class LdapConfigProperties implements Validator {
     }
 
     public @Override boolean supports(Class<?> clazz) {
-        return LdapConfigProperties.class.equals(clazz);
+        return GeorchestraGatewaySecurityConfigProperties.class.equals(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
-        LdapConfigProperties config = (LdapConfigProperties) target;
+        GeorchestraGatewaySecurityConfigProperties config = (GeorchestraGatewaySecurityConfigProperties) target;
         Map<String, Server> ldap = config.getLdap();
         if (ldap == null || ldap.isEmpty()) {
             return;

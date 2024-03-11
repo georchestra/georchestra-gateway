@@ -21,13 +21,13 @@ package org.georchestra.gateway.security.ldap;
 import static java.lang.String.format;
 import static org.springframework.validation.ValidationUtils.rejectIfEmptyOrWhitespace;
 
-import org.georchestra.gateway.security.ldap.LdapConfigProperties.Server;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties.Server;
 import org.springframework.validation.Errors;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j(topic = "org.georchestra.gateway.security.ldap")
-class LdapConfigPropertiesValidations {
+public class LdapConfigPropertiesValidations {
 
     public void validate(String name, Server config, Errors errors) {
         if (!config.isEnabled()) {

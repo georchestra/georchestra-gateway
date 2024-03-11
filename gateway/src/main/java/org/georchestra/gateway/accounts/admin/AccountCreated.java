@@ -24,7 +24,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * Application event published when a new account was created
+ * Application event published when a new account has been created
  */
 @Value
 public class AccountCreated {

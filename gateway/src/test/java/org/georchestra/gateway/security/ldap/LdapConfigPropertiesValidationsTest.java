@@ -21,6 +21,7 @@ package org.georchestra.gateway.security.ldap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.georchestra.gateway.security.ldap.basic.LdapServerConfig;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapConfig;
 import org.junit.jupiter.api.Test;
@@ -32,14 +33,15 @@ import org.springframework.context.annotation.Configuration;
  * Test cases for {@link LdapConfigPropertiesValidations}.
  * <p>
  * {@link LdapConfigPropertiesValidations} will forbid application startup if
- * {@link LdapConfigProperties} is invalid.
+ * {@link GeorchestraGatewaySecurityConfigProperties} is invalid.
  * <p>
- * {@link LdapConfigProperties} is loaded from application properties, usually
- * from georchestra datadirectory's {@literal gateway/gateway.yaml}
+ * {@link GeorchestraGatewaySecurityConfigProperties} is loaded from application
+ * properties, usually from georchestra datadirectory's
+ * {@literal gateway/gateway.yaml}
  */
 class LdapConfigPropertiesValidationsTest {
 
-    @EnableConfigurationProperties(LdapConfigProperties.class)
+    @EnableConfigurationProperties(GeorchestraGatewaySecurityConfigProperties.class)
     static @Configuration class EnableConfigProps {
 
     }
@@ -49,8 +51,8 @@ class LdapConfigPropertiesValidationsTest {
 
     public @Test void no_ldap_configs() {
         runner.run(context -> {
-            assertThat(context).hasSingleBean(LdapConfigProperties.class);
-            assertThat(context.getBean(LdapConfigProperties.class).getLdap()).isEmpty();
+            assertThat(context).hasSingleBean(GeorchestraGatewaySecurityConfigProperties.class);
+            assertThat(context.getBean(GeorchestraGatewaySecurityConfigProperties.class).getLdap()).isEmpty();
         });
     }
 
@@ -59,8 +61,9 @@ class LdapConfigPropertiesValidationsTest {
                 "georchestra.gateway.security.ldap.ldap1.enabled: false" //
                 , "georchestra.gateway.security.ldap.ldap2.enabled: false" //
         ).run(context -> {
-            assertThat(context).hasSingleBean(LdapConfigProperties.class);
-            LdapConfigProperties config = context.getBean(LdapConfigProperties.class);
+            assertThat(context).hasSingleBean(GeorchestraGatewaySecurityConfigProperties.class);
+            GeorchestraGatewaySecurityConfigProperties config = context
+                    .getBean(GeorchestraGatewaySecurityConfigProperties.class);
             assertThat(config.getLdap()).hasSize(2);
             assertThat(config.simpleEnabled()).isEmpty();
             assertThat(config.extendedEnabled()).isEmpty();
@@ -239,7 +242,8 @@ class LdapConfigPropertiesValidationsTest {
                 , "georchestra.gateway.security.ldap.ldap1.roles.searchFilter: (member={0})" //
         ).run(context -> {
             assertThat(context).hasNotFailed();
-            LdapConfigProperties config = context.getBean(LdapConfigProperties.class);
+            GeorchestraGatewaySecurityConfigProperties config = context
+                    .getBean(GeorchestraGatewaySecurityConfigProperties.class);
             assertThat(config.simpleEnabled()).hasSize(1);
             assertThat(config.extendedEnabled()).isEmpty();
 
@@ -269,7 +273,8 @@ class LdapConfigPropertiesValidationsTest {
                 , "georchestra.gateway.security.ldap.ldap1.orgs.rdn: ou=orgs" //
         ).run(context -> {
             assertThat(context).hasNotFailed();
-            LdapConfigProperties config = context.getBean(LdapConfigProperties.class);
+            GeorchestraGatewaySecurityConfigProperties config = context
+                    .getBean(GeorchestraGatewaySecurityConfigProperties.class);
             assertThat(config.simpleEnabled()).isEmpty();
             assertThat(config.extendedEnabled()).hasSize(1);
 
@@ -327,7 +332,8 @@ class LdapConfigPropertiesValidationsTest {
         ).run(context -> {
             assertThat(context).hasNotFailed();
 
-            LdapConfigProperties config = context.getBean(LdapConfigProperties.class);
+            GeorchestraGatewaySecurityConfigProperties config = context
+                    .getBean(GeorchestraGatewaySecurityConfigProperties.class);
             assertThat(config.simpleEnabled()).hasSize(3);
             assertThat(config.extendedEnabled()).hasSize(1);
         });

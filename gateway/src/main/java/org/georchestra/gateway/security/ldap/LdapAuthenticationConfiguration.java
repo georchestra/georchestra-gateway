@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.georchestra.gateway.security.ServerHttpSecurityCustomizer;
 import org.georchestra.gateway.security.ldap.basic.BasicLdapAuthenticationConfiguration;
 import org.georchestra.gateway.security.ldap.basic.BasicLdapAuthenticationProvider;
@@ -49,9 +50,11 @@ import lombok.extern.slf4j.Slf4j;
  * authorization across multiple LDAP databases.
  * <p>
  * This configuration sets up the required beans for spring-based LDAP
- * authentication and authorization, using {@link LdapConfigProperties} to get
- * the {@link LdapConfigProperties#getUrl() connection URL} and the
- * {@link LdapConfigProperties#getBaseDn() base DN}.
+ * authentication and authorization, using
+ * {@link GeorchestraGatewaySecurityConfigProperties} to get the
+ * {@link GeorchestraGatewaySecurityConfigProperties#getUrl() connection URL}
+ * and the {@link GeorchestraGatewaySecurityConfigProperties#getBaseDn() base
+ * DN}.
  * <p>
  * As a result, the {@link ServerHttpSecurity} will have HTTP-Basic
  * authentication enabled and {@link ServerHttpSecurity#formLogin() form login}
@@ -68,12 +71,12 @@ import lombok.extern.slf4j.Slf4j;
  * the matching gateway-route configuration. See
  * {@link ExtendedLdapAuthenticationConfiguration} for further details.
  * 
- * @see LdapConfigProperties
+ * @see GeorchestraGatewaySecurityConfigProperties
  * @see BasicLdapAuthenticationConfiguration
  * @see ExtendedLdapAuthenticationConfiguration
  */
 @Configuration(proxyBeanMethods = true)
-@EnableConfigurationProperties(LdapConfigProperties.class)
+@EnableConfigurationProperties(GeorchestraGatewaySecurityConfigProperties.class)
 @Import({ //
         BasicLdapAuthenticationConfiguration.class, //
         ExtendedLdapAuthenticationConfiguration.class })

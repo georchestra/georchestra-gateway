@@ -37,8 +37,8 @@ import org.georchestra.ds.users.AccountDao;
 import org.georchestra.ds.users.AccountDaoImpl;
 import org.georchestra.ds.users.UserRule;
 import org.georchestra.gateway.security.GeorchestraUserMapperExtension;
-import org.georchestra.gateway.security.ldap.LdapConfigProperties;
-import org.georchestra.gateway.security.ldap.LdapConfigProperties.Server;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties.Server;
 import org.georchestra.gateway.security.ldap.basic.LdapAuthenticatorProviderBuilder;
 import org.georchestra.security.api.OrganizationsApi;
 import org.georchestra.security.api.UsersApi;
@@ -62,7 +62,7 @@ import lombok.extern.slf4j.Slf4j;
  * {@literal georchestra-ldap-account-management} module's {@link UsersApi}.
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(LdapConfigProperties.class)
+@EnableConfigurationProperties(GeorchestraGatewaySecurityConfigProperties.class)
 @Slf4j(topic = "org.georchestra.gateway.security.ldap.extended")
 public class ExtendedLdapAuthenticationConfiguration {
 
@@ -72,7 +72,7 @@ public class ExtendedLdapAuthenticationConfiguration {
     }
 
     @Bean
-    List<ExtendedLdapConfig> enabledExtendedLdapConfigs(LdapConfigProperties config) {
+    List<ExtendedLdapConfig> enabledExtendedLdapConfigs(GeorchestraGatewaySecurityConfigProperties config) {
         return config.extendedEnabled();
     }
 

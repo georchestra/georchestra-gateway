@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.georchestra.gateway.security.ldap.LdapConfigProperties;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionMessage.ItemsBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
@@ -48,7 +48,7 @@ import com.google.common.collect.Streams;
  * the externalized config properties
  * {@code georchestra.gateway.security.ldap.<configName>.enabled}
  * 
- * @see LdapConfigProperties
+ * @see GeorchestraGatewaySecurityConfigProperties
  */
 class AtLeastOneLdapDatasourceEnabledCondition extends SpringBootCondition {
 

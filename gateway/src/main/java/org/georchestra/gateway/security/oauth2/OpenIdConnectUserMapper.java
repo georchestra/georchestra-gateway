@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import org.georchestra.gateway.security.ldap.LdapConfigProperties;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
 import org.slf4j.Logger;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -131,7 +131,7 @@ import lombok.extern.slf4j.Slf4j;
  * </ul>
  */
 @RequiredArgsConstructor
-@EnableConfigurationProperties({ LdapConfigProperties.class })
+@EnableConfigurationProperties({ GeorchestraGatewaySecurityConfigProperties.class })
 @Slf4j(topic = "org.georchestra.gateway.security.oauth2")
 public class OpenIdConnectUserMapper extends OAuth2UserMapper {
 

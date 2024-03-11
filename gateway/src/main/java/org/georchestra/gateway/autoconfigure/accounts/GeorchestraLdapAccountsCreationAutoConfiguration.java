@@ -19,6 +19,7 @@
 package org.georchestra.gateway.autoconfigure.accounts;
 
 import org.georchestra.gateway.accounts.admin.ldap.GeorchestraLdapAccountManagementConfiguration;
+import org.georchestra.gateway.security.ldap.extended.ExtendedLdapAuthenticationConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Import;
 
@@ -30,6 +31,6 @@ import org.springframework.context.annotation.Import;
  */
 @AutoConfiguration
 @ConditionalOnCreateLdapAccounts
-@Import(GeorchestraLdapAccountManagementConfiguration.class)
+@Import({ ExtendedLdapAuthenticationConfiguration.class, GeorchestraLdapAccountManagementConfiguration.class })
 public class GeorchestraLdapAccountsCreationAutoConfiguration {
 }

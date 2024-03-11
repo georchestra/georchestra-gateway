@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.georchestra.gateway.security.ldap.LdapAuthenticationConfiguration;
 import org.georchestra.gateway.security.ldap.LdapAuthenticationConfiguration.LDAPAuthenticationCustomizer;
-import org.georchestra.gateway.security.ldap.LdapConfigProperties;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -63,7 +63,7 @@ class LdapSecurityAutoConfigurationTest {
 
     private void testDisabled(ApplicationContextRunner runner) {
         runner.run(context -> {
-            assertThat(context).doesNotHaveBean(LdapConfigProperties.class);
+            assertThat(context).doesNotHaveBean(GeorchestraGatewaySecurityConfigProperties.class);
             assertThat(context).doesNotHaveBean(LDAPAuthenticationCustomizer.class);
             assertThat(context).doesNotHaveBean(AuthenticationWebFilter.class);
             assertThat(context).doesNotHaveBean(ReactiveAuthenticationManager.class);
@@ -104,7 +104,7 @@ class LdapSecurityAutoConfigurationTest {
 
     private void testEnabled(ApplicationContextRunner runner) {
         runner.run(context -> {
-            assertThat(context).hasSingleBean(LdapConfigProperties.class);
+            assertThat(context).hasSingleBean(GeorchestraGatewaySecurityConfigProperties.class);
             assertThat(context).hasSingleBean(LDAPAuthenticationCustomizer.class);
             assertThat(context).hasSingleBean(AuthenticationWebFilter.class);
 

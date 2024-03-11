@@ -57,7 +57,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
         return findByUsername(mappedUser.getUsername());
     }
 
-    GeorchestraUser createIfMissing(GeorchestraUser mapped) {
+    protected GeorchestraUser createIfMissing(GeorchestraUser mapped) {
         lock.writeLock().lock();
         try {
             GeorchestraUser existing = findInternal(mapped).orElse(null);

@@ -18,12 +18,8 @@
  */
 package org.georchestra.gateway.accounts.admin.ldap;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.georchestra.ds.DataServiceException;
 import org.georchestra.ds.DuplicatedCommonNameException;
@@ -31,21 +27,20 @@ import org.georchestra.ds.orgs.Org;
 import org.georchestra.ds.orgs.OrgsDao;
 import org.georchestra.ds.roles.RoleDao;
 import org.georchestra.ds.roles.RoleFactory;
-import org.georchestra.ds.users.Account;
-import org.georchestra.ds.users.AccountDao;
-import org.georchestra.ds.users.AccountFactory;
-import org.georchestra.ds.users.DuplicatedEmailException;
-import org.georchestra.ds.users.DuplicatedUidException;
-import org.georchestra.gateway.accounts.admin.AbstractAccountsManager;;
+import org.georchestra.ds.users.*;
+import org.georchestra.gateway.accounts.admin.AbstractAccountsManager;
 import org.georchestra.gateway.accounts.admin.AccountManager;
-import org.georchestra.security.api.UsersApi;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
+import org.georchestra.gateway.security.ldap.extended.DemultiplexingUsersApi;
 import org.georchestra.security.model.GeorchestraUser;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.ldap.NameNotFoundException;
 
-import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * {@link AccountManager} that fetches and creates {@link GeorchestraUser}s from
@@ -55,30 +50,31 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j(topic = "org.georchestra.gateway.accounts.admin.ldap")
 class LdapAccountsManager extends AbstractAccountsManager {
 
-    private @Value("${georchestra.gateway.security.defaultOrganization:}") String defaultOrganization;
+    private final @NonNull GeorchestraGatewaySecurityConfigProperties georchestraGatewaySecurityConfigProperties;
     private final @NonNull AccountDao accountDao;
     private final @NonNull RoleDao roleDao;
-
     private final @NonNull OrgsDao orgsDao;
-    private final @NonNull UsersApi usersApi;
+    private final @NonNull DemultiplexingUsersApi demultiplexingUsersApi;
 
     public LdapAccountsManager(ApplicationEventPublisher eventPublisher, AccountDao accountDao, RoleDao roleDao,
-            OrgsDao orgsDao, UsersApi usersApi) {
+            OrgsDao orgsDao, DemultiplexingUsersApi demultiplexingUsersApi,
+            GeorchestraGatewaySecurityConfigProperties georchestraGatewaySecurityConfigProperties) {
         super(eventPublisher);
         this.accountDao = accountDao;
         this.roleDao = roleDao;
         this.orgsDao = orgsDao;
-        this.usersApi = usersApi;
+        this.demultiplexingUsersApi = demultiplexingUsersApi;
+        this.georchestraGatewaySecurityConfigProperties = georchestraGatewaySecurityConfigProperties;
     }
 
     @Override
     protected Optional<GeorchestraUser> findByOAuth2Uid(@NonNull String oAuth2Provider, @NonNull String oAuth2Uid) {
-        return usersApi.findByOAuth2Uid(oAuth2Provider, oAuth2Uid).map(this::ensureRolesPrefixed);
+        return demultiplexingUsersApi.findByOAuth2Uid(oAuth2Provider, oAuth2Uid).map(this::ensureRolesPrefixed);
     }
 
     @Override
     protected Optional<GeorchestraUser> findByUsername(@NonNull String username) {
-        return usersApi.findByUsername(username).map(this::ensureRolesPrefixed);
+        return demultiplexingUsersApi.findByUsername(username).map(this::ensureRolesPrefixed);
     }
 
     private GeorchestraUser ensureRolesPrefixed(GeorchestraUser user) {
@@ -150,8 +146,9 @@ class LdapAccountsManager extends AbstractAccountsManager {
         Account newAccount = AccountFactory.createBrief(username, password, firstName, lastName, email, phone, title,
                 description, oAuth2Provider, oAuth2Uid);
         newAccount.setPending(false);
-        if (StringUtils.isEmpty(org) && !StringUtils.isBlank(defaultOrganization)) {
-            newAccount.setOrg(defaultOrganization);
+        String defaultOrg = this.georchestraGatewaySecurityConfigProperties.getDefaultOrganization();
+        if (StringUtils.isEmpty(org) && !StringUtils.isBlank(defaultOrg)) {
+            newAccount.setOrg(defaultOrg);
         } else {
             newAccount.setOrg(org);
         }

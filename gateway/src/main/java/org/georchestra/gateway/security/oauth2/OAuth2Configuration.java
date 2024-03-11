@@ -28,7 +28,7 @@ import java.util.Collections;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.georchestra.gateway.security.ServerHttpSecurityCustomizer;
-import org.georchestra.gateway.security.ldap.LdapConfigProperties;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -67,7 +67,7 @@ import java.util.stream.Collectors;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties({ OAuth2ProxyConfigProperties.class, OpenIdConnectCustomClaimsConfigProperties.class,
-        LdapConfigProperties.class, ExtendedOAuth2ClientProperties.class })
+        GeorchestraGatewaySecurityConfigProperties.class, ExtendedOAuth2ClientProperties.class })
 @Slf4j(topic = "org.georchestra.gateway.security.oauth2")
 public class OAuth2Configuration {
 
