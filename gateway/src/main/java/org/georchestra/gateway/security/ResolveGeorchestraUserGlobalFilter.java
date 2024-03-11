@@ -21,6 +21,7 @@ package org.georchestra.gateway.security;
 import org.georchestra.gateway.model.GeorchestraOrganizations;
 import org.georchestra.gateway.model.GeorchestraTargetConfig;
 import org.georchestra.gateway.model.GeorchestraUsers;
+import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.gateway.security.ldap.extended.ExtendedGeorchestraUser;
 import org.georchestra.security.model.GeorchestraUser;
 import org.georchestra.security.model.Organization;
@@ -30,12 +31,20 @@ import org.springframework.cloud.gateway.filter.RouteToRequestUrlFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.core.Ordered;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.server.DefaultServerRedirectStrategy;
+import org.springframework.security.web.server.ServerRedirectStrategy;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebSession;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
+
+import java.net.URI;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * A {@link GlobalFilter} that resolves the {@link GeorchestraUser} from the
@@ -56,6 +65,10 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
 
     private final @NonNull GeorchestraUserMapper resolver;
 
+    private ServerRedirectStrategy redirectStrategy = new DefaultServerRedirectStrategy();
+
+    private static String DUPLICATE_ACCOUNT = "duplicate_account";
+
     /**
      * @return a lower precedence than {@link RouteToRequestUrlFilter}'s, in order
      *         to make sure the matched {@link Route} has been set as a
@@ -72,13 +85,26 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
      * chain.
      */
     public @Override Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-
-        return exchange.getPrincipal()//
+        Mono<Void> res = exchange.getPrincipal()//
                 .doOnNext(p -> log.debug("resolving user from {}", p.getClass().getName()))//
                 .filter(Authentication.class::isInstance)//
                 .map(Authentication.class::cast)//
-                .map(resolver::resolve)//
+                .map(auth -> {
+                    try {
+                        return resolver.resolve(auth);
+                    } catch (DuplicatedEmailFoundException exp) {
+                        Optional<GeorchestraUser> op = Optional.empty();
+                        return op;
+                    }
+                })//
                 .map(user -> {
+                    if (user.isEmpty()) {
+                        SecurityContextHolder.getContext();
+                        return this.redirectStrategy //
+                                .sendRedirect(exchange, URI.create("/login?error=" + DUPLICATE_ACCOUNT)) //
+                                .then(exchange.getSession().flatMap(WebSession::invalidate));
+                    }
+
                     GeorchestraUser usr = user.orElse(null);
                     GeorchestraUsers.store(exchange, usr);
                     if (usr != null && usr instanceof ExtendedGeorchestraUser) {
@@ -86,10 +112,13 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                         Organization org = eu.getOrg();
                         GeorchestraOrganizations.store(exchange, org);
                     }
-                    return exchange;
+                    return chain.filter(exchange);
                 })//
-                .defaultIfEmpty(exchange)//
-                .flatMap(chain::filter);
+                .defaultIfEmpty(chain.filter(exchange))//
+                .flatMap(Function.identity());
+
+        System.out.println(res);
+        return res;
     }
 
 }

@@ -39,6 +39,7 @@
             <div style="text-align: center; font-size: 18px; color: #ff0033;" th:if="${passwordExpired}">  <span th:text="#{expired_password}" ></span>
                 <a href="/console/account/passwordRecovery" > <span th:text="#{expired_password_link}" ></span> </a>
             </div>
+            <div style="text-align: center; font-size: 18px; color: #ff0033;" th:if="${duplicateAccount}"> <span th:text="#{duplicate_account}"></span> </div>
         </div>
     </form>
     <div th:if="${oauth2LoginLinks.size() != 0}" class="container"><h2 class="form-signin-heading">Login with OAuth 2.0</h2>

@@ -21,7 +21,9 @@ package org.georchestra.gateway.security;
 import java.util.List;
 import java.util.Optional;
 
+import org.georchestra.ds.users.DuplicatedEmailException;
 import org.georchestra.gateway.model.GeorchestraUsers;
+import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.core.Ordered;
 import org.springframework.security.core.Authentication;
@@ -77,7 +79,7 @@ public class GeorchestraUserMapper {
      *         {@link Optional#empty()} if no extension point implementation can
      *         handle the auth token.
      */
-    public Optional<GeorchestraUser> resolve(@NonNull Authentication authToken) {
+    public Optional<GeorchestraUser> resolve(@NonNull Authentication authToken) throws DuplicatedEmailFoundException {
         return resolvers.stream()//
                 .map(resolver -> resolver.resolve(authToken))//
                 .filter(Optional::isPresent)//
@@ -85,7 +87,8 @@ public class GeorchestraUserMapper {
                 .map(mapped -> customize(authToken, mapped)).findFirst();
     }
 
-    private GeorchestraUser customize(@NonNull Authentication authToken, GeorchestraUser mapped) {
+    private GeorchestraUser customize(@NonNull Authentication authToken, GeorchestraUser mapped)
+            throws DuplicatedEmailFoundException {
         GeorchestraUser customized = mapped;
         for (GeorchestraUserCustomizerExtension customizer : customizers) {
             customized = customizer.apply(authToken, customized);

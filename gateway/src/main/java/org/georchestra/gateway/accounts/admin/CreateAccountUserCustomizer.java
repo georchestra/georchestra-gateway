@@ -22,7 +22,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
 
+import org.georchestra.ds.users.DuplicatedEmailException;
 import org.georchestra.gateway.security.GeorchestraUserCustomizerExtension;
+import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.core.Ordered;
 import org.springframework.security.core.Authentication;
@@ -61,7 +63,8 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
      *         otherwise.
      */
     @Override
-    public @NonNull GeorchestraUser apply(@NonNull Authentication auth, @NonNull GeorchestraUser mappedUser) {
+    public @NonNull GeorchestraUser apply(@NonNull Authentication auth, @NonNull GeorchestraUser mappedUser)
+            throws DuplicatedEmailFoundException {
         final boolean isOauth2 = auth instanceof OAuth2AuthenticationToken;
         final boolean isPreAuth = auth instanceof PreAuthenticatedAuthenticationToken;
         if (isOauth2) {

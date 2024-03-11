@@ -38,6 +38,8 @@ import org.georchestra.ds.users.DuplicatedEmailException;
 import org.georchestra.ds.users.DuplicatedUidException;
 import org.georchestra.gateway.accounts.admin.AbstractAccountsManager;;
 import org.georchestra.gateway.accounts.admin.AccountManager;
+import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
+import org.georchestra.gateway.security.exceptions.DuplicatedUsernameFoundException;
 import org.georchestra.security.api.UsersApi;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,12 +91,16 @@ class LdapAccountsManager extends AbstractAccountsManager {
     }
 
     @Override
-    protected void createInternal(GeorchestraUser mapped) {
+    protected void createInternal(GeorchestraUser mapped) throws DuplicatedEmailFoundException {
         Account newAccount = mapToAccountBrief(mapped);
         try {
             accountDao.insert(newAccount);
-        } catch (DataServiceException | DuplicatedUidException | DuplicatedEmailException accountError) {
+        } catch (DataServiceException accountError) {
             throw new IllegalStateException(accountError);
+        } catch (DuplicatedEmailException accountError) {
+            throw new DuplicatedEmailFoundException(accountError.getMessage());
+        } catch (DuplicatedUidException accountError) {
+            throw new DuplicatedUsernameFoundException(accountError.getMessage());
         }
 
         ensureOrgExists(newAccount);

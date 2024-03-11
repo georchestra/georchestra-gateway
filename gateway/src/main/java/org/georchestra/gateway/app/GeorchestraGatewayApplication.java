@@ -28,6 +28,7 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 
 import org.georchestra.gateway.security.GeorchestraUserMapper;
+import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.gateway.security.ldap.LdapConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,7 +88,12 @@ public class GeorchestraGatewayApplication {
     @GetMapping(path = "/whoami", produces = "application/json")
     @ResponseBody
     public Mono<Map<String, Object>> whoami(Authentication principal, ServerWebExchange exchange) {
-        GeorchestraUser user = Optional.ofNullable(principal).flatMap(userMapper::resolve).orElse(null);
+        GeorchestraUser user = null;
+        try {
+            user = Optional.ofNullable(principal).flatMap(userMapper::resolve).orElse(null);
+        } catch (DuplicatedEmailFoundException e) {
+        }
+
         Map<String, Object> ret = new LinkedHashMap<>();
         ret.put("GeorchestraUser", user);
         if (principal == null) {
@@ -96,8 +102,6 @@ public class GeorchestraGatewayApplication {
             ret.put(principal.getClass().getCanonicalName(), principal);
         }
         return Mono.just(ret);
-        // return principal == null ? Mono.empty() :
-        // Mono.just(Map.of(principal.getClass().getCanonicalName(), principal));
     }
 
     @GetMapping(path = "/logout")
@@ -123,6 +127,8 @@ public class GeorchestraGatewayApplication {
         mdl.addAttribute("passwordExpired", expired);
         boolean invalidCredentials = "invalid_credentials".equals(allRequestParams.get("error"));
         mdl.addAttribute("invalidCredentials", invalidCredentials);
+        boolean duplicateAccount = "duplicate_account".equals(allRequestParams.get("error"));
+        mdl.addAttribute("duplicateAccount", duplicateAccount);
         return "login";
     }
 
