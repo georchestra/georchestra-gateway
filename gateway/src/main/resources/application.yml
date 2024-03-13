@@ -15,6 +15,7 @@ server:
   ssl:
     enabled: false
     #TODO: configure SSL with a self-signed certificate
+  forward-headers-strategy: FRAMEWORK
 
 spring:
   config:
@@ -52,6 +53,7 @@ spring:
       - RemoveSecurityHeaders
       # AddSecHeaders appends sec-* headers to proxied requests based on the currently authenticated user
       - AddSecHeaders
+      - PreserveHostHeader
       global-filter:
         websocket-routing:
           enabled: true
