@@ -38,16 +38,16 @@ import org.springframework.web.server.ServerWebExchange;
 
 import reactor.core.publisher.Mono;
 
-class PreauthAuthenticationManager implements ReactiveAuthenticationManager, ServerAuthenticationConverter {
+public class PreauthAuthenticationManager implements ReactiveAuthenticationManager, ServerAuthenticationConverter {
 
-    static final String PREAUTH_HEADER_NAME = "sec-georchestra-preauthenticated";
+    public static final String PREAUTH_HEADER_NAME = "sec-georchestra-preauthenticated";
 
-    private static final String PREAUTH_USERNAME = "preauth-username";
-    private static final String PREAUTH_EMAIL = "preauth-email";
-    private static final String PREAUTH_FIRSTNAME = "preauth-firstname";
-    private static final String PREAUTH_LASTNAME = "preauth-lastname";
-    private static final String PREAUTH_ORG = "preauth-org";
-    private static final String PREAUTH_ROLES = "preauth-roles";
+    public static final String PREAUTH_USERNAME = "preauth-username";
+    public static final String PREAUTH_EMAIL = "preauth-email";
+    public static final String PREAUTH_FIRSTNAME = "preauth-firstname";
+    public static final String PREAUTH_LASTNAME = "preauth-lastname";
+    public static final String PREAUTH_ORG = "preauth-org";
+    public static final String PREAUTH_ROLES = "preauth-roles";
 
     /**
      * @return {@code Mono.empty()} if the pre-auth request headers are not

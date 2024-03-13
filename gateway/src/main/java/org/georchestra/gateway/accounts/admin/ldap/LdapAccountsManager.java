@@ -36,7 +36,7 @@ import org.georchestra.ds.users.AccountDao;
 import org.georchestra.ds.users.AccountFactory;
 import org.georchestra.ds.users.DuplicatedEmailException;
 import org.georchestra.ds.users.DuplicatedUidException;
-import org.georchestra.gateway.accounts.admin.AbstractAccountsManager;;
+import org.georchestra.gateway.accounts.admin.AbstractAccountsManager;
 import org.georchestra.gateway.accounts.admin.AccountManager;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.gateway.security.exceptions.DuplicatedUsernameFoundException;

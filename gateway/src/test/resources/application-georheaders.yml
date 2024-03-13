@@ -7,9 +7,11 @@ georchestra:
       roles: true
       org: true
       orgname: true
-      #jsonUser: true
       jsonOrganization: true
     security:
+      createNonExistingUsersInLDAP: true
+      header-authentication:
+        enabled: true
       ldap:
         default:
           enabled: true
