@@ -47,7 +47,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
  * {@link java.net.UnknownHostException} and {@link java.net.ConnectException}
  * to {@link HttpStatus#SERVICE_UNAVAILABLE}
  */
-class CustomErrorAttributes extends DefaultErrorAttributes {
+public class CustomErrorAttributes extends DefaultErrorAttributes {
 
     @Override
     public Map<String, Object> getErrorAttributes(ServerRequest request, ErrorAttributeOptions options) {
