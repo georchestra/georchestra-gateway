@@ -52,6 +52,7 @@ spring:
       - RemoveSecurityHeaders
       # AddSecHeaders appends sec-* headers to proxied requests based on the currently authenticated user
       - AddSecHeaders
+      - RewriteLocationResponseHeader=AS_IN_REQUEST, Location, ,
       global-filter:
         websocket-routing:
           enabled: true
