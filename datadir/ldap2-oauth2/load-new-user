@@ -1,0 +1,102 @@
+#!/bin/bash
+# start slapd in background
+echo -n "Starting slapd daemon in background..."
+slapd -u ${RUN_AS_UID} -g ${RUN_AS_GID} -h "ldapi:/// ldap:///"
+echo "Started: OK"
+
+echo -n "Waiting for LDAP deamon to start..."
+while true; do
+    sleep 1
+    ldapsearch -x >/dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        break
+    fi
+done;
+echo "Waiting: OK"
+
+cat <<EOF > /tmp/oauth2user.ldif
+dn: uid=testadmin,ou=users,dc=georchestra,dc=org
+changetype: delete
+
+dn: uid=testuser,ou=users,dc=georchestra,dc=org
+changetype: delete
+
+dn: uid=testreviewer,ou=users,dc=georchestra,dc=org
+changetype: delete
+
+dn: uid=testeditor,ou=users,dc=georchestra,dc=org
+changetype: delete
+
+dn: uid=geoserver_privileged_user,ou=users,dc=georchestra,dc=org
+changetype: delete
+
+dn: uid=idatafeeder,ou=users,dc=georchestra,dc=org
+changetype: delete
+
+dn: uid=testdelegatedadmin,ou=users,dc=georchestra,dc=org
+changetype: delete
+
+dn: uid=testoauth2,ou=users,dc=georchestra,dc=org
+changetype: add
+uid: test
+georchestraObjectIdentifier: d0033419-a16a-4a41-848f-b41651ee5d68
+mail: georchestra@camptocamp.com
+givenName: geOrchestra Functional tests
+sn: Functional tests
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+objectClass: georchestraUser
+objectClass: shadowAccount
+userPassword: $(slappasswd -s testoauth2)
+cn: testing OAuth2 endpoint
+
+dn: o=C2C,ou=orgs,dc=georchestra,dc=org
+changeType: modify
+add: member
+member: uid=testoauth2,ou=users,dc=georchestra,dc=org
+
+dn: cn=ADMINISTRATOR,ou=roles,dc=georchestra,dc=org
+changeType: modify
+add: member
+member: uid=testoauth2,ou=users,dc=georchestra,dc=org
+
+dn: cn=SUPERUSER,ou=roles,dc=georchestra,dc=org
+changeType: modify
+add: member
+member: uid=testoauth2,ou=users,dc=georchestra,dc=org
+
+dn: cn=GN_ADMIN,ou=roles,dc=georchestra,dc=org
+changeType: modify
+add: member
+member: uid=testoauth2,ou=users,dc=georchestra,dc=org
+
+dn: cn=USER,ou=roles,dc=georchestra,dc=org
+changeType: modify
+add: member
+member: uid=testoauth2,ou=users,dc=georchestra,dc=org
+
+dn: cn=MAPSTORE_ADMIN,ou=roles,dc=georchestra,dc=org
+changeType: modify
+add: member
+member: uid=testoauth2,ou=users,dc=georchestra,dc=org
+
+
+
+EOF
+
+ldapmodify -c -H ldap:/// -Dcn=admin,dc=georchestra,dc=org -w secret -x -f /tmp/oauth2user.ldif
+
+pkill slapd
+
+# wait for ldap to stop
+echo -n "Waiting for LDAP to stop..."
+while true; do
+    sleep 1
+    pgrep slapd >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        break
+    fi
+done;
+echo "Waiting: OK"

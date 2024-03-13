@@ -59,3 +59,7 @@ spring:
         uri: ${georchestra.gateway.services.import.target}
         predicates:
         - Path=/import/**
+      - id: cas
+        uri: http://cas:8080/cas/
+        predicates:
+          - Path=/cas/**
