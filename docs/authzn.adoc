@@ -276,3 +276,14 @@ sec-roles: ROLE_ORG_6007280321;ROLE_GDI_PLANER;ROLE_GDI_EDITOR;ROLE_USER
 sec-org: 6007280321
 ```
 
+== External authentication
+Whenever an external authentication is used (OAuth2 or external IDP), a new attribute is added to Header, named :
+```
+sec-external-authentication
+```
+which is set to "true" in this case.
+
+This allows the proxified webapps to adapt their behaviour consequently:
+as an example, it does not make sense to display a password update form in the geOrchestra
+console if the user is logged in via a third party identity provider. +
+Having the flag passed in the HTTP headers allows to enable or disable such a functionality.

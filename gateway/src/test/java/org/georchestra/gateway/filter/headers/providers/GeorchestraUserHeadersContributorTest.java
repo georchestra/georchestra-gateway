@@ -19,6 +19,7 @@
 
 package org.georchestra.gateway.filter.headers.providers;
 
+import static org.georchestra.commons.security.SecurityHeaders.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -115,18 +116,19 @@ class GeorchestraUserHeadersContributorTest {
         HttpHeaders target = new HttpHeaders();
         contributor.accept(target);
 
-        assertEquals(List.of(user.getId()), target.get("sec-userid"));
-        assertEquals(List.of(user.getUsername()), target.get("sec-username"));
-        assertEquals(List.of(user.getFirstName()), target.get("sec-firstname"));
-        assertEquals(List.of(user.getLastName()), target.get("sec-lastname"));
-        assertEquals(List.of(user.getOrganization()), target.get("sec-org"));
-        assertEquals(List.of(user.getEmail()), target.get("sec-email"));
-        assertEquals(List.of(user.getTelephoneNumber()), target.get("sec-tel"));
-        assertEquals(List.of(user.getPostalAddress()), target.get("sec-address"));
-        assertEquals(List.of(user.getTitle()), target.get("sec-title"));
-        assertEquals(List.of(user.getNotes()), target.get("sec-notes"));
+        assertEquals(List.of(user.getId()), target.get(SEC_USERID));
+        assertEquals(List.of(user.getUsername()), target.get(SEC_USERNAME));
+        assertEquals(List.of(user.getFirstName()), target.get(SEC_FIRSTNAME));
+        assertEquals(List.of(user.getLastName()), target.get(SEC_LASTNAME));
+        assertEquals(List.of(user.getOrganization()), target.get(SEC_ORG));
+        assertEquals(List.of(user.getEmail()), target.get(SEC_EMAIL));
+        assertEquals(List.of(user.getTelephoneNumber()), target.get(SEC_TEL));
+        assertEquals(List.of(user.getPostalAddress()), target.get(SEC_ADDRESS));
+        assertEquals(List.of(user.getTitle()), target.get(SEC_TITLE));
+        assertEquals(List.of(user.getNotes()), target.get(SEC_NOTES));
+        assertEquals(List.of(String.valueOf(user.getIsExternalAuth())), target.get(SEC_EXTERNAL_AUTHENTICATION));
 
         String roles = user.getRoles().stream().collect(Collectors.joining(";"));
-        assertEquals(List.of(roles), target.get("sec-roles"));
+        assertEquals(List.of(roles), target.get(SEC_ROLES));
     }
 }

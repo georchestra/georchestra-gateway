@@ -30,8 +30,9 @@ import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.georchestra.commons.security.SecurityHeaders.SEC_EXTERNAL_AUTHENTICATION;
+import static org.georchestra.commons.security.SecurityHeaders.SEC_ROLES;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = GeorchestraGatewayApplication.class, webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureWebTestClient(timeout = "PT20S")
@@ -93,7 +94,27 @@ class PreauthGatewaySecurityCustomizerIT {
             assertTrue(req.getHeaders().keys().stream().filter(h -> h.startsWith("preauth-"))
                     .collect(Collectors.toList()).isEmpty());
             // but still the regular sec-* ones
-            assertFalse(req.getHeader("sec-roles").isEmpty());
+            assertFalse(req.getHeader(SEC_ROLES).isEmpty());
         });
+    }
+
+    public @Test void testProxifiedRequestWithExternalAuthenticationHeaderAttribute() {
+        mockService.stubFor(get(urlMatching("/test"))//
+                .willReturn(ok()));
+
+        testClient.get().uri("/test").headers(h -> { //
+            h.set("sec-georchestra-preauthenticated", "true"); //
+            h.set("preauth-username", "testadmin"); //
+            h.set("preauth-email", "testadmin@example.org"); //
+            h.set("preauth-firstname", "Test"); //
+            h.set("preauth-lastname", "Admin"); //
+            h.set("preauth-org", "PSC"); //
+        }).exchange().expectStatus().is2xxSuccessful();
+
+        List<LoggedRequest> requests = mockService.findAll(getRequestedFor(urlEqualTo("/test")));
+        requests.forEach(req -> {
+            assertFalse(req.getHeader(SEC_EXTERNAL_AUTHENTICATION).isEmpty());
+        });
+
     }
 }
