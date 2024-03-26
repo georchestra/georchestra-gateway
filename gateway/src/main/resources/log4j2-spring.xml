@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+  <Appenders>
+    <Console name="Console">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %p %notEmpty{[X-Request-ID=%X{X-Request-ID}]} %notEmpty{[trace=%X{traceId}]} %notEmpty{[span=%X{spanId}]} --- [%t] %c : %msg%n" />
+    </Console>
+    <SpringProfile name="jsonlogs">
+      <Console name="Console" target="SYSTEM_OUT" follow="true">
+        <!--  see https://github.com/vy/log4j2-logstash-layout/blob/master/layout/src/main/resources/LogstashJsonEventLayoutV1.json -->
+        <JsonTemplateLayout
+          eventTemplateUri="classpath:LogstashJsonEventLayoutV1.json">
+          <!-- EventTemplateAdditionalField key="HOME_DIR" value="${env:HOME}" /-->
+        </JsonTemplateLayout>
+      </Console>
+    </SpringProfile>
+  </Appenders>
+  <Loggers>
+    <Root level="info">
+      <AppenderRef ref="Console" />
+    </Root>
+  </Loggers>
+</Configuration>

@@ -32,6 +32,23 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>spring-boot-starter-logging</artifactId>
+          <!-- exclude transitive dep on logging to remove logback,
+			         we're using log4j2 below to use its json output -->
+          <groupId>org.springframework.boot</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>context-propagation</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-reactive-httpclient</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -76,7 +93,7 @@
     </dependency>
     <dependency>
       <!-- Annotation processor that generates metadata about classes annotated with @ConfigurationProperties. -->
-      <!-- This metadata is used by IDEs to provide auto-completion and documentation for the properties when editing application.properties 
+      <!-- This metadata is used by IDEs to provide auto-completion and documentation for the properties when editing application.properties
         and application.yaml -->
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
