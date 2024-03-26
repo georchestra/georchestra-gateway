@@ -18,8 +18,11 @@
  */
 package org.georchestra.gateway.autoconfigure.app;
 
+import org.georchestra.gateway.filter.global.AccessLogFilter;
+import org.georchestra.gateway.filter.global.AccessLogFilterConfig;
 import org.georchestra.gateway.filter.global.ApplicationErrorGatewayFilterFactory;
 import org.georchestra.gateway.filter.global.LoginParamRedirectGatewayFilterFactory;
+import org.georchestra.gateway.filter.global.RequestIdGlobalFilter;
 import org.georchestra.gateway.filter.global.ResolveTargetGlobalFilter;
 import org.georchestra.gateway.filter.headers.HeaderFiltersConfiguration;
 import org.georchestra.gateway.model.GatewayConfigProperties;
@@ -38,7 +41,7 @@ import org.springframework.context.annotation.Import;
 @AutoConfiguration
 @AutoConfigureBefore(GatewayAutoConfiguration.class)
 @Import(HeaderFiltersConfiguration.class)
-@EnableConfigurationProperties(GatewayConfigProperties.class)
+@EnableConfigurationProperties({ GatewayConfigProperties.class, AccessLogFilterConfig.class })
 public class FiltersAutoConfiguration {
 
     /**
@@ -50,6 +53,7 @@ public class FiltersAutoConfiguration {
     ResolveTargetGlobalFilter resolveTargetWebFilter(GatewayConfigProperties config) {
         return new ResolveTargetGlobalFilter(config);
     }
+
 
     @Bean
     LoginParamRedirectGatewayFilterFactory loginParamRedirectGatewayFilterFactory() {
@@ -76,5 +80,15 @@ public class FiltersAutoConfiguration {
     @Bean
     ApplicationErrorGatewayFilterFactory applicationErrorGatewayFilterFactory() {
         return new ApplicationErrorGatewayFilterFactory();
+    }
+
+    @Bean
+    RequestIdGlobalFilter requestIdGlobalFilter() {
+        return new RequestIdGlobalFilter();
+    }
+
+    @Bean
+    AccessLogFilter accessLogGlobalFilter(AccessLogFilterConfig config) {
+        return new AccessLogFilter(config);
     }
 }
