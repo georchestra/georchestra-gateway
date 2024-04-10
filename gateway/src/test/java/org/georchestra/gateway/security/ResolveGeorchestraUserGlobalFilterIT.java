@@ -119,8 +119,7 @@ public class ResolveGeorchestraUserGlobalFilterIT {
     @Test
     void testRedirectIfOauth2UserExists() {
         final String email = "psc+testadmin@georchestra.org";
-        // set up scenario: have a use
-        String expected = "/login?error=....";
+        final String expected = "/login?error=duplicate_account";
 
         testClient.get().uri("/echo/")//
                 .header(PreauthAuthenticationManager.PREAUTH_HEADER_NAME, "true")

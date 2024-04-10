@@ -18,14 +18,17 @@
  */
 package org.georchestra.gateway.security;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.georchestra.gateway.model.GeorchestraOrganizations;
 import org.georchestra.gateway.model.GeorchestraTargetConfig;
 import org.georchestra.gateway.model.GeorchestraUsers;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.gateway.security.ldap.extended.ExtendedGeorchestraUser;
 import org.georchestra.security.model.GeorchestraUser;
-import org.georchestra.security.model.Organization;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.georchestra.security.model.Organization;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.cloud.gateway.filter.RouteToRequestUrlFilter;
 import org.springframework.cloud.gateway.route.Route;
@@ -44,7 +47,6 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * A {@link GlobalFilter} that resolves the {@link GeorchestraUser} from the
@@ -91,31 +93,33 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                 .map(Authentication.class::cast)//
                 .map(auth -> {
                     try {
-                        return resolver.resolve(auth);
+                        return Pair.of(resolver.resolve(auth), "");
                     } catch (DuplicatedEmailFoundException exp) {
                         Optional<GeorchestraUser> op = Optional.empty();
-                        return op;
+                        return Pair.of(op, "/login?error=" + DUPLICATE_ACCOUNT);
                     }
                 })//
                 .map(user -> {
-                    if (user.isEmpty()) {
+                    if (!user.getRight().isEmpty()) {
                         SecurityContextHolder.getContext();
-                        return this.redirectStrategy //
-                                .sendRedirect(exchange, URI.create("/login?error=" + DUPLICATE_ACCOUNT)) //
-                                .then(exchange.getSession().flatMap(WebSession::invalidate));
+                        ServerHttpResponse response = exchange.getResponse();
+                        response.setStatusCode(HttpStatus.FOUND);
+                        response.getHeaders().setLocation(URI.create(user.getRight()));
+                        return exchange;
                     }
 
-                    GeorchestraUser usr = user.orElse(null);
+                    GeorchestraUser usr = user.getLeft().orElse(null);
                     GeorchestraUsers.store(exchange, usr);
                     if (usr != null && usr instanceof ExtendedGeorchestraUser) {
                         ExtendedGeorchestraUser eu = (ExtendedGeorchestraUser) usr;
                         Organization org = eu.getOrg();
                         GeorchestraOrganizations.store(exchange, org);
                     }
-                    return chain.filter(exchange);
+                    return exchange;
                 })//
-                .defaultIfEmpty(chain.filter(exchange))//
-                .flatMap(Function.identity());
+                .defaultIfEmpty(exchange)//
+                .flatMap(e -> e.getResponse().getStatusCode() != HttpStatus.FOUND ? chain.filter(e)
+                        : Mono.fromRunnable(() -> exchange.getSession().flatMap(WebSession::invalidate)));
 
         System.out.println(res);
         return res;

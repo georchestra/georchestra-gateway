@@ -115,7 +115,7 @@ class ResolveGeorchestraUserGlobalFilterTest {
 
         filter.filter(exchange, mockChain).block();
 
-        verify(mockChain, times(2)).filter(same(exchange));
+        verify(mockChain, times(1)).filter(same(exchange));
         verify(mockMapper, times(1)).resolve(any());
 
         Optional<GeorchestraUser> resolved = GeorchestraUsers.resolve(exchange);
