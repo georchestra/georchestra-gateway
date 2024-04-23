@@ -87,28 +87,13 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
      * chain.
      */
     public @Override Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        Mono<Void> res = exchange.getPrincipal()//
+        return exchange.getPrincipal()//
                 .doOnNext(p -> log.debug("resolving user from {}", p.getClass().getName()))//
                 .filter(Authentication.class::isInstance)//
                 .map(Authentication.class::cast)//
-                .map(auth -> {
-                    try {
-                        return Pair.of(resolver.resolve(auth), "");
-                    } catch (DuplicatedEmailFoundException exp) {
-                        Optional<GeorchestraUser> op = Optional.empty();
-                        return Pair.of(op, "/login?error=" + DUPLICATE_ACCOUNT);
-                    }
-                })//
+                .map(resolver::resolve)//
                 .map(user -> {
-                    if (!user.getRight().isEmpty()) {
-                        SecurityContextHolder.getContext();
-                        ServerHttpResponse response = exchange.getResponse();
-                        response.setStatusCode(HttpStatus.FOUND);
-                        response.getHeaders().setLocation(URI.create(user.getRight()));
-                        return exchange;
-                    }
-
-                    GeorchestraUser usr = user.getLeft().orElse(null);
+                    GeorchestraUser usr = user.orElse(null);
                     GeorchestraUsers.store(exchange, usr);
                     if (usr != null && usr instanceof ExtendedGeorchestraUser) {
                         ExtendedGeorchestraUser eu = (ExtendedGeorchestraUser) usr;
@@ -118,11 +103,11 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                     return exchange;
                 })//
                 .defaultIfEmpty(exchange)//
-                .flatMap(e -> e.getResponse().getStatusCode() != HttpStatus.FOUND ? chain.filter(e)
-                        : Mono.fromRunnable(() -> exchange.getSession().flatMap(WebSession::invalidate)));
-
-        System.out.println(res);
-        return res;
+                .flatMap(chain::filter)//
+                .onErrorResume(DuplicatedEmailFoundException.class,
+                        exp -> this.redirectStrategy
+                                .sendRedirect(exchange, URI.create("/login?error=" + DUPLICATE_ACCOUNT))
+                                .then(exchange.getSession().flatMap(WebSession::invalidate)));
     }
 
 }
