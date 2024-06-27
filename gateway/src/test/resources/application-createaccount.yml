@@ -1,3 +1,9 @@
+ # This YAML file configures the geOrchestra gateway with
+ # * a geOrchestra extended LDAP
+ # * authentication via HTTP headers
+ #
+ # It is mainly used for integration testing the preauthentication mechanisms.
+ #
 georchestra:
   gateway:
     default-headers:
@@ -21,7 +27,7 @@ georchestra:
         default:
           enabled: true
           extended: true
-          url: ldap://${ldapHost}:${ldapPort}/
+          url: ldap://${testcontainers.georchestra.ldap.host}:${testcontainers.georchestra.ldap.port}/
           baseDn: dc=georchestra,dc=org
           adminDn: cn=admin,dc=georchestra,dc=org
           adminPassword: secret
