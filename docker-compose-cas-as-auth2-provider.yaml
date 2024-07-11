@@ -1,0 +1,139 @@
+version: "3.1"
+
+volumes:
+  postgresql_data:
+  datadir:
+    driver_opts:
+      type: none
+      o: bind
+      device: $PWD/datadir
+
+services:
+  database:
+    image: georchestra/database:latest
+    environment:
+      - POSTGRES_USER=georchestra
+      - POSTGRES_PASSWORD=georchestra
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - 54321:5432
+
+  ldap:
+    image: georchestra/ldap:latest
+    environment:
+        - SLAPD_ORGANISATION=georchestra
+        - SLAPD_DOMAIN=georchestra.org
+        - SLAPD_PASSWORD_FILE=/run/secrets/slapd_password.txt
+        - SLAPD_PASSWORD=
+        - GEOSERVER_PRIVILEGED_USER_PASSWORD_FILE=/run/secrets/geoserver_privileged_user_passwd.txt
+        - SLAPD_LOG_LEVEL=32768 # See https://www.openldap.org/doc/admin24/slapdconfig.html#loglevel%20%3Clevel%3E
+    restart: always
+    volumes:
+      - ./datadir/secrets:/run/secrets
+    ports:
+      - 3891:389
+
+  # This second LDAP should provide accounts which differ from the first one
+  ldap2:
+    image: georchestra/ldap:latest
+    environment:
+        - SLAPD_ORGANISATION=georchestra
+        - SLAPD_DOMAIN=georchestra.org
+        - SLAPD_PASSWORD_FILE=/run/secrets/slapd_password.txt
+        - SLAPD_PASSWORD=
+        - GEOSERVER_PRIVILEGED_USER_PASSWORD_FILE=/run/secrets/geoserver_privileged_user_passwd.txt
+        - SLAPD_LOG_LEVEL=32768 # See https://www.openldap.org/doc/admin24/slapdconfig.html#loglevel%20%3Clevel%3E
+    restart: always
+    volumes:
+      - ./datadir/secrets:/run/secrets
+      - ./datadir/ldap2-oauth2/load-new-user:/docker-entrypoint.d/99-load-new-user
+
+
+  gateway:
+    image: georchestra/gateway:latest
+    depends_on:
+      - ldap
+      - database
+    volumes:
+      - datadir:/etc/georchestra
+    environment:
+      - JAVA_TOOL_OPTIONS=-Dgeorchestra.datadir=/etc/georchestra -Dspring.profiles.active=docker,casoauth2rabbitmq -Xmx512M -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005
+    restart: always
+    ports:
+      - 8090:8090
+      - 5005:5005
+
+  header:
+    image: georchestra/header:latest
+    volumes:
+      - datadir:/etc/georchestra
+    environment:
+      - JAVA_OPTIONS=-Dorg.eclipse.jetty.annotations.AnnotationParser.LEVEL=OFF
+      - XMS=256M
+      - XMX=512M
+    restart: always
+    ports:
+      - 10003:8080
+
+  # geoserver:
+  #   image: georchestra/geoserver:latest
+  #   depends_on:
+  #     - ldap
+  #   volumes:
+  #     - datadir:/etc/georchestra
+  #   environment:
+  #     - JAVA_OPTIONS=-Dorg.eclipse.jetty.annotations.AnnotationParser.LEVEL=OFF
+  #     - XMS=256M
+  #     - XMX=8G
+  #   restart: always
+  #   ports:
+  #     - 10006:8080
+
+  console:
+    image: georchestra/console:latest
+    depends_on:
+      - ldap
+      - database
+    volumes:
+      - datadir:/etc/georchestra
+    environment:
+      - JAVA_OPTIONS=-Dorg.eclipse.jetty.annotations.AnnotationParser.LEVEL=OFF
+      - XMS=256M
+      - XMX=1G
+    restart: always
+    ports:
+      - 10007:8080
+
+  cas:
+    image: georchestra/cas:latest
+    depends_on:
+      - ldap2
+    volumes:
+      - datadir:/etc/georchestra
+    environment:
+      - JAVA_OPTIONS=-Dorg.eclipse.jetty.annotations.AnnotationParser.LEVEL=OFF
+      - XMS=256M
+      - XMX=1G
+    ports:
+    - 8081:8080
+    restart: always
+
+  rabbitmq:
+    image: docker.io/bitnami/rabbitmq:3.12
+    environment:
+      - RABBITMQ_LOGS=-
+      - RABBITMQ_USERNAME=georchestra
+      - RABBITMQ_PASSWORD=georchestra
+      - RABBITMQ_PORT=5672
+
+  nginx:
+    image: nginx
+    depends_on:
+      - gateway
+      - cas
+    volumes:
+      - ./datadir/nginx-casoauth2/nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 8080:8080

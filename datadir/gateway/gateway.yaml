@@ -41,9 +41,9 @@ georchestra:
         access-rules:
         - intercept-url: /analytics/**
           allowed-roles: ROLE_SUPERUSER, ROLE_ORGADMIN
-      atlas: 
+      atlas:
         target: http://atlas:8080/atlas/
-      console: 
+      console:
         target: http://console:8080/console/
         access-rules:
         - intercept-url:
@@ -72,7 +72,7 @@ georchestra:
           allowed-roles: SUPERUSER
         - intercept-url: /console/account/**
           anonymous: false
-      extractorapp: 
+      extractorapp:
         target: http://extractorapp:8080/extractorapp/
         access-rules:
         - intercept-url: /extractorapp/admin*
@@ -81,7 +81,7 @@ georchestra:
           allowed-roles: ADMINISTRATOR
         - intercept-url: /extractorapp/**
           allowed-roles: EXTRACTORAPP
-      geonetwork: 
+      geonetwork:
         target: http://geonetwork:8080/geonetwork/
         access-rules:
         - intercept-url: /geonetwork/**
@@ -93,7 +93,7 @@ georchestra:
           org: false
           orgname: true
           json-user: true
-      geoserver: 
+      geoserver:
         target: http://geoserver:8080/geoserver/
         access-rules:
         - intercept-url: /geoserver/**
@@ -103,23 +103,23 @@ georchestra:
         access-rules:
         - intercept-url: /geofence/**
           allowed-roles: ADMINISTRATOR
-      header: 
+      header:
         target: http://header:8080/header/
         access-rules:
         - intercept-url: /header/**
           anonymous: true
-      mapfishapp: 
+      mapfishapp:
         target: http://mapfishapp:8080/mapfishapp/
         access-rules:
         - intercept-url: /mapfishapp/ogcproxy/**
           forbidden: true
         - intercept-url: /mapfishapp/**
           anonymous: true
-      geowebcache: 
+      geowebcache:
         target: http://geowebcache:8080/geowebcache/
-      mapstore: 
+      mapstore:
         target: http://mapstore:8080/mapstore/
-      datafeeder: 
+      datafeeder:
         target: http://datafeeder:8080/datafeeder
         headers:
           proxy: true
@@ -132,7 +132,7 @@ georchestra:
         access-rules:
         - intercept-url: /datafeeder/**
           anonymous: false
-      import: 
+      import:
         target: http://import:80/
         access-rules:
         - intercept-url: /import/**
@@ -182,3 +182,53 @@ georchestra.gateway.services:
   import.target: http://localhost:10012/
   atlas.target: http://localhost:8080/atlas/
   geowebcache.target: http://localhost:8080/geowebcache/
+
+---
+spring.config.activate.on-profile: casoauth2rabbitmq
+debug: true
+logging:
+  level:
+    root: warn
+    '[org.springframework]': debug
+    '[org.springframework.cloud.gateway]': info
+    '[org.springframework.security]': debug
+    '[org.springframework.security.oauth2]': debug
+    '[org.springframework.http.codec.json]': debug
+    '[org.springframework.security.oauth2.client.oidc]': debug
+    '[org.georchestra.gateway]': info
+    '[org.georchestra.gateway.accesslog]': info
+    '[org.georchestra.gateway.security]': debug
+    '[org.springframework.security.ldap]': info
+server:
+  forward-headers-strategy: FRAMEWORK
+logging.level.org.springframework: INFO
+logging.level.org.springframework.security.oauth2.client: DEBUG
+georchestra:
+  gateway:
+    security:
+      events:
+        rabbitmq:
+          # Note usually enableRabbitmqEvents, rabbitmqHost, etc. come from georchestra's default.properties
+          enabled: true
+          host: rabbitmq
+          port: 5672
+          user: georchestra
+          password: georchestra
+      oauth2:
+        enabled: true
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          cas-oauth2:
+            client-id: oauth2
+            client-secret: oauth2
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/login/oauth2/code/cas-oauth2"
+        provider:
+          cas-oauth2:
+            authorization-uri: http://localhost:8080/cas/oauth2.0/authorize
+            token-uri: http://cas:8080/cas/oauth2.0/accessToken
+            user-info-uri: http://cas:8080/cas/oauth2.0/profile
+            userNameAttribute: id
