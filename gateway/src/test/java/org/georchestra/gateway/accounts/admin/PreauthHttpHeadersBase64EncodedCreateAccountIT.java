@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @SpringBootTest(classes = GeorchestraGatewayApplication.class)
@@ -32,6 +34,12 @@ class PreauthHttpHeadersBase64EncodedCreateAccountIT {
 
     public static @AfterAll void shutDownContainers() {
         ldap.stop();
+    }
+
+    @DynamicPropertySource
+    static void registerLdap(DynamicPropertyRegistry registry) {
+        registry.add("testcontainers.georchestra.ldap.host", () -> "127.0.0.1");
+        registry.add("testcontainers.georchestra.ldap.port", ldap::getMappedLdapPort);
     }
 
     @Test
