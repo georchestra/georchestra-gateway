@@ -121,6 +121,11 @@ public class GeorchestraGatewayApplication {
                 oauth2LoginLinks.put("/oauth2/authorization/" + k, clientName);
             });
         }
+
+        if (oauth2LoginLinks.size() == 1 && !ldapEnabled ) {
+            return "redirect:"+oauth2LoginLinks.keySet().stream().findFirst().get();
+        }
+        
         mdl.addAttribute("header_enabled", headerEnabled);
         mdl.addAttribute("header_script", headerScript);
         mdl.addAttribute("ldapEnabled", ldapEnabled);
