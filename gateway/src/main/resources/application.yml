@@ -71,6 +71,7 @@ spring:
       #routes: ought to be loaded from gateway.yaml, preferrably from georchestra's datadir
 
 georchestra:
+  datadir: /etc/georchestra
   gateway:
     security:
       create-non-existing-users-in-l-d-a-p: false
