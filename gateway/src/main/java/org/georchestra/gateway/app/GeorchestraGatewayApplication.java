@@ -19,6 +19,7 @@
 package org.georchestra.gateway.app;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties.Server;
 import org.georchestra.gateway.security.GeorchestraUserMapper;
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -50,6 +52,7 @@ import reactor.core.publisher.Mono;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -70,7 +73,13 @@ public class GeorchestraGatewayApplication {
 
     private @Autowired(required = false) OAuth2ClientProperties oauth2ClientConfig;
     private @Value("${georchestra.gateway.headerEnabled:true}") boolean headerEnabled;
+
     // defined in georchestra datadir's default.properties
+    private @Value("${georchestraStylesheet:}") String georchestraStylesheet;
+    private @Value("${useLegacyHeader:false}") boolean useLegacyHeader;
+    private @Value("${headerUrl:/header/}") String headerUrl;
+    private @Value("${headerHeight:90}") int headerHeight;
+    private @Value("${logoUrl:}") String logoUrl;
     private @Value("${headerScript:https://cdn.jsdelivr.net/gh/georchestra/header@dist/header.js}") String headerScript;
     private @Value("${spring.messages.basename:}") String messagesBasename;
 
@@ -108,26 +117,29 @@ public class GeorchestraGatewayApplication {
 
     @GetMapping(path = "/logout")
     public String logout(Model mdl) {
-        mdl.addAttribute("header_enabled", headerEnabled);
+        setHeaderAttributes(mdl);
         return "logout";
     }
 
     @GetMapping(path = "/login")
     public String loginPage(@RequestParam Map<String, String> allRequestParams, Model mdl) {
-        Map<String, String> oauth2LoginLinks = new HashMap<>();
+        Map<String, Pair<String, String>> oauth2LoginLinks = new HashMap<>();
         if (oauth2ClientConfig != null) {
             oauth2ClientConfig.getRegistration().forEach((k, v) -> {
                 String clientName = Optional.ofNullable(v.getClientName()).orElse(k);
-                oauth2LoginLinks.put("/oauth2/authorization/" + k, clientName);
+
+                String providerPath = Paths.get("login/img/", k + ".png").toString();
+                String logo = new ClassPathResource("static/" + providerPath).exists() ? providerPath
+                        : "login/img/default.png";
+                oauth2LoginLinks.put("/oauth2/authorization/" + k, Pair.of(clientName, logo));
             });
         }
 
-        if (oauth2LoginLinks.size() == 1 && !ldapEnabled ) {
-            return "redirect:"+oauth2LoginLinks.keySet().stream().findFirst().get();
+        if (oauth2LoginLinks.size() == 1 && !ldapEnabled) {
+            return "redirect:" + oauth2LoginLinks.keySet().stream().findFirst().get();
         }
-        
-        mdl.addAttribute("header_enabled", headerEnabled);
-        mdl.addAttribute("header_script", headerScript);
+
+        setHeaderAttributes(mdl);
         mdl.addAttribute("ldapEnabled", ldapEnabled);
         mdl.addAttribute("oauth2LoginLinks", oauth2LoginLinks);
         boolean expired = "expired_password".equals(allRequestParams.get("error"));
@@ -177,5 +189,15 @@ public class GeorchestraGatewayApplication {
         messageSource.setUseCodeAsDefaultMessage(true);
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());
         return messageSource;
+    }
+
+    private void setHeaderAttributes(Model mdl) {
+        mdl.addAttribute("georchestraStylesheet", georchestraStylesheet);
+        mdl.addAttribute("useLegacyHeader", useLegacyHeader);
+        mdl.addAttribute("headerUrl", headerUrl);
+        mdl.addAttribute("headerHeight", headerHeight);
+        mdl.addAttribute("logoUrl", logoUrl);
+        mdl.addAttribute("headerEnabled", headerEnabled);
+        mdl.addAttribute("headerScript", headerScript);
     }
 }
