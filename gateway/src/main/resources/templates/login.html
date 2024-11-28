@@ -22,13 +22,13 @@
         <div class="row h-100 rounded-lg w-100">
             <div class="col p-0 d-none d-md-block" id="login-left-col">
                 <div class="bg-transparent w-100 h-100 flex align-items-center justify-content-center">
-                    <div class="h-100 w-100 text-white rounded-5" style="background: url('login/img/login.webp')">
+                    <div class="h-100 w-100 text-white rounded-5" style="background: url('login/img/login.webp')" id="login-left-img">
                     </div>
                 </div>
             </div>
             <div class="col d-flex flex-column align-items-center justify-content-between bg-white py-5">
                 <a href="/" class="d-flex align-items-center justify-content-center" th:if="${not headerEnabled}">
-                    <img src="https://www.georchestra.org/public/georchestra-logo.svg" alt="" width="200" height="72">
+                    <img th:src="${logoUrl}" alt="" width="200" height="72">
                 </a>
                 <form class="form-signin" method="post" action="/login" th:if="${ldapEnabled}">
                     <h2 class="form-signin-heading"><span th:text="#{login_message_title}"/></h2>
