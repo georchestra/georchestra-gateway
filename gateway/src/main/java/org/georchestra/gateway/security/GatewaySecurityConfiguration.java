@@ -88,6 +88,10 @@ public class GatewaySecurityConfiguration {
         // custom handling for forbidden error
         http.exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler());
 
+        http.formLogin()
+                .authenticationFailureHandler(new ExtendedRedirectServerAuthenticationFailureHandler("login?error"))
+                .loginPage("/login");
+
         sortedCustomizers(customizers).forEach(customizer -> {
             log.debug("Applying security customizer {}", customizer.getName());
             customizer.customize(http);

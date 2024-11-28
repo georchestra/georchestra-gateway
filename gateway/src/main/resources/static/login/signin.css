@@ -1,6 +1,7 @@
 html, 
 body {
-    height: 100%;
+  height: 100%;
+  font-family: Inter, sans-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 :root {
   --georchestra: #85127e;
@@ -44,5 +45,46 @@ body {
   background-color: #fff;
   border-color: var(--georchestra);
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(133, 18, 125,.25);
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb,var(--georchestra),#fff 80%);
+}
+#login-left-col {
+  border: 20px solid white;
+  border-radius: 30px;
+  border-end-end-radius: 0;
+  border-start-end-radius: 0;
+}
+a {
+  color: var(--georchestra);
+  text-decoration: none;
+}
+a:hover {
+  /*text-decoration: underline;*/
+  color: color-mix(in srgb,var(--georchestra),#000 50%);
+}
+.fs-7 {
+  font-size: 0.75rem;
+}
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+  margin-top: 1rem;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #aaa;
+}
+
+.separator:not(:empty)::before {
+  margin-right: .25em;
+}
+
+.separator:not(:empty)::after {
+  margin-left: .25em;
 }
