@@ -7,7 +7,7 @@ The gateway belongs to geOrchestra core, since it is the component which:
 * handles user sessions
 * routes requests to webapps
 
-The behavior is controlled by the files from the `<datadir_root>/gateway` folder, which can be found [here](https://github.com/georchestra/datadir/tree/master/security-proxy)
+The behavior is controlled by the files from the `<datadir_root>/gateway` folder, which can be found [here](https://github.com/georchestra/datadir/tree/master/datadir)
 
 ## How-to integrate a new application in geOrchestra ?
 
