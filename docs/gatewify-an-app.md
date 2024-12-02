@@ -13,6 +13,10 @@ The behavior is controlled by the files from the `<datadir_root>/gateway` folder
 
 The goal here is to benefit from the [SSO](https://en.wikipedia.org/wiki/Single_sign-on) feature for the new application without having to use an external authentication process.
 
+### Ready to launch example
+
+Here [is a ready-to-launch example of a secured application](https://github.com/georchestra/sample-docker-composition/tree/main/gateway/new-app) behind the gateway.
+
 ### Gateway configuration
 
 1. **Put application behind the gateway**
@@ -116,9 +120,10 @@ Several other user properties are also provided as headers:
 * `sec-firstname` is the first name (LDAP `givenName`)
 * `sec-lastname` is the second name (LDAP `sn`)
 * `sec-tel` is the user phone number (LDAP `telephoneNumber`)
+* `sec-json-user` is a Base64 json representation of the user object.
+* `sec-json-organization` is a Base64 json representation of the organization object.
 
-* `sec-json-user` is a json representation of the user object.
-* `sec-json-organization` is a json representation of the organization object.
+You can also use the [ready-to-launch example](https://github.com/georchestra/sample-docker-composition/tree/main/gateway/new-app) to check how headers are sent to the application.
 
 You can find full configuration in [HeaderMappings.java](https://github.com/georchestra/georchestra-gateway/blob/main/gateway/src/main/java/org/georchestra/gateway/model/HeaderMappings.java) file. You just need to rename fields from camelCase (in java file) to kebab-case (in yaml file).
 
