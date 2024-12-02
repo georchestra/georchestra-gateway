@@ -2,16 +2,16 @@
 
 ![gateway](https://github.com/georchestra/georchestra-gateway/actions/workflows/docker.yml/badge.svg)
 
-The gateway belongs to geOrchestra core, since it is the component which :
+The gateway belongs to geOrchestra core, since it is the component which:
 
 * handles user sessions
 * routes requests to webapps
 
-The behavior is controlled by the files from the `<datadir_root>/security-proxy` folder, which can be found [here](https://github.com/georchestra/datadir/tree/master/security-proxy)
+The behavior is controlled by the files from the `<datadir_root>/gateway` folder, which can be found [here](https://github.com/georchestra/datadir/tree/master/security-proxy)
 
 ## How-to integrate a new application in geOrchestra ?
 
-The goal here is to benefit from the [SSO](https://en.wikipedia.org/wiki/Single_sign-on) feature for the new application without having to use an external application.
+The goal here is to benefit from the [SSO](https://en.wikipedia.org/wiki/Single_sign-on) feature for the new application without having to use an external authentication process.
 
 ### Gateway configuration
 
@@ -87,7 +87,7 @@ georchestra:
 
 As you can see above, the `newappfrontend` service has a header section, which is used to override the default headers that will be sent to the frontend application.
 
-In `gateway.yaml` as the start of the file, you can modify the default headers sent to apps :
+In `gateway.yaml` as the start of the file, you can modify the default headers sent to apps:
     
 ```yaml
     georchestra:
@@ -117,7 +117,12 @@ Several other user properties are also provided as headers:
 * `sec-lastname` is the second name (LDAP `sn`)
 * `sec-tel` is the user phone number (LDAP `telephoneNumber`)
 
+* `sec-json-user` is a json representation of the user object.
+* `sec-json-organization` is a json representation of the organization object.
+
 You can find full configuration in [HeaderMappings.java](https://github.com/georchestra/georchestra-gateway/blob/main/gateway/src/main/java/org/georchestra/gateway/model/HeaderMappings.java) file. You just need to rename fields from camelCase (in java file) to kebab-case (in yaml file).
+
+See [here](./custom_filters.adoc#addsecheadersgatewayfilter) for technical details.
 
 The application handles requests appropriately thanks to the headers received.
 Some applications will require a direct connection to the LDAP (where users, roles and organisations objects are stored), for instance to list all organisations.
