@@ -7,6 +7,7 @@
     <meta name="googlebot" content="noarchive"/>
     <title>Access forbidden</title>
     <link href="login/error.css" rel="stylesheet"/>
+    <script src="login/getConfig.js"></script>
 </head>
 <body lang="EN">
 <div id="wrapper">
@@ -17,20 +18,5 @@
     <a href="/" class="error-back">Return to the homepage</a>
 </div>
 </body>
-<script>
-    fetch("/config").then(res => {
-        if (res.ok) {
-            return res.json();
-        }
-        throw new Error("Gateway down")
-    }).then(json => {
-        if (json.stylesheet){
-            var styleSheet = document.createElement("style")
-            styleSheet.textContent = json.stylesheet
-            document.head.appendChild(styleSheet)
-        }
-
-    })
-</script>
 </html>
 
