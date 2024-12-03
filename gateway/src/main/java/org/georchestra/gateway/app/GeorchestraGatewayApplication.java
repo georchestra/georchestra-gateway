@@ -151,9 +151,9 @@ public class GeorchestraGatewayApplication {
         return "login";
     }
 
-    @GetMapping(path = "/config", produces = "application/json")
+    @GetMapping(path = "/style-config", produces = "application/json")
     @ResponseBody
-    public Mono<Map<String, Object>> config(ServerWebExchange exchange) {
+    public Mono<Map<String, Object>> styleConfig() {
         Map<String, Object> ret = new LinkedHashMap<>();
         ret.put("stylesheet", georchestraStylesheet);
         ret.put("logo", logoUrl);

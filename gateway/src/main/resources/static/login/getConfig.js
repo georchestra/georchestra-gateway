@@ -1,4 +1,4 @@
-fetch("/config").then(res => {
+fetch("/style-config").then(res => {
     if (res.ok) {
         return res.json();
     }
