@@ -151,6 +151,15 @@ public class GeorchestraGatewayApplication {
         return "login";
     }
 
+    @GetMapping(path = "/style-config", produces = "application/json")
+    @ResponseBody
+    public Mono<Map<String, Object>> styleConfig() {
+        Map<String, Object> ret = new LinkedHashMap<>();
+        ret.put("stylesheet", georchestraStylesheet);
+        ret.put("logo", logoUrl);
+        return Mono.just(ret);
+    }
+
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationReady(ApplicationReadyEvent e) {
         Environment env = e.getApplicationContext().getEnvironment();
