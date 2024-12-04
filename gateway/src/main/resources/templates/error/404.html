@@ -6,34 +6,16 @@
     <meta name="robots" content="none" />
     <meta name="googlebot" content="noarchive" />
     <title>Page not found</title>
-    <style type="text/css">
-      body {
-        background-color:#e6e6e6;
-        font-family:Calibri;
-        text-align:center;
-      }
-      #wrapper {
-        background:#fff;
-        width:492px;
-        position:relative;
-        margin-left:auto;
-        margin-right:auto;
-        text-align:left;
-        border:3px solid #999;
-        overflow:hidden;
-	padding: 30px;
-        border-bottom-right-radius: 16px;
-        border-bottom-left-radius: 16px;
-      }
-      #wrapper p {
-        padding:5px;
-      }
-    </style>
+    <link href="login/error.css" rel="stylesheet"/>
+    <script src="login/getConfig.js"></script>
   </head>
   <body lang=EN>
     <div id="wrapper">
-      <img src="https://www.georchestra.org/public/logos/georchestra_logo.png" alt="geOrchestra" />
-      <p>Page not found. Return to the <a href="/">homepage</a>.</p>
+      <div class="error-code">404</div>
+      <img src="" alt="" style="display: none" id="error-img">
+      <p class="error-desc">Page not found</p>
+      <p>Sorry the page you requested doesn't exist.</p>
+      <a href="/" class="error-back">Return to the homepage</a>
     </div>
   </body>
 </html>
