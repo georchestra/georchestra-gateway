@@ -76,8 +76,7 @@ public class GeorchestraGatewayApplication {
 
     // defined in georchestra datadir's default.properties
     private @Value("${georchestraStylesheet:}") String georchestraStylesheet;
-    private @Value("${useLegacyHeader:false}") boolean useLegacyHeader;
-    private @Value("${headerUrl:/header/}") String headerUrl;
+    private @Value("${headerConfigFile:}") String headerConfigFile;
     private @Value("${headerHeight:90}") int headerHeight;
     private @Value("${logoUrl:}") String logoUrl;
     private @Value("${headerScript:https://cdn.jsdelivr.net/gh/georchestra/header@dist/header.js}") String headerScript;
@@ -202,10 +201,8 @@ public class GeorchestraGatewayApplication {
 
     private void setHeaderAttributes(Model mdl) {
         mdl.addAttribute("georchestraStylesheet", georchestraStylesheet);
-        mdl.addAttribute("useLegacyHeader", useLegacyHeader);
-        mdl.addAttribute("headerUrl", headerUrl);
         mdl.addAttribute("headerHeight", headerHeight);
-        mdl.addAttribute("logoUrl", logoUrl);
+        mdl.addAttribute("headerConfigFile", headerConfigFile);
         mdl.addAttribute("headerEnabled", headerEnabled);
         mdl.addAttribute("headerScript", headerScript);
     }
