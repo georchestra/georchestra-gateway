@@ -21,10 +21,14 @@ package org.georchestra.gateway.filter.global;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.georchestra.gateway.model.GeorchestraTargetConfig;
+import org.georchestra.gateway.model.HeaderMappings;
+import org.georchestra.gateway.model.RoleBasedAccessRule;
 import org.georchestra.gateway.model.Service;
 import org.georchestra.gateway.security.ResolveGeorchestraUserGlobalFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -75,9 +79,9 @@ public class ResolveTargetGlobalFilter implements GlobalFilter, Ordered {
         Route route = (Route) exchange.getAttributes().get(GATEWAY_ROUTE_ATTR);
         Objects.requireNonNull(route, "no route matched, filter shouldn't be hit");
 
-        GeorchestraTargetConfig config = resolveTarget(route);
+        GeorchestraTargetConfig targetConfig = resolveTarget(route);
         log.debug("Storing geOrchestra target config for Route {} request context", route.getId());
-        GeorchestraTargetConfig.setTarget(exchange, config);
+        GeorchestraTargetConfig.setTarget(exchange, targetConfig);
         return chain.filter(exchange);
     }
 
@@ -85,22 +89,47 @@ public class ResolveTargetGlobalFilter implements GlobalFilter, Ordered {
     @NonNull
     GeorchestraTargetConfig resolveTarget(@NonNull Route route) {
 
-        GeorchestraTargetConfig target = new GeorchestraTargetConfig().headers(config.getDefaultHeaders())
-                .accessRules(config.getGlobalAccessRules());
+        GeorchestraTargetConfig target = new GeorchestraTargetConfig();
 
+        Optional<Service> service = findService(route);
+
+        setAccessRules(target, service);
+        setHeaderMappings(target, service);
+
+        return target;
+    }
+
+    private void setAccessRules(GeorchestraTargetConfig target, Optional<Service> service) {
+        List<RoleBasedAccessRule> globalAccessRules = config.getGlobalAccessRules();
+        var targetAccessRules = service.map(Service::getAccessRules).filter(Objects::nonNull).filter(l -> !l.isEmpty())
+                .orElse(globalAccessRules);
+
+        target.accessRules(targetAccessRules);
+    }
+
+    private void setHeaderMappings(GeorchestraTargetConfig target, Optional<Service> service) {
+        HeaderMappings defaultHeaders = config.getDefaultHeaders();
+        HeaderMappings mergedHeaders = service.flatMap(Service::headers)
+                .map(serviceHeaders -> merge(defaultHeaders, serviceHeaders)).orElse(defaultHeaders);
+
+        target.headers(mergedHeaders);
+    }
+
+    private HeaderMappings merge(HeaderMappings defaults, HeaderMappings service) {
+        return defaults.copy().merge(service);
+    }
+
+    private Optional<Service> findService(@NonNull Route route) {
         final URI routeURI = route.getUri();
 
         for (Service service : config.getServices().values()) {
             var serviceURI = service.getTarget();
             if (Objects.equals(routeURI, serviceURI)) {
-                if (!service.getAccessRules().isEmpty())
-                    target.accessRules(service.getAccessRules());
-                if (service.getHeaders().isPresent())
-                    target.headers(service.getHeaders().get());
-                break;
+                return Optional.of(service);
             }
         }
-        return target;
+
+        return Optional.empty();
     }
 
 }

@@ -36,8 +36,9 @@ import reactor.core.publisher.Mono;
 public class AddSecHeadersGatewayFilterFactory
         extends AbstractGatewayFilterFactory<AbstractGatewayFilterFactory.NameConfig> {
 
-    public static String DISABLE_SECURITY_HEADERS = AddSecHeadersGatewayFilterFactory.class.getName()
-            + ".DISABLE_SECURITY_HEADERS";
+    public static final String DISABLE_SECURITY_HEADERS = "%s.DISABLE_SECURITY_HEADERS"
+            .formatted(AddSecHeadersGatewayFilterFactory.class.getName());
+
     private final List<HeaderContributor> providers;
 
     public AddSecHeadersGatewayFilterFactory(List<HeaderContributor> providers) {

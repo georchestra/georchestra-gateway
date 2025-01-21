@@ -1,4 +1,4 @@
-# Georchestra application gateway service
+# geOrchestra application gateway service
 
 ## Features
 
@@ -43,7 +43,7 @@ and the additional property sources by means of spring-boot's
 make
 ```
 
-Builds georchestra submodule dependencies, the gateway, runs tests,
+Builds geOrchestra submodule dependencies, the gateway, runs tests,
 and builds the docker image.
 
 ### Build dependencies only

@@ -19,6 +19,7 @@
 
 package org.georchestra.gateway.filter.global;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -35,7 +36,6 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.georchestra.gateway.model.GeorchestraTargetConfig;
@@ -64,8 +64,8 @@ class ResolveTargetGlobalFilterTest {
     private MockServerHttpRequest request;
     private MockServerWebExchange exchange;
 
-    final URI matchedURI = URI.create("http://fake.backend.com:8080");
-    private Route matchedRoute;
+    final URI matchingURI = URI.create("http://fake.backend.com:8080");
+    private Route matchingRoute;
 
     HeaderMappings defaultHeaders;
     List<RoleBasedAccessRule> defaultRules;
@@ -80,14 +80,14 @@ class ResolveTargetGlobalFilterTest {
 
         filter = new ResolveTargetGlobalFilter(config);
 
-        matchedRoute = mock(Route.class);
-        when(matchedRoute.getUri()).thenReturn(matchedURI);
+        matchingRoute = mock(Route.class);
+        when(matchingRoute.getUri()).thenReturn(matchingURI);
 
         mockChain = mock(GatewayFilterChain.class);
         when(mockChain.filter(any())).thenReturn(Mono.empty());
         request = MockServerHttpRequest.get("/test").build();
         exchange = MockServerWebExchange.from(request);
-        exchange.getAttributes().put(GATEWAY_ROUTE_ATTR, matchedRoute);
+        exchange.getAttributes().put(GATEWAY_ROUTE_ATTR, matchingRoute);
 
     }
 
@@ -101,7 +101,7 @@ class ResolveTargetGlobalFilterTest {
 
     @Test
     void resolveTarget_defaultsToGlobal() {
-        GeorchestraTargetConfig target = filter.resolveTarget(matchedRoute);
+        GeorchestraTargetConfig target = filter.resolveTarget(matchingRoute);
         assertNotNull(target);
         assertSame(defaultHeaders, target.headers());
         assertSame(defaultRules, target.accessRules());
@@ -109,30 +109,60 @@ class ResolveTargetGlobalFilterTest {
 
     @Test
     void resolveTarget_applies_global_headers_if_service_doesnt_define_them() {
-        Service serviceWithNoHeaderMappings = service(matchedURI, (HeaderMappings) null);
+        Service serviceWithNoHeaderMappings = service(matchingURI, (HeaderMappings) null);
         RoleBasedAccessRule serviceSpecificRule = rule("/rule/path");
         serviceWithNoHeaderMappings.setAccessRules(List.of(serviceSpecificRule));
 
         Service service2 = service(URI.create("https://backend.service.2"), new HeaderMappings());
         config.setServices(Map.of("service1", serviceWithNoHeaderMappings, "service2", service2));
 
-        GeorchestraTargetConfig target = filter.resolveTarget(matchedRoute);
+        GeorchestraTargetConfig target = filter.resolveTarget(matchingRoute);
         assertSame(defaultHeaders, target.headers());
         assertEquals(List.of(serviceSpecificRule), target.accessRules());
     }
 
     @Test
     void resolveTarget_applies_global_access_rules_if_service_doesnt_define_them() {
-        Service serviceWithNoAccessRules = service(matchedURI);
-        HeaderMappings serviceHeaders = new HeaderMappings();
-        serviceWithNoAccessRules.setHeaders(Optional.of(serviceHeaders));
+        Service serviceWithNoAccessRules = service(matchingURI);
 
         Service service2 = service(URI.create("https://backend.service.2"), new HeaderMappings());
         config.setServices(Map.of("service1", serviceWithNoAccessRules, "service2", service2));
 
-        GeorchestraTargetConfig target = filter.resolveTarget(matchedRoute);
+        GeorchestraTargetConfig target = filter.resolveTarget(matchingRoute);
         assertEquals(defaultRules, target.accessRules());
-        assertSame(serviceHeaders, target.headers());
+    }
+
+    @Test
+    void resolveTarget_applies_default_headers() {
+        Service serviceWithEmptyHeaders = service(matchingURI);
+        serviceWithEmptyHeaders.setHeaders(new HeaderMappings());
+
+        GeorchestraTargetConfig target = filter.resolveTarget(matchingRoute);
+        assertEquals(defaultHeaders, target.headers());
+    }
+
+    @Test
+    void resolveTarget_service_headers_merged_with_default_headers() {
+
+        this.defaultHeaders = new HeaderMappings().disableAll().userid(true);
+        config.setDefaultHeaders(defaultHeaders);
+
+        HeaderMappings headerMappings = new HeaderMappings().jsonUser(true).jsonOrganization(true);
+        Service serviceWithCustomHeaders = service(matchingURI, headerMappings);
+
+        config.setServices(Map.of("service", serviceWithCustomHeaders));
+
+        GeorchestraTargetConfig target = filter.resolveTarget(matchingRoute);
+
+        var expected = new HeaderMappings().disableAll().userid(true).jsonUser(true).jsonOrganization(true);
+
+        assertThat(target.headers().getJsonUser()).as("expected from service").isEqualTo(expected.getJsonUser());
+        assertThat(target.headers().getJsonOrganization()).as("expected from service")
+                .isEqualTo(expected.getJsonOrganization());
+
+        assertThat(target.headers().getUserid()).as("expected from defaults").isEqualTo(expected.getUserid());
+
+        assertThat(target.headers()).isEqualTo(expected);
     }
 
     private Service service(URI targetURI) {
@@ -142,7 +172,7 @@ class ResolveTargetGlobalFilterTest {
     private Service service(URI targetURI, HeaderMappings headers) {
         Service service = new Service();
         service.setTarget(targetURI);
-        service.setHeaders(Optional.ofNullable(headers));
+        service.setHeaders(headers);
         return service;
     }
 

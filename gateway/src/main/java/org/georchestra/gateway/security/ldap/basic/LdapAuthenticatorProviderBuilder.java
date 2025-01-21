@@ -21,6 +21,7 @@ package org.georchestra.gateway.security.ldap.basic;
 import static java.util.Objects.requireNonNull;
 
 import org.georchestra.ds.users.AccountDao;
+import org.georchestra.gateway.security.ldap.NoPasswordLdapUserDetailsMapper;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapAuthenticationProvider;
 import org.georchestra.gateway.security.ldap.extended.ExtendedPasswordPolicyAwareContextSource;
 import org.springframework.ldap.core.support.BaseLdapPathContextSource;
@@ -72,7 +73,7 @@ public class LdapAuthenticatorProviderBuilder {
 
         final GrantedAuthoritiesMapper rolesMapper = ldapAuthoritiesMapper();
         provider.setAuthoritiesMapper(rolesMapper);
-        provider.setUserDetailsContextMapper(new LdapUserDetailsMapper());
+        provider.setUserDetailsContextMapper(new NoPasswordLdapUserDetailsMapper());
         provider.setAccountDao(accountDao);
         return provider;
     }

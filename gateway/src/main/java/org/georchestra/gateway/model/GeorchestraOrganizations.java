@@ -23,6 +23,9 @@ import java.util.Optional;
 import org.georchestra.security.model.Organization;
 import org.springframework.web.server.ServerWebExchange;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class GeorchestraOrganizations {
 
     static final String GEORCHESTRA_ORGANIZATION_KEY = GeorchestraOrganizations.class.getCanonicalName();

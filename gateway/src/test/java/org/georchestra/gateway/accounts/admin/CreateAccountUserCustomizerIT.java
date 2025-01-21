@@ -16,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ldap.NameNotFoundException;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Map;
@@ -44,6 +46,12 @@ public class CreateAccountUserCustomizerIT {
 
     public static @AfterAll void shutDownContainers() {
         ldap.stop();
+    }
+
+    @DynamicPropertySource
+    static void registerLdap(DynamicPropertyRegistry registry) {
+        registry.add("testcontainers.georchestra.ldap.host", () -> "127.0.0.1");
+        registry.add("testcontainers.georchestra.ldap.port", ldap::getMappedLdapPort);
     }
 
     private static final Map<String, String> NOT_EXISTING_ACCOUNT_HEADERS = Map.of( //

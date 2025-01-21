@@ -13,12 +13,19 @@
   <version>${revision}</version>
   <packaging>pom</packaging>
   <name>gateway-root</name>
+  <distributionManagement>
+   <repository>
+      <id>geOrchestra-artifactory</id>
+      <name>geOrchestra Maven repository</name>
+      <url>https://artifactory.georchestra.org/artifactory/georchestra/</url>
+    </repository>
+  </distributionManagement>
   <modules>
     <module>gateway</module>
   </modules>
   <properties>
     <revision>1.1.1-SNAPSHOT</revision>
-    <georchestra.version>24.0.4-SNAPSHOT</georchestra.version>
+    <georchestra.version>24.1-SNAPSHOT</georchestra.version>
     <spring-cloud.version>2021.0.9</spring-cloud.version>
     <formatter-maven-plugin.version>2.10.0</formatter-maven-plugin.version>
     <fmt.skip>false</fmt.skip>

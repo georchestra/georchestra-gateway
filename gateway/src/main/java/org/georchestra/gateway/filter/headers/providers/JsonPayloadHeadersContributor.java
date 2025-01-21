@@ -18,6 +18,7 @@
  */
 package org.georchestra.gateway.filter.headers.providers;
 
+import java.io.UncheckedIOException;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -64,21 +65,20 @@ public class JsonPayloadHeadersContributor extends HeaderContributor {
     }
 
     public @Override Consumer<HttpHeaders> prepare(ServerWebExchange exchange) {
-        return headers -> {
-            GeorchestraTargetConfig.getTarget(exchange)//
-                    .map(GeorchestraTargetConfig::headers)//
-                    .ifPresent(mappings -> {
-                        Optional<GeorchestraUser> user = GeorchestraUsers.resolve(exchange);
-                        Optional<Organization> org = GeorchestraOrganizations.resolve(exchange);
-
-                        addJson(headers, "sec-user", mappings.getJsonUser(), user);
-                        addJson(headers, "sec-organization", mappings.getJsonOrganization(), org);
-                    });
-        };
+        return headers -> GeorchestraTargetConfig.getTarget(exchange)//
+                .map(GeorchestraTargetConfig::headers)//
+                .ifPresent(mappings -> addJsonPayloads(exchange, mappings, headers));
     }
 
-    private void addJson(HttpHeaders target, String headerName, Optional<Boolean> enabled, Optional<?> toEncode) {
-        if (enabled.orElse(false)) {
+    private void addJsonPayloads(final ServerWebExchange exchange, final HeaderMappings mappings, HttpHeaders headers) {
+        Optional<GeorchestraUser> user = GeorchestraUsers.resolve(exchange);
+        Optional<Organization> org = GeorchestraOrganizations.resolve(exchange);
+        addJson(headers, "sec-user", mappings.getJsonUser().orElse(false), user);
+        addJson(headers, "sec-organization", mappings.getJsonOrganization().orElse(false), org);
+    }
+
+    private void addJson(HttpHeaders target, String headerName, boolean enabled, Optional<?> toEncode) {
+        if (enabled) {
             toEncode.map(this::encodeJson)//
                     .map(this::encodeBase64)//
                     .ifPresent(encoded -> target.add(headerName, encoded));
@@ -89,7 +89,7 @@ public class JsonPayloadHeadersContributor extends HeaderContributor {
         try {
             return this.encoder.writer().writeValueAsString(payloadObject);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 

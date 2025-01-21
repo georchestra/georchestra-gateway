@@ -25,7 +25,9 @@ import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.web.server.ServerWebExchange;
 
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class GeorchestraUsers {
 
     static final String GEORCHESTRA_USER_KEY = GeorchestraUsers.class.getCanonicalName();

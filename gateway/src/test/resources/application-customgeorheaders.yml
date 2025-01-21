@@ -1,0 +1,43 @@
+georchestra:
+  gateway:
+    default-headers:
+      # Default security headers to append to proxied requests
+      proxy: true
+      username: true
+      roles: true
+      org: true
+      orgname: true
+    security:
+      ldap:
+        default:
+          enabled: true
+          extended: true
+          url: ldap://${ldapHost}:${ldapPort}/
+          baseDn: dc=georchestra,dc=org
+          adminDn: cn=admin,dc=georchestra,dc=org
+          adminPassword: secret
+          users:
+            rdn: ou=users
+            searchFilter: (uid={0})
+          roles:
+            rdn: ou=roles
+            searchFilter: (member={0})
+          orgs:
+            rdn: ou=orgs
+    services:
+      echo:
+        target: http://${wmHost}:${wmPort}
+        access-rules:
+          - intercept-url: /echo/**
+            anonymous: false
+        headers:
+          json-user: true
+          json-organization: true
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: echo
+          uri: http://${wmHost}:${wmPort}
+          predicates:
+            - Path=/echo/

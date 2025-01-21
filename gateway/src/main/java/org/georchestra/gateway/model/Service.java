@@ -44,10 +44,14 @@ public class Service {
     /**
      * Service-specific security headers configuration
      */
-    private Optional<HeaderMappings> headers = Optional.empty();
+    private HeaderMappings headers;
 
     /**
      * List of Ant-pattern based access rules for the given back-end service
      */
     private List<RoleBasedAccessRule> accessRules = List.of();
+
+    public Optional<HeaderMappings> headers() {
+        return Optional.ofNullable(headers);
+    }
 }

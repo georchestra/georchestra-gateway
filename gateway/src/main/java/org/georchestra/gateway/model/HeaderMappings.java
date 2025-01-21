@@ -127,4 +127,57 @@ public class HeaderMappings {
         this.orgLastUpdated = val;
         this.jsonOrganization = val;
     }
+
+    public HeaderMappings userid(boolean b) {
+        setUserid(Optional.of(b));
+        return this;
+    }
+
+    public HeaderMappings jsonUser(boolean b) {
+        setJsonUser(Optional.of(b));
+        return this;
+    }
+
+    public HeaderMappings jsonOrganization(boolean b) {
+        setJsonOrganization(Optional.of(b));
+        return this;
+    }
+
+    /**
+     * @return a copy of this object
+     */
+    public HeaderMappings copy() {
+        HeaderMappings copy = new HeaderMappings();
+        copy.merge(this);
+        return copy;
+    }
+
+    /**
+     * Applies the non-empty fields from {@code other} to this one, and returns this
+     */
+    public HeaderMappings merge(HeaderMappings other) {
+        proxy = merge(proxy, other.proxy);
+        userid = merge(userid, other.userid);
+        lastUpdated = merge(lastUpdated, other.lastUpdated);
+        username = merge(username, other.username);
+        roles = merge(roles, other.roles);
+        org = merge(org, other.org);
+        email = merge(email, other.email);
+        firstname = merge(firstname, other.firstname);
+        lastname = merge(lastname, other.lastname);
+        tel = merge(tel, other.tel);
+        address = merge(address, other.address);
+        title = merge(title, other.title);
+        notes = merge(notes, other.notes);
+        jsonUser = merge(jsonUser, other.jsonUser);
+        orgname = merge(orgname, other.orgname);
+        orgid = merge(orgid, other.orgid);
+        orgLastUpdated = merge(orgLastUpdated, other.orgLastUpdated);
+        jsonOrganization = merge(jsonOrganization, other.jsonOrganization);
+        return this;
+    }
+
+    private Optional<Boolean> merge(Optional<Boolean> a, Optional<Boolean> b) {
+        return b.isEmpty() ? a : b;
+    }
 }

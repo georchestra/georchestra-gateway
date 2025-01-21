@@ -156,9 +156,9 @@ logging:
     '[org.springframework.cloud.gateway]': info
     '[org.springframework.security]': info
     '[org.springframework.security.oauth2]': debug
-    '[reactor.netty.http ]': debug
+    '[reactor.netty.http]': info
     '[org.georchestra.gateway]': info
-    '[org.georchestra.gateway.filter.headers]': debug
+    '[org.georchestra.gateway.filter.headers]': info
     '[org.georchestra.gateway.config.security]': debug
     '[org.georchestra.gateway.config.security.accessrules]': debug
     '[org.georchestra.gateway.security.ldap]': debug

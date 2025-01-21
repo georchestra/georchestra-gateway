@@ -14,10 +14,10 @@ your needs, then reconfigure the gateway to point to the newly created directory
 ----
 spring:
   thymeleaf:
-    prefix: file:/path/to/templates/
+    prefix: file:${georchestra.datadir}/gateway/templates/
 ----
 
-See also the <<custom-error-pages.adoc#,documentation to customize the error pages>>.
+Create a `login.html` file in this directory to customize login, and a `logout.html` file for logout. For errors pages, see below.
 
 == header
 
@@ -31,8 +31,77 @@ The web component is sourced from a Javascript file defined in the `default.prop
 # URL to the Javascript definition of the <geor-header> web component
 headerScript: https://cdn.jsdelivr.net/gh/georchestra/header@dist/header.js
 
-
 # From the gateway's yaml configuration
 # includes or disables the <geor-header/> web component
 georchestra.gateway.headerEnabled: true
+----
+
+== Customize error pages
+
+1. Go to application.yaml and add these new lines:
+
+[source,yaml]
+----
+server:
+  error:
+    whitelabel:
+      enabled: false
+----
+
+2. In the template directory create a subdirectory in template directory named `error`
+3. Place your error page files named as per the status code. For example for 404: `404.html`
+4. Restart georchestra gateway.
+
+== Using custom error pages for applications errors
+
+Custom error pages can also be used when an application behind the gateways returns an error.
+
+To enable it globally, add this to `application.yaml` :
+[source,yaml]
+----
+spring:
+  cloud:
+    gateway:
+      default-filters:
+        - ApplicationError
+----
+
+To enable it only on some routes, add this to concerned routes in `routes.yaml` :
+[source,yaml]
+----
+        filters:
+        - name: ApplicationError
+----
+
+== Translations
+
+Translation files can be provided for captions used in custom templates. File naming consists of a base name followed by an underscore and a language code, then the `.properties` extension. For example `basename_fr.properties` will be used for French translations. English translation can be left without underscore and language code as `basename.properties`.
+
+In-file format is `key = value` lines, and expected encoding is UTF-8.
+
+This sub-directory and the basename shall be specified in gateway configuration file `application.yaml`, by concatenation of the both as below :
+[source,yaml]
+----
+spring:
+  messages:
+    basename: file:${georchestra.datadir}/gateway/templates/messages/basename
+----
+
+== Static resources
+
+This directory can contain all needed static files for custom templates, such as images, CSS files, JS files... This sub-directory shall be specified in gateway configuration file `application.yaml` as below :
+[source,yaml]
+----
+spring:
+  web:
+    resources:
+      static-locations: file:${georchestra.datadir}/gateway/templates/static/
+----
+
+The path where they will be made available to the HTTP client has also to be specified in same location as below. Be aware not to collide with gateway routes when choosing this path.
+[source,yaml]
+----
+spring:
+  webflux:
+    static-path-pattern: /path/to/static/**
 ----
