@@ -83,13 +83,13 @@ jobs:
       run: |
         docker tag georchestra/gateway:latest ghcr.io/georchestra/georchestra-gateway/gateway:commit-${{ github.sha }}
         docker push ghcr.io/georchestra/georchestra-gateway/gateway:commit-${{ github.sha }}
-        
+
     - name: "Publish binaries in artifactory"
-        run: ./mvnw deploy -Dmaven.test.skip=true
-        continue-on-error: true
-        env:
-          ARTIFACTORY_TOKEN_REF: ${{ secrets.ARTIFACTORY_TOKEN }}
-          ARTIFACTORY_USERNAME_REF: ${{ secrets.ARTIFACTORY_USERNAME }}
+      run: ./mvnw deploy -Dmaven.test.skip=true
+      continue-on-error: true
+      env:
+        ARTIFACTORY_TOKEN_REF: ${{ secrets.ARTIFACTORY_TOKEN }}
+        ARTIFACTORY_USERNAME_REF: ${{ secrets.ARTIFACTORY_USERNAME }}
 
     - name: "Remove SNAPSHOT jars from repository"
       run: |
