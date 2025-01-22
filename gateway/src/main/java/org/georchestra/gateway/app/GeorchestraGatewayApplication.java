@@ -79,7 +79,7 @@ public class GeorchestraGatewayApplication {
     private @Value("${useLegacyHeader:false}") boolean useLegacyHeader;
     private @Value("${headerUrl:/header/}") String headerUrl;
     private @Value("${headerConfigFile:}") String headerConfigFile;
-    private @Value("${headerHeight:90}") int headerHeight;
+    private @Value("${headerHeight:80}") int headerHeight;
     private @Value("${logoUrl:}") String logoUrl;
     private @Value("${headerScript:https://cdn.jsdelivr.net/gh/georchestra/header@dist/header.js}") String headerScript;
     private @Value("${spring.messages.basename:}") String messagesBasename;
