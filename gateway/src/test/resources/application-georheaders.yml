@@ -23,16 +23,11 @@ georchestra:
           users:
             rdn: ou=users
             searchFilter: (uid={0})
-            pendingUsersSearchBaseDN: ou=pendingusers
-            protectedUsers: geoserver_privileged_user
           roles:
             rdn: ou=roles
             searchFilter: (member={0})
-            protectedRoles: ADMINISTRATOR, EXTRACTORAPP, GN_.*, ORGADMIN, REFERENT, USER, SUPERUSER
           orgs:
             rdn: ou=orgs
-            orgTypes: Association,Company,NGO,Individual,Other
-            pendingOrgSearchBaseDN: ou=pendingorgs
     services:
       echo:
         target: http://${httpEchoHost}:${httpEchoPort}

@@ -13,9 +13,8 @@
 </head>
 <body class="d-flex flex-column" id="georchestra-login-page">
 <header th:if="${headerEnabled}">
-    <geor-header th:stylesheet="${georchestraStylesheet}" th:legacy-header="${useLegacyHeader}"
-                 th:style="'height:' + ${headerHeight} + 'px'" th:logo-url="${logoUrl}"
-                 th:legacy-url="${headerUrl}"></geor-header>
+    <geor-header th:stylesheet="${georchestraStylesheet}" th:legacy-header="${useLegacyHeader}" th:legacy-url="${headerUrl}" th:logo-url="${logoUrl}"
+                 th:height="${headerHeight}" th:config-file="${configFile}"></geor-header>
 </header>
 <div class="container h-100 py-4 px-3">
     <div class="d-flex justify-content-center align-items-center rounded-5 h-100">

@@ -78,7 +78,8 @@ public class GeorchestraGatewayApplication {
     private @Value("${georchestraStylesheet:}") String georchestraStylesheet;
     private @Value("${useLegacyHeader:false}") boolean useLegacyHeader;
     private @Value("${headerUrl:/header/}") String headerUrl;
-    private @Value("${headerHeight:90}") int headerHeight;
+    private @Value("${headerConfigFile:}") String headerConfigFile;
+    private @Value("${headerHeight:80}") int headerHeight;
     private @Value("${logoUrl:}") String logoUrl;
     private @Value("${headerScript:https://cdn.jsdelivr.net/gh/georchestra/header@dist/header.js}") String headerScript;
     private @Value("${spring.messages.basename:}") String messagesBasename;
@@ -206,6 +207,7 @@ public class GeorchestraGatewayApplication {
         mdl.addAttribute("headerUrl", headerUrl);
         mdl.addAttribute("headerHeight", headerHeight);
         mdl.addAttribute("logoUrl", logoUrl);
+        mdl.addAttribute("headerConfigFile", headerConfigFile);
         mdl.addAttribute("headerEnabled", headerEnabled);
         mdl.addAttribute("headerScript", headerScript);
     }

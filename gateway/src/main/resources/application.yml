@@ -36,10 +36,8 @@ spring:
       enabled: true
       global-filter.websocket-routing.enabled: true
       metrics.enabled: true
-      # Uncomment the following to allow cross-origin requests from any methods
-      # coming from anywhere.
-      # See https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/cors-configuration.html
-      # for more infos.
+      # Uncomment the following to allow cross-origin requests from any methods coming from anywhere.
+      # See https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/cors-configuration.html for more info.
       #globalcors:
       #  cors-configurations:
       #    '[/**]':
@@ -48,21 +46,19 @@ spring:
       #      allowedMethods: "*"
 
       default-filters:
-      - SecureHeaders
-      - TokenRelay
-      - RemoveSecurityHeaders
-      # AddSecHeaders appends sec-* headers to proxied requests based on the currently authenticated user
-      - AddSecHeaders
-      - PreserveHostHeader
-      - ApplicationError
-      - LoginParamRedirect
+      - SecureHeaders # add security-related HTTP headers to responses sent from the gateway to clients. See https://blog.appcanary.com/2017/http-security-headers.html
+      - TokenRelay # propagates OAuth2 access tokens from incoming requests to downstream services
+      - RemoveSecurityHeaders # removing incoming sec-* headers to prevent impresionation
+      - AddSecHeaders # append resolved sec-* headers to proxied requests based on the currently authenticated user
+      - PreserveHostHeader # ensure that the original Host header from the incoming HTTP request is preserved and passed along to the downstream service
+      - ApplicationError # use gateway's custom error pages when a downstream request returns an error code
+      - LoginParamRedirect # redirect to /login if the request contains a ?login query param and is not already authenticated
       global-filter:
-        websocket-routing:
-          enabled: true
+        websocket-routing.enabled: true
       filter:
         secure-headers:
           enabled: true
-          disable:
+          disable: # NOTE: header names must be lower-case
           - content-security-policy
           frame-options: SAMEORIGIN
           xss-protection-header: 0
@@ -71,6 +67,7 @@ spring:
       #routes: ought to be loaded from gateway.yaml, preferrably from georchestra's datadir
 
 georchestra:
+  datadir: /etc/georchestra
   gateway:
     security:
       create-non-existing-users-in-l-d-a-p: false
@@ -107,16 +104,11 @@ georchestra:
           users:
             rdn: ${ldapUsersRdn:ou=users}
             searchFilter: ${ldapUserSearchFilter:(uid={0})}
-            pendingUsersSearchBaseDN: ou=pendingusers
-            protectedUsers: geoserver_privileged_user
           roles:
             rdn: ${ldapRolesRdn:ou=roles}
             searchFilter: ${ldapRolesSearchFilter:(member={0})}
-            protectedRoles: ADMINISTRATOR, EXTRACTORAPP, GN_.*, ORGADMIN, REFERENT, USER, SUPERUSER
           orgs:
             rdn: ${ldapOrgsRdn:ou=orgs}
-            orgTypes: Association,Company,NGO,Individual,Other
-            pendingOrgSearchBaseDN: ou=pendingorgs
 
 management:
   server:
@@ -139,15 +131,6 @@ management:
       enabled: true
       probes.enabled: true
       show-details: always
-  metrics:
-    binders:
-      processor.enabled: true
-      uptime.enabled: true
-      jvm.enabled: true
-    enable.all: true
-    enable.jvm: true
-    export:
-      atlas.enabled: false
 
 logging:
   level:

@@ -1,0 +1,45 @@
+# Spring-boot/cloud application configuration, imported from gateway.yaml
+server:
+  forward-headers-strategy: FRAMEWORK
+  reactive:
+    session:
+      timeout: 1440m # 24h
+
+# The following sample configuration disables x-frame-options and x-content-type options response headers
+# It is a two step process, by one side, we need to remove the headers from downstream service responses,
+# by adding a RemoveResponseHeader default filter for each response header to remove.
+# On the other hand, the gateway's corresponding secure headers have to be disabled
+# (see spring.cloud.gateway.filter.secure-headers.disable.*)
+spring:
+  cloud:
+    gateway:
+      metrics.enabled: true
+      # Uncomment the following to allow cross-origin requests from any methods coming from anywhere.
+      # See https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/cors-configuration.html for more info.
+      #globalcors:
+      #  cors-configurations:
+      #    '[/**]':
+      #      allowedOrigins: "*"
+      #      allowedHeaders: "*"
+      #      allowedMethods: "*"
+      default-filters:
+      - SecureHeaders # add security-related HTTP headers to responses sent from the gateway to clients. See https://blog.appcanary.com/2017/http-security-headers.html
+      - TokenRelay # propagates OAuth2 access tokens from incoming requests to downstream services
+      - RemoveSecurityHeaders # removing incoming sec-* headers to prevent impresionation
+      - AddSecHeaders # append resolved sec-* headers to proxied requests based on the currently authenticated user
+      - PreserveHostHeader # ensure that the original Host header from the incoming HTTP request is preserved and passed along to the downstream service
+      - ApplicationError # use gateway's custom error pages when a downstream request returns an error code
+      - LoginParamRedirect # redirect to /login if the request contains a ?login query param and is not already authenticated
+      - RemoveResponseHeader=X-Content-Type-Options # remove unwanted response header from downstream services
+      - RemoveResponseHeader=X-Frame-Options # remove unwanted response header from downstream services
+      filter:
+        secure-headers:
+          disable: # NOTE: header names must be lower-case
+          - content-security-policy
+          - x-frame-options
+          - x-content-type-options
+          referrer-policy: strict-origin
+          enabled: true
+          frame-options: SAMEORIGIN
+          xss-protection-header: 0
+          #content-security-policy: script-src 'self' 'unsafe-eval'; object-src 'self';

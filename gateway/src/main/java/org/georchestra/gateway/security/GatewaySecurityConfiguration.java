@@ -64,16 +64,37 @@ public class GatewaySecurityConfiguration {
 
     private @Value("${georchestra.gateway.logoutUrl:/?logout}") String georchestraLogoutUrl;
 
-//	@Primary
-//	@Bean
-//	ReactiveAuthenticationManager authManagerDelegator(List<ReactiveAuthenticationManager> managers) {
-//		return new DelegatingReactiveAuthenticationManager(managers);
-//	}
-
     /**
      * Relies on available {@link ServerHttpSecurityCustomizer} extensions to
      * configure the different aspects of the {@link ServerHttpSecurity} used to
      * {@link ServerHttpSecurity#build build} the {@link SecurityWebFilterChain}.
+     * <p>
+     * Disables appending default response headers as far as the regular
+     * Spring-Security is concerned. This way, we let Spring Cloud Gateway control
+     * their behavior. Otherwise the config property
+     * {@literal spring.cloud.gateway.filter.secure-headers.disable: x-frame-options}
+     * has no effect.
+     * <p>
+     * Note also {@literal spring.cloud.gateway.default-filters} must contain the
+     * {@literal SecureHeaders} filter.
+     * <p>
+     * Finally, note
+     * {@literal spring.cloud.gateway.default-filters: x-frame-options} won't
+     * prevent downstream services so provide their own header.
+     * <p>
+     * The following are the default headers suppressed here:
+     * 
+     * <pre>
+     * <code>
+     * Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+     * Pragma: no-cache
+     * Expires: 0
+     * X-Content-Type-Options: nosniff
+     * Strict-Transport-Security: max-age=31536000 ; includeSubDomains
+     * X-Frame-Options: DENY
+     * X-XSS-Protection: 1; mode=block
+     * </code>
+     * </pre>
      */
     @Bean
     SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
@@ -84,6 +105,9 @@ public class GatewaySecurityConfiguration {
         // disable CSRF protection, considering it will be managed
         // by proxified webapps, not the gateway.
         http.csrf().disable();
+
+        // disable default response headers. See comment in the method's javadoc
+        http.headers().disable();
 
         // custom handling for forbidden error
         http.exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler());

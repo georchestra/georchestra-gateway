@@ -5,6 +5,10 @@ spring:
   cloud:
     gateway:
       routes:
+      - id: echo
+        uri: ${georchestra.gateway.services.echo.target}
+        predicates:
+        - Path=/echo
       - id: root
         uri: ${georchestra.gateway.services.header.target}
         predicates:

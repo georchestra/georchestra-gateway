@@ -1,5 +1,3 @@
-version: "3.1"
-
 volumes:
   postgresql_data:
   datadir:
@@ -91,3 +89,8 @@ services:
     ports:
       - 10007:8080
     
+  echo:
+    image: ealen/echo-server:latest
+    ports:
+      - 10009:80
+        
