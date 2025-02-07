@@ -54,6 +54,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoderFactory;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.nimbusds.jwt.JWT;
@@ -287,6 +288,7 @@ public class OAuth2Configuration {
             log.info("OAuth2 client will use system-defined HTTP proxy settings if available.");
             httpClient = httpClient.proxyWithSystemProperties();
         }
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+        ExchangeFilterFunction handleJwtContentType = OpenIdHelper.transformJWTClientResponseToJSON();
+        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).filter(handleJwtContentType).build();
     }
 }
