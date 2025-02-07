@@ -50,10 +50,12 @@ import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.BadJwtException;
-import org.springframework.security.oauth2.jwt.Jwt;;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoderFactory;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.nimbusds.jwt.JWT;
@@ -245,8 +247,10 @@ public class OAuth2Configuration {
             httpClient = httpClient.proxyWithSystemProperties();
         }
         ReactorClientHttpConnector conn = new ReactorClientHttpConnector(httpClient);
+        ExchangeFilterFunction handleJwtContentType = OpenIdHelper.transformJWTClientResponseToJSON();
 
-        WebClient webClient = WebClient.builder().clientConnector(conn).build();
+        WebClient webClient = WebClient.builder().clientConnector(conn).filter(handleJwtContentType).build();
+
         return webClient;
     }
 
