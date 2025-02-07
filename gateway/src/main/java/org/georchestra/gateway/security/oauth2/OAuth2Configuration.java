@@ -48,6 +48,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.DefaultReactiveOAuth2UserService;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
@@ -191,6 +192,8 @@ public class OAuth2Configuration {
             try {
                 JWT parsedJwt = JWTParser.parse(token);
                 MacAlgorithm macAlgorithm = MacAlgorithm.from(parsedJwt.getHeader().getAlgorithm().getName());
+                SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm
+                        .from(parsedJwt.getHeader().getAlgorithm().getName());
                 NimbusReactiveJwtDecoder jwtDecoder;
                 if (macAlgorithm != null) {
                     var secretKey = clientRegistration.getClientSecret().getBytes(StandardCharsets.UTF_8);
@@ -200,6 +203,10 @@ public class OAuth2Configuration {
                     SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey, macAlgorithm.getName());
                     jwtDecoder = NimbusReactiveJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(macAlgorithm)
                             .build();
+                } else if (signatureAlgorithm != null) {
+                    jwtDecoder = NimbusReactiveJwtDecoder
+                            .withJwkSetUri(clientRegistration.getProviderDetails().getJwkSetUri())
+                            .jwsAlgorithm(signatureAlgorithm).webClient(oauth2WebClient).build();
                 } else {
                     jwtDecoder = NimbusReactiveJwtDecoder
                             .withJwkSetUri(clientRegistration.getProviderDetails().getJwkSetUri())
