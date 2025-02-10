@@ -107,6 +107,11 @@ public class GeorchestraGatewayApplication {
         }
 
         Map<String, Object> ret = new LinkedHashMap<>();
+        if (user != null) {
+            // notes is an internal field and should not be provided by the /whoami endpoint
+            // (see #170)
+            user.setNotes(null);
+        }
         ret.put("GeorchestraUser", user);
         if (principal == null) {
             ret.put("Authentication", null);
