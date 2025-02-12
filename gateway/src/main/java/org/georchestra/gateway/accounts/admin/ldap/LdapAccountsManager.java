@@ -214,12 +214,13 @@ class LdapAccountsManager extends AbstractAccountsManager {
         String orgUniqueId = Optional.ofNullable(newAccount.getOAuth2OrgId()).orElse("");
 
         // search by orgUniqueId or CN
-        Optional<Org> existingOrg = StringUtils.isNotEmpty(orgUniqueId) ? findOrgById(orgId, orgUniqueId)
-                : findOrg(orgId);
+        if (!StringUtils.isEmpty(orgId)) {
+            Optional<Org> existingOrg = StringUtils.isNotEmpty(orgUniqueId) ? findOrgById(orgId, orgUniqueId)
+                    : findOrg(orgId);
 
-        existingOrg.ifPresentOrElse(org -> addAccountToOrg(newAccount, org),
-                () -> createOrgAndAddAccount(newAccount, orgId, orgUniqueId));
-
+            existingOrg.ifPresentOrElse(org -> addAccountToOrg(newAccount, org),
+                    () -> createOrgAndAddAccount(newAccount, orgId, orgUniqueId));
+        }
     }
 
     private void createOrgAndAddAccount(Account newAccount, final String orgId, final String orgUniqueId) {

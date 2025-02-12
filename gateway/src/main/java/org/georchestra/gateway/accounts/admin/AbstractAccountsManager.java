@@ -18,8 +18,9 @@
  */
 package org.georchestra.gateway.accounts.admin;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.georchestra.ds.orgs.Org;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
@@ -27,9 +28,8 @@ import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomConfig;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.context.ApplicationEventPublisher;
 
-import java.util.Optional;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public abstract class AbstractAccountsManager implements AccountManager {
@@ -92,12 +92,16 @@ public abstract class AbstractAccountsManager implements AccountManager {
         if (null == existingUser.getOrganization()) {
             return false;
         }
+
         // Compare mapped orgUniqueId with existing user's org uniqueOrgId
         Org existUserOrg = findOrgByUser(existingUser);
-        String existOrgUniqueId = existUserOrg.getOrgUniqueId();
+
+        // Optional.ofNullable to consider that Null and empty are the same
+        String existOrgUniqueId = Optional.ofNullable(existUserOrg.getOrgUniqueId()).orElse("");
+        String mappedOrgUniqueId = Optional.ofNullable(mapped.getOAuth2OrgId()).orElse("");
         // return false if provider user's orgUniqueId is not
         // same as LDAP user's orgUniqueId
-        return mapped.getOAuth2OrgId().equals(existOrgUniqueId);
+        return mappedOrgUniqueId.equals(existOrgUniqueId);
     }
 
     @Override
