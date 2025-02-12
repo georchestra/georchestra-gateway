@@ -18,15 +18,18 @@
  */
 package org.georchestra.gateway.accounts.admin;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
-import org.georchestra.security.model.GeorchestraUser;
-import org.springframework.context.ApplicationEventPublisher;
-
 import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.georchestra.ds.orgs.Org;
+import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
+import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomConfig;
+import org.georchestra.security.model.GeorchestraUser;
+import org.springframework.context.ApplicationEventPublisher;
+
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public abstract class AbstractAccountsManager implements AccountManager {
@@ -35,9 +38,21 @@ public abstract class AbstractAccountsManager implements AccountManager {
 
     protected final ReadWriteLock lock = new ReentrantReadWriteLock();
 
+    private final OpenIdConnectCustomConfig providersConfig;
+
     @Override
     public GeorchestraUser getOrCreate(@NonNull GeorchestraUser mappedUser) throws DuplicatedEmailFoundException {
         return find(mappedUser).orElseGet(() -> createIfMissing(mappedUser));
+    }
+
+    public Optional<GeorchestraUser> findByEmailAndOAuth2OrgId(GeorchestraUser mappedUser) {
+        Optional<GeorchestraUser> user = null;
+        // search user by email
+        if ((null != mappedUser.getOAuth2Provider()) && (null != mappedUser.getOAuth2Uid())
+                && (null != mappedUser.getEmail())) {
+            user = findByEmail(mappedUser.getEmail());
+        }
+        return user;
     }
 
     public Optional<GeorchestraUser> find(GeorchestraUser mappedUser) {
@@ -50,22 +65,80 @@ public abstract class AbstractAccountsManager implements AccountManager {
     }
 
     protected Optional<GeorchestraUser> findInternal(GeorchestraUser mappedUser) {
-        if ((null != mappedUser.getOAuth2Provider()) && (null != mappedUser.getOAuth2Uid())) {
-            return findByOAuth2Uid(mappedUser.getOAuth2Provider(), mappedUser.getOAuth2Uid());
+        String oAuth2Provider = mappedUser.getOAuth2Provider();
+        String oAuth2UId = mappedUser.getOAuth2Uid();
+        if (oAuth2Provider != null && oAuth2UId != null) {
+            // search user by email or by OAuth2Uid
+            Boolean useEmail = providersConfig.useEmail(oAuth2Provider);
+            return useEmail ? findByEmail(mappedUser.getEmail()) : findByOAuth2Uid(oAuth2Provider, oAuth2UId);
         }
         return findByUsername(mappedUser.getUsername());
+    }
+
+    public Org findOrgByUser(GeorchestraUser existingUser) {
+        String existUserOrgCN = existingUser.getOrganization();
+        return findOrg(existUserOrgCN).orElse(null);
+    }
+
+    /**
+     * Control that orgUniqueId from provider match with georchestra orgUniqueId
+     * 
+     * @param mapped
+     * @param existingUser
+     * @return false if provider user's orgUniqueId is not same as LDAP user's
+     *         orgUniqueId
+     */
+    public Boolean isSameOrgUniqueId(GeorchestraUser mapped, GeorchestraUser existingUser) {
+        if (null == existingUser.getOrganization()) {
+            return false;
+        }
+
+        // Compare mapped orgUniqueId with existing user's org uniqueOrgId
+        Org existUserOrg = findOrgByUser(existingUser);
+
+        // Optional.ofNullable to consider that Null and empty are the same
+        String existOrgUniqueId = Optional.ofNullable(existUserOrg.getOrgUniqueId()).orElse("");
+        String mappedOrgUniqueId = Optional.ofNullable(mapped.getOAuth2OrgId()).orElse("");
+        // return false if provider user's orgUniqueId is not
+        // same as LDAP user's orgUniqueId
+        return mappedOrgUniqueId.equals(existOrgUniqueId);
+    }
+
+    @Override
+    public void createUserOrgUniqueIdIfMissing(@NonNull GeorchestraUser mapped) throws DuplicatedEmailFoundException {
+        lock.writeLock().lock();
+        try {
+            // verify if user exist
+            GeorchestraUser existing = findInternal(mapped).orElse(null);
+            // verify if user org match between ldap and OAuth2 info
+            if (!isSameOrgUniqueId(mapped, existing)) {
+                // we find or create org from this orgUniqueId and add user to this org
+                // unlink
+                unlinkUserOrg(existing);
+                // create org if necessary and add user to org
+                ensureOrgExists(mapped);
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     protected GeorchestraUser createIfMissing(GeorchestraUser mapped) throws DuplicatedEmailFoundException {
         lock.writeLock().lock();
         try {
+            // verify if user exist
             GeorchestraUser existing = findInternal(mapped).orElse(null);
+            // not exists
             if (null == existing) {
+                // create
                 createInternal(mapped);
                 existing = findInternal(mapped).orElseThrow(() -> new IllegalStateException(
                         "User " + mapped.getUsername() + " not found right after creation"));
                 eventPublisher.publishEvent(new AccountCreated(existing));
             }
+
+            createUserOrgUniqueIdIfMissing(mapped);
+
             return existing;
 
         } finally {
@@ -77,6 +150,14 @@ public abstract class AbstractAccountsManager implements AccountManager {
 
     protected abstract Optional<GeorchestraUser> findByUsername(String username);
 
+    protected abstract Optional<GeorchestraUser> findByEmail(String email);
+
     protected abstract void createInternal(GeorchestraUser mapped);
+
+    protected abstract void ensureOrgExists(GeorchestraUser mapped);
+
+    protected abstract Optional<Org> findOrg(String orgId);
+
+    protected abstract void unlinkUserOrg(GeorchestraUser existingUser);
 
 }

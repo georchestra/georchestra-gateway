@@ -21,6 +21,7 @@ package org.georchestra.gateway.security.oauth2;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +35,7 @@ import org.springframework.util.StringUtils;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 import lombok.Data;
 import lombok.NonNull;
@@ -47,6 +49,12 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
     private JsonPathExtractor id = new JsonPathExtractor();
     private RolesMapping roles = new RolesMapping();
     private JsonPathExtractor organization = new JsonPathExtractor();
+    private JsonPathExtractor organizationUid = new JsonPathExtractor();
+    private JsonPathExtractor familyName = new JsonPathExtractor();
+    private JsonPathExtractor givenName = new JsonPathExtractor();
+    private JsonPathExtractor email = new JsonPathExtractor();
+
+    private Map<String, OpenIdConnectCustomClaimsConfigProperties> provider = new HashMap<>();
 
     public Optional<JsonPathExtractor> id() {
         return Optional.ofNullable(id);
@@ -58,6 +66,26 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
 
     public Optional<JsonPathExtractor> organization() {
         return Optional.ofNullable(organization);
+    }
+
+    public Optional<JsonPathExtractor> organizationUid() {
+        return Optional.ofNullable(organizationUid);
+    }
+
+    public Optional<JsonPathExtractor> familyName() {
+        return Optional.ofNullable(familyName);
+    }
+
+    public Optional<JsonPathExtractor> givenName() {
+        return Optional.ofNullable(givenName);
+    }
+
+    public Optional<JsonPathExtractor> email() {
+        return Optional.ofNullable(email);
+    }
+
+    public Optional<OpenIdConnectCustomClaimsConfigProperties> getProviderConfig(@NonNull String providerName) {
+        return Optional.ofNullable(provider.get(providerName));
     }
 
     @Accessors(chain = true)
@@ -158,6 +186,13 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
          */
         private List<String> path = new ArrayList<>();
 
+        public JsonPathExtractor() {
+        }
+
+        public JsonPathExtractor(List<String> path) {
+            this.path = path;
+        }
+
         /**
          * @param claims
          * @return
@@ -173,6 +208,7 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
             if (!StringUtils.hasText(jsonPathExpression)) {
                 return List.of();
             }
+
             // if we call claims.get(key) and the result is a JSON object,
             // the json api used is a shaded version of org.json at package
             // com.nimbusds.jose.shaded.json, we don't want to use that
@@ -180,7 +216,14 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
             // JsonPath works fine with it though, as it's designed
             // to work on POJOS, JSONObject is a Map and JSONArray is a List so it's ok
             DocumentContext context = JsonPath.parse(claims);
-            Object matched = context.read(jsonPathExpression);
+            Object matched;
+
+            try {
+                matched = context.read(jsonPathExpression);
+            } catch (PathNotFoundException e) {
+                log.warn("JSONPath expression {} not found in claims", jsonPathExpression, e);
+                return List.of();
+            }
 
             if (null == matched) {
                 log.warn("The JSONPath expession {} evaluates to null", jsonPathExpression);

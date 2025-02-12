@@ -53,6 +53,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoderFactory;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.nimbusds.jwt.JWT;
@@ -120,8 +121,10 @@ public class OAuth2Configuration {
 
     @Bean
     OpenIdConnectUserMapper openIdConnectGeorchestraUserUserMapper(
-            OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig) {
-        return new OpenIdConnectUserMapper(nonStandardClaimsConfig);
+            OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig,
+            ExtendedOAuth2ClientProperties properties) {
+
+        return new OpenIdConnectUserMapper(nonStandardClaimsConfig, properties);
     }
 
     /**
@@ -239,8 +242,11 @@ public class OAuth2Configuration {
         }
         ReactorClientHttpConnector conn = new ReactorClientHttpConnector(httpClient);
 
-        WebClient webClient = WebClient.builder().clientConnector(conn).build();
+        // Client response application/jwt is not compatible with Spring-security
+        // This filter will allow to convert JWT response to JSON.
+        ExchangeFilterFunction handleJwtContentType = OpenIdHelper.transformJWTClientResponseToJSON();
+
+        WebClient webClient = WebClient.builder().clientConnector(conn).filter(handleJwtContentType).build();
         return webClient;
     }
-
 }

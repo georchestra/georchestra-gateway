@@ -88,6 +88,22 @@ public class DemultiplexingUsersApi {
         return extend(serviceName, user);
     }
 
+    public Optional<ExtendedGeorchestraUser> findByEmail(@NonNull String serviceName, @NonNull String email) {
+        UsersApi usersApi = usersByConfigName.get(serviceName);
+        Objects.requireNonNull(usersApi, () -> "No UsersApi found for config named " + serviceName);
+        Optional<GeorchestraUser> user = usersApi.findByEmail(email);
+
+        return extend(serviceName, user);
+    }
+
+    public Optional<ExtendedGeorchestraUser> findByEmail(@NonNull String email) {
+        String serviceName = usersByConfigName.keySet().stream().findFirst().get();
+        UsersApi usersApi = usersByConfigName.get(serviceName);
+        Optional<GeorchestraUser> user = usersApi.findByEmail(email);
+
+        return extend(serviceName, user);
+    }
+
     public Optional<ExtendedGeorchestraUser> findByOAuth2Uid(@NonNull String oauth2Provider,
             @NonNull String oauth2Uid) {
         String serviceName = usersByConfigName.keySet().stream().findFirst().get();

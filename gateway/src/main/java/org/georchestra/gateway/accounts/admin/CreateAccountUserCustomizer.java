@@ -22,7 +22,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
 
-import org.georchestra.ds.users.DuplicatedEmailException;
 import org.georchestra.gateway.security.GeorchestraUserCustomizerExtension;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.security.model.GeorchestraUser;
@@ -41,6 +40,9 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExtension, Ordered {
+
+    // private @Value("${georchestra.gateway.security.providerWithEmailAsUnique}")
+    // List<String> providerWithEmailAsUnique;
 
     private final @NonNull AccountManager accounts;
 
@@ -83,6 +85,7 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
                 }
             } else {
                 user = accounts.getOrCreate(mappedUser);
+                accounts.createUserOrgUniqueIdIfMissing(mappedUser);
             }
             user.setIsExternalAuth(true);
             loggedInUsers.put(auth, user);

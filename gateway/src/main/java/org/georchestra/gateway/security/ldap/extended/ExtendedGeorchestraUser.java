@@ -37,4 +37,7 @@ public class ExtendedGeorchestraUser extends GeorchestraUser {
     public @Override int hashCode() {
         return super.hashCode();
     }
+
+    @JsonIgnore
+    private @Getter @Setter String orgUniqueId;
 }

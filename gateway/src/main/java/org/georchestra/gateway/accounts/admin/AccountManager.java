@@ -58,4 +58,13 @@ public interface AccountManager {
      */
     GeorchestraUser getOrCreate(GeorchestraUser mappedUser);
 
+    /**
+     * 
+     * @param mappedUser the user {@link ResolveGeorchestraUserGlobalFilter}
+     *                   resolved by calling
+     *                   {@link GeorchestraUserMapper#resolve(Authentication)}
+     * @return
+     */
+    void createUserOrgUniqueIdIfMissing(GeorchestraUser mappedUser);
+
 }

@@ -36,6 +36,8 @@ public class ExtendedOAuth2ClientProperties implements InitializingBean {
 
     public static class Provider extends OAuth2ClientProperties.Provider {
         private String endSessionUri;
+        private Boolean pivot;
+        private Map<String, Object> claims;
 
         public String getEndSessionUri() {
             return this.endSessionUri;
@@ -43,6 +45,22 @@ public class ExtendedOAuth2ClientProperties implements InitializingBean {
 
         public void setEndSessionUri(String endSessionUri) {
             this.endSessionUri = endSessionUri;
+        }
+
+        public Boolean getPivot() {
+            return this.pivot;
+        }
+
+        public void setPivot(Boolean pivot) {
+            this.pivot = pivot;
+        }
+
+        public Map<String, Object> getClaims() {
+            return this.claims;
+        }
+
+        public void setClaims(Map<String, Object> claims) {
+            this.claims = claims;
         }
     }
 

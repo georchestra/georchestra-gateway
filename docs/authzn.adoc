@@ -153,7 +153,13 @@ georchestra:
 
 OAuth2 authentication is enabled by setting `georchestra.gateway.security.oauth2.enabled` to `true`.
 
-=== Provider configuration
+Next, 3 sections allow to manage provider configuration:
+
+- Spring-security section under `spring.security.oauth2.client`
+- geOrchestra's section under `georchestra.gateway.security.oidc` wich contains `claims` mapping and `config` settings (general or by provider)
+- geOrchestra's section under `georchestra.gateway.security.oidc.config` wich contains a general OpenID configuration and configuration by provider.
+
+=== Spring provider configuration
 
 Identity providers are declared as shown in https://docs.spring.io/spring-security/reference/servlet/oauth2/login/core.html[Spring OAuth2 Log In documentation].
 Some providers are natively supported by Spring, resulting in minimal configuration which often summarizes
@@ -223,6 +229,38 @@ access to their identification feature with given secrets. Here are the callback
 Login callback : `https://<gateway-url>/login/oauth2/code/<provider-name>` +
 Logout callback : `https://<gateway-url>/login?logout`
 
+=== Provider's configuration
+
+This configuration is located under `georchestra.gateway.security.oidc.config`.
+
+All parameters are common.
+Provider's settings override general settings if exists or available such as claims mapping.
+
+By example with `searchEmail`, `georchestra.gateway.security.oidc.config.searchEmail` is override by `georchestra.gateway.security.oidc.config.provider.[provider].searchEmail`.
+
+|===
+|Property name | Default value | Description
+|`georchestra.gateway.security.oidc.config.searchEmail`
+| false
+| Find user in geOrchestra by email
+|===
+
+Here is an example of a working configuration to retrieve ProConnect user by email :
+[source,yaml]
+----
+georchestra:
+  gateway:
+    security:
+      oidc:
+        config:
+          searchEmail: false
+          provider:
+            proconnect:
+              searchEmail: true
+            google:
+              searchEmail: false
+----
+
 === FranceConnect provider
 
 FranceConnect is a widely used french identity provider which allows individuals to login on a public
@@ -234,7 +272,6 @@ endpoints, and dummy accounts for testing purpose.
 
 FranceConnect technical documentation is available https://partenaires.franceconnect.gouv.fr/fcp/fournisseur-service[here in French]. It requires some specific parameters to be used with the gateway. Here is an example of a working
 configuration using integration platform (URLs may change) :
-
 [source,yaml]
 ----
 spring:
@@ -268,13 +305,80 @@ FranceConnect does not support the general `profile` scope, so it is required to
 OpenID fields one by one, as in the example, in a list of supported fields. It will also show to the user
 when logging in which scope has been requested.
 
+=== ProConnect provider
+
+ProConnect enables private and public sector professionals to connect to their usual applications. It's like FranceConnect, but for professionals.
+
+ProConnect overview and technical documentation is available https://github.com/numerique-gouv/proconnect-documentation[here in French]. It requires some specific parameters to be used with the gateway.
+Here is an example of a working configuration using integration platform (URLs may change) :
+[source,yaml]
+----
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          proconnect:
+            provider: proconnect
+            client-name: proconnect
+            client-authentication-method: post
+            client-id: <client-id>
+            client-secret: <client-secret>
+            authorization-grant-type: authorization_code
+            redirect-uri: <redirect-url>
+            scope: openid,siret,given_name,usual_name,email,uid,custom
+        provider:
+          proconnect:
+            issuer-uri: https://fca.integ01.dev-agentconnect.fr/api/v2
+----
+
+You can replace `issuer-uri` by full configurations such as FranConnect.
+
+[source,yaml]
+----
+        provider:
+          proconnect:
+            authorization-uri: https://fca.integ01.dev-agentconnect.fr/api/v2/authorize
+            token-uri: https://fca.integ01.dev-agentconnect.fr/api/v2/token
+            user-info-uri: https://fca.integ01.dev-agentconnect.fr/api/v2/userinfo
+            end-session-uri: https://fca.integ01.dev-agentconnect.fr/api/v2/session/end
+            jwk-set-uri: https://fca.integ01.dev-agentconnect.fr/api/v2/jwks
+            user-name-attribute: sub
+----
+
+Note that ProConnect does not support the general `profile` scope, so it is required to specify each necessary
+OpenID fields one by one. You can find the list of claims https://github.com/numerique-gouv/proconnect-documentation/blob/main/doc_fs/scope-claims.md#correspondance-entre-scope-et-claims-sur-proconnect[here].
+
+Finally, ProConnect use a non standard claims "usual_name" instead of standard "family_name". You needs map claims (see next section) under  `georchestra.gateway.security.oidc.claims.provider`:
+
+[source,yaml]
+----
+          provider:
+            proconnect:
+              id.path: "$.sub"
+              email.path: "$.email"
+              familyName.path: "$.usual_name"
+              givenName.path: "$.given_name"
+              organization.path: "$.given_name"
+              organizationUid.path: "$.siret"
+----
+
 === Claims configuration
 
-Both standard and non-standard claims can be used to set the `GeorchestraUser`'s
-`organization` short name and `roles` properties using JSONPath expressions with
-`OidcUser#getClaims():Map<String, Object>` as the expresion's root object.
+Standard claims are automatically mapped between user Token infos and Spring-security. Spring seems to be aligned with https://openid.net/specs/openid-connect-core-1_0.html[OpenId specifications (5.1. Standard Claims)] for identifying token fields.
+Others claims can't be recognize and needs a custom mapping (non standard claims).
+
+Both standard and non-standard claims can be used to set the `GeorchestraUser`'s `organization` short name, `roles`, `email`, `firstname`, `lastname` properties
+using JSONPath expressions with `OidcUser#getClaims():Map<String, Object>` as the expresion's root object.
 
 > `org.springframework.security.oauth2.core.oidc.user.OidcUser`
+
+Not that 2 configurations level are available : 
+
+- General claims settings : georchestra.gateway.security.oidc.Claims
+- Claims settings by provider : georchestra.gateway.security.oidc.claims.provider.<provider>
+
+During the mapping process, the standard claims are mapped first and non standard claims are mapped next to override first standard mapping (only if mapping success).
 
 |===
 |Property name | Default value | Description
@@ -303,6 +407,26 @@ Both standard and non-standard claims can be used to set the `GeorchestraUser`'s
 |Whether to append (`true`) the resolved role names to the roles given by the OAuth2 authentication, or replace them (`false`).
 |===
 
+|`georchestra.gateway.security.oidc.claims.email`
+| 
+|JSONPath expression to extract the email from the OIDC claims map
+|===
+
+|`georchestra.gateway.security.oidc.claims.givenName`
+| defaults to the standard "given_name" claim
+|JSONPath expression to extract the given name from the OIDC claims map
+|===
+
+|`georchestra.gateway.security.oidc.claims.familyName`
+| defaults to the standard "family_name" claim
+|JSONPath expression to extract the family name from the OIDC claims map
+|===
+
+|`georchestra.gateway.security.oidc.claims.organizationUid`
+| 
+|(optional) JSONPath expression to extract the unique organization id the OIDC claims map
+|===
+
 === Example
 
 Take as example the following claims provided by an OIDC ID Token:
@@ -326,7 +450,7 @@ Take as example the following claims provided by an OIDC ID Token:
 }
 ----
 
-The following configuration properties can be used to extract the user id from the
+The following general configuration properties can be used to extract the user id from the
 `icuid` claim, the role names from the `groups` claim,
 and the organization's short name from the `PartyOrganisationID` claim:
 
@@ -388,6 +512,38 @@ Which the gateway will then convey to the proxied services as the following requ
 sec-roles: ROLE_ORG_6007280321;ROLE_GDI_PLANER;ROLE_GDI_EDITOR;ROLE_USER
 sec-org: 6007280321
 ```
+
+At provider level, the following provider's claims configuration properties can be used to extract others claims from provider config (proconnect here):
+
+[source,yaml]
+----
+georchestra:
+  gateway:
+    security:
+      oidc:
+        # Configure general mappings of custom IDToken claims to roles and org name
+        claims:
+          # JSONPath expression to extract the user id from a non-standard claim. Otherwise defaults to the "sub" claim (subject identifier)
+          id.path: "$.sub"
+          organization.path: "$.org_id"
+          pivot: "$.email"
+          roles:
+            json.path:
+              - "$.concat(\"ORG_\", $.siret)"
+          provider:
+            # configure providers claims mapping
+            proconnect:
+              id.path: "$.sub"
+              email.path: "$.email"
+              familyName.path: "$.usual_name"
+              givenName.path: "$.given_name"
+              organization.path: "$.given_name"
+              organizationUid.path: "$.siret"
+              roles:
+                json.path:
+                  - "$.concat(\"ORG_\", $.siret)"
+                  - "$.concat(\"ORG_\", $.foo)"
+----
 
 == External authentication
 
