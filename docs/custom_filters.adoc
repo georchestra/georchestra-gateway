@@ -77,7 +77,38 @@ spring:
 === RemoveSecurityHeadersGatewayFilter
 
 Removes any incoming `sec-\*` request header to prevent impersonation. Valid `sec-*` headers ought to be
-computed by the filter chain and appended to proxied requests.
+computed by the filter chain and appended to proxied requests. This filter also removes the
+`Authorization: basic [...]` http headers, which is meant to authenticate geOrchestra users and
+should not be sent to proxified webapps.
+
+Technically, this filter is an instance of the `RemoveHeadersGatewayFilter` (see next section)
+instanciated with the following regex:
+
+```
+"(?i)(sec-.*|Authorization)"
+```
+
+=== RemoveHeadersGatewayFilter
+
+This filter is a more generic version of the previous one, which allows to pass a custom regular
+expression as parameter.
+
+Considering you want to strip Basic-authentication http headers, but keep the bearer-related ones
+proxified to underlying webapps, one could use the following configuration:
+
+```
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: proxified-service
+        uri: http://proxified-service:8080
+        predicates:
+        - Path=/proxified-service/**
+        filters:
+        # Strip basic authentication headers but keep bearer ones
+        - RemoveHeaders=(?i)^(sec-.*|Authorization:(?!\s*Bearer\s*$))
+```
 
 === AddSecHeadersGatewayFilter
 

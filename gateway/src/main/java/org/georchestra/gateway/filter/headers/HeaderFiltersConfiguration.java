@@ -95,4 +95,5 @@ public class HeaderFiltersConfiguration {
     RemoveSecurityHeadersGatewayFilterFactory removeSecurityHeadersGatewayFilterFactory() {
         return new RemoveSecurityHeadersGatewayFilterFactory();
     }
+
 }

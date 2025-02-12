@@ -48,7 +48,7 @@ spring:
       default-filters:
       - SecureHeaders # add security-related HTTP headers to responses sent from the gateway to clients. See https://blog.appcanary.com/2017/http-security-headers.html
       - TokenRelay # propagates OAuth2 access tokens from incoming requests to downstream services
-      - RemoveSecurityHeaders # removing incoming sec-* headers to prevent impresionation
+      - RemoveSecurityHeaders # removing incoming sec-* headers to prevent impersonation
       - AddSecHeaders # append resolved sec-* headers to proxied requests based on the currently authenticated user
       - PreserveHostHeader # ensure that the original Host header from the incoming HTTP request is preserved and passed along to the downstream service
       - ApplicationError # use gateway's custom error pages when a downstream request returns an error code

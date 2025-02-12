@@ -21,6 +21,7 @@ package org.georchestra.gateway.filter.headers;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -76,11 +77,10 @@ public class RemoveHeadersGatewayFilterFactory extends AbstractGatewayFilterFact
     public GatewayFilter apply(RegExConfig regexConfig) {
         return (exchange, chain) -> {
             final RegExConfig config = regexConfig;// == null ? DEFAULT_SECURITY_HEADERS_CONFIG : regexConfig;
-            HttpHeaders incoming = exchange.getRequest().getHeaders();
-            if (config.anyMatches(incoming)) {
-                ServerHttpRequest request = exchange.getRequest().mutate().headers(config::removeMatching).build();
-                exchange = exchange.mutate().request(request).build();
-            }
+
+            ServerHttpRequest request = exchange.getRequest().mutate().headers(config::removeMatching).build();
+            exchange = exchange.mutate().request(request).build();
+
             return chain.filter(exchange);
         };
     }
@@ -107,17 +107,21 @@ public class RemoveHeadersGatewayFilterFactory extends AbstractGatewayFilterFact
             return compiled;
         }
 
-        boolean matches(@NonNull String headerName) {
-            return pattern().matcher(headerName).matches();
+        boolean anyMatches(@NonNull HttpHeaders httpHeaders) {
+            return httpHeaders.keySet().stream().anyMatch(h -> this.matches(h, httpHeaders.get(h)));
         }
 
-        boolean anyMatches(@NonNull HttpHeaders headers) {
-            return headers.keySet().stream().anyMatch(this::matches);
+        boolean matches(@NonNull String headerNameOrTuple) {
+            return pattern().matcher(headerNameOrTuple).matches();
+        }
+
+        boolean matches(@NonNull String headerName, List<String> values) {
+            return values.stream().map(value -> "%s: %s".formatted(headerName, value)).anyMatch(this::matches);
         }
 
         void removeMatching(@NonNull HttpHeaders headers) {
-            new HashSet<>(headers.keySet()).stream()//
-                    .filter(this::matches)//
+            List.copyOf(headers.entrySet()).stream().filter(e -> matches(e.getKey()))//
+                    .filter(e -> matches(e.getKey(), e.getValue())).map(Map.Entry::getKey)//
                     .peek(name -> log.trace("Removing header {}", name))//
                     .forEach(headers::remove);
         }
