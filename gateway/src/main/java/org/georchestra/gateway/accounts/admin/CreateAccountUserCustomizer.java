@@ -41,6 +41,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExtension, Ordered {
 
+    // private @Value("${georchestra.gateway.security.providerWithEmailAsUnique}")
+    // List<String> providerWithEmailAsUnique;
+
     private final @NonNull AccountManager accounts;
 
     private final WeakHashMap<Authentication, GeorchestraUser> loggedInUsers = new WeakHashMap<>();
@@ -82,6 +85,7 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
                 }
             } else {
                 user = accounts.getOrCreate(mappedUser);
+                accounts.createUserOrgUniqueIdIfMissing(mappedUser);
             }
             user.setIsExternalAuth(true);
             loggedInUsers.put(auth, user);

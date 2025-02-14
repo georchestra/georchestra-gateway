@@ -32,6 +32,7 @@ import org.georchestra.gateway.accounts.admin.CreateAccountUserCustomizer;
 import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.georchestra.gateway.security.ldap.extended.DemultiplexingUsersApi;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapConfig;
+import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomConfig;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -54,7 +55,7 @@ import org.springframework.ldap.pool.validation.DefaultDirContextValidator;
  * </p>
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(GeorchestraGatewaySecurityConfigProperties.class)
+@EnableConfigurationProperties({ GeorchestraGatewaySecurityConfigProperties.class, OpenIdConnectCustomConfig.class })
 public class GeorchestraLdapAccountManagementConfiguration {
 
     /**
@@ -75,10 +76,12 @@ public class GeorchestraLdapAccountManagementConfiguration {
             AccountDao accountDao, //
             RoleDao roleDao, //
             OrgsDao orgsDao, //
-            DemultiplexingUsersApi demultiplexingUsersApi,
-            GeorchestraGatewaySecurityConfigProperties configProperties) {
+            DemultiplexingUsersApi demultiplexingUsersApi, //
+            GeorchestraGatewaySecurityConfigProperties configProperties, //
+            OpenIdConnectCustomConfig providerConfig) {
+
         return new LdapAccountsManager(eventPublisher::publishEvent, accountDao, roleDao, orgsDao,
-                demultiplexingUsersApi, configProperties);
+                demultiplexingUsersApi, configProperties, providerConfig);
     }
 
     /**

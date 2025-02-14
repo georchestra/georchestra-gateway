@@ -21,6 +21,7 @@ package org.georchestra.gateway.security.oauth2;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +34,7 @@ import org.springframework.util.StringUtils;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 
 import lombok.Data;
 import lombok.NonNull;
@@ -54,6 +56,12 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
     private JsonPathExtractor id = new JsonPathExtractor();
     private RolesMapping roles = new RolesMapping();
     private JsonPathExtractor organization = new JsonPathExtractor();
+    private JsonPathExtractor organizationUid = new JsonPathExtractor();
+    private JsonPathExtractor familyName = new JsonPathExtractor();
+    private JsonPathExtractor givenName = new JsonPathExtractor();
+    private JsonPathExtractor email = new JsonPathExtractor();
+
+    private Map<String, OpenIdConnectCustomClaimsConfigProperties> provider = new HashMap<>();
 
     /**
      * Retrieves the JSONPath extractor configuration for extracting the user ID.
@@ -84,6 +92,59 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
      */
     public Optional<JsonPathExtractor> organization() {
         return Optional.ofNullable(organization);
+    }
+
+    /**
+     * Retrieves the JSONPath extractor configuration for extracting the
+     * organization'field orgUniqueId (not UUID).
+     *
+     * @return an {@link Optional} containing the {@link JsonPathExtractor} for
+     *         organizationUid extraction.
+     */
+    public Optional<JsonPathExtractor> organizationUid() {
+        return Optional.ofNullable(organizationUid);
+    }
+
+    /**
+     * Retrieves the JSONPath extractor configuration for extracting the family
+     * name.
+     *
+     * @return an {@link Optional} containing the {@link JsonPathExtractor} for
+     *         family name extraction.
+     */
+    public Optional<JsonPathExtractor> familyName() {
+        return Optional.ofNullable(familyName);
+    }
+
+    /**
+     * Retrieves the JSONPath extractor configuration for extracting the given name.
+     *
+     * @return an {@link Optional} containing the {@link JsonPathExtractor} for
+     *         given name extraction.
+     */
+    public Optional<JsonPathExtractor> givenName() {
+        return Optional.ofNullable(givenName);
+    }
+
+    /**
+     * Retrieves the JSONPath extractor configuration for extracting the email.
+     *
+     * @return an {@link Optional} containing the {@link JsonPathExtractor} for
+     *         email extraction.
+     */
+    public Optional<JsonPathExtractor> email() {
+        return Optional.ofNullable(email);
+    }
+
+    /**
+     * Extract a provider claims mapping.
+     *
+     * @return an {@link Optional} containing the
+     *         {@link OpenIdConnectCustomClaimsConfigProperties} provider claims
+     *         mapping.
+     */
+    public Optional<OpenIdConnectCustomClaimsConfigProperties> getProviderConfig(@NonNull String providerName) {
+        return Optional.ofNullable(provider.get(providerName));
     }
 
     /**
@@ -221,6 +282,18 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
          */
         private List<String> path = new ArrayList<>();
 
+        public JsonPathExtractor() {
+        }
+
+        /**
+         * Constructor to pass path param directly.
+         * 
+         * @param path
+         */
+        public JsonPathExtractor(List<String> path) {
+            this.path = path;
+        }
+
         /**
          * Extracts values from the provided OIDC claims using the configured JSONPath
          * expressions.
@@ -252,7 +325,14 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
             // JsonPath works fine with it though, as it's designed
             // to work on POJOS, JSONObject is a Map and JSONArray is a List so it's ok
             DocumentContext context = JsonPath.parse(claims);
-            Object matched = context.read(jsonPathExpression);
+            Object matched;
+
+            try {
+                matched = context.read(jsonPathExpression);
+            } catch (PathNotFoundException e) {
+                log.warn("JSONPath expression {} not found in claims", jsonPathExpression, e);
+                return List.of();
+            }
 
             if (matched == null) {
                 log.warn("The JSONPath expression {} evaluates to null", jsonPathExpression);

@@ -88,3 +88,13 @@ a:hover {
 .separator:not(:empty)::after {
   margin-left: .25em;
 }
+
+.proconnect {
+  width: 214px;
+  height: 56px;
+  border: none;
+}
+
+.btn-oauth2:has(.proconnect) {
+  background-color: white !important;
+}
