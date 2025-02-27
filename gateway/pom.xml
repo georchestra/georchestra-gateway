@@ -355,6 +355,9 @@
               <image>
                 <pullPolicy>IF_NOT_PRESENT</pullPolicy>
               </image>
+              <jvmOptions>
+                -XX:MaxRAMPercentage=80 -XX:+UseParallelGC
+              </jvmOptions>
             </configuration>
           </plugin>
         </plugins>
