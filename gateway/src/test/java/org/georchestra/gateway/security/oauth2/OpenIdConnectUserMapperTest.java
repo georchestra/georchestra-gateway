@@ -43,6 +43,7 @@ class OpenIdConnectUserMapperTest {
 
     OpenIdConnectUserMapper mapper;
     OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig;
+    ExtendedOAuth2ClientProperties properties;
 
     /**
      * @throws java.lang.Exception
@@ -98,7 +99,7 @@ class OpenIdConnectUserMapperTest {
         Map<String, Object> claims = sampleClaims(json);
 
         GeorchestraUser target = new GeorchestraUser();
-        mapper.applyNonStandardClaims(claims, target);
+        mapper.applyGeorchestraNonStandardClaims(claims, target);
 
         assertEquals(List.of("GDI_PLANER_EXTERN"), target.getRoles());
     }
@@ -126,7 +127,7 @@ class OpenIdConnectUserMapperTest {
         Map<String, Object> claims = sampleClaims(json);
 
         GeorchestraUser target = new GeorchestraUser();
-        mapper.applyNonStandardClaims(claims, target);
+        mapper.applyGeorchestraNonStandardClaims(claims, target);
 
         List<String> expected = List.of("GDI_PLANER_EXTERN", "GDI_EDITOR_EXTERN");
         List<String> actual = target.getRoles();
@@ -158,7 +159,7 @@ class OpenIdConnectUserMapperTest {
         Map<String, Object> claims = sampleClaims(json);
 
         GeorchestraUser target = new GeorchestraUser();
-        mapper.applyNonStandardClaims(claims, target);
+        mapper.applyGeorchestraNonStandardClaims(claims, target);
 
         List<String> expected = List.of("ORG_6007280321", "GDI_PLANER_EXTERN", "GDI_EDITOR_EXTERN");
         List<String> actual = target.getRoles();
@@ -176,7 +177,7 @@ class OpenIdConnectUserMapperTest {
 
         GeorchestraUser target = new GeorchestraUser();
         target.setOrganization("unexpected");
-        mapper.applyNonStandardClaims(claims, target);
+        mapper.applyGeorchestraNonStandardClaims(claims, target);
 
         String expected = "6007280321";
         String actual = target.getOrganization();
@@ -193,7 +194,7 @@ class OpenIdConnectUserMapperTest {
         nonStandardClaimsConfig.getId().getPath().add(jsonPath);
 
         GeorchestraUser target = new GeorchestraUser();
-        mapper.applyNonStandardClaims(claims, target);
+        mapper.applyGeorchestraNonStandardClaims(claims, target);
         assertEquals(icuid, target.getId());
     }
 

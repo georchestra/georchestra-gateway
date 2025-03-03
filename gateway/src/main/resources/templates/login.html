@@ -62,9 +62,9 @@
                     <div th:if="${oauth2LoginLinks.size() != 0}" class="container">
                         <div class="separator" th:text="#{separator_login}"></div>
                         <div class="d-flex align-items-center justify-content-evenly my-3">
-                            <div class="bg-light border p-2 rounded" th:each="oauth2Client : ${oauth2LoginLinks}">
+                            <div class="bg-light border p-2 rounded btn-oauth2" th:each="oauth2Client : ${oauth2LoginLinks}">
                                 <a th:href="${oauth2Client.key}" th:title="${oauth2Client.value.left}">
-                                    <img th:src="${oauth2Client.value.right}" th:alt="${oauth2Client.value.left}" width="24" height="24">
+                                    <img th:src="${oauth2Client.value.right}" th:alt="${oauth2Client.value.left}" width="24" height="24" th:class="${oauth2Client.value.left}">
                                 </a>
                             </div>
                         </div>

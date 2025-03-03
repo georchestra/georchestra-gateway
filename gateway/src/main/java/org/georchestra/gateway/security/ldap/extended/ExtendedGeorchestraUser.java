@@ -110,4 +110,10 @@ public class ExtendedGeorchestraUser extends GeorchestraUser {
     public @Override int hashCode() {
         return super.hashCode();
     }
+
+    /**
+     * The orgUniqueId associated with this user.
+     */
+    @JsonIgnore
+    private @Getter @Setter String orgUniqueId;
 }

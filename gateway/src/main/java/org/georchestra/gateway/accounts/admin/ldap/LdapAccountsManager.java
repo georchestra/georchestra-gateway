@@ -41,6 +41,7 @@ import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperti
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.gateway.security.exceptions.DuplicatedUsernameFoundException;
 import org.georchestra.gateway.security.ldap.extended.DemultiplexingUsersApi;
+import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomConfig;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.ldap.NameNotFoundException;
@@ -86,6 +87,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
 
     /** API for resolving users based on OAuth2 credentials. */
     private final @NonNull DemultiplexingUsersApi demultiplexingUsersApi;
+    private final @NonNull OpenIdConnectCustomConfig providersConfig;
 
     /**
      * Constructs an instance of {@code LdapAccountsManager}.
@@ -109,13 +111,15 @@ class LdapAccountsManager extends AbstractAccountsManager {
      */
     public LdapAccountsManager(ApplicationEventPublisher eventPublisher, AccountDao accountDao, RoleDao roleDao,
             OrgsDao orgsDao, DemultiplexingUsersApi demultiplexingUsersApi,
-            GeorchestraGatewaySecurityConfigProperties georchestraGatewaySecurityConfigProperties) {
-        super(eventPublisher);
+            GeorchestraGatewaySecurityConfigProperties georchestraGatewaySecurityConfigProperties,
+            OpenIdConnectCustomConfig providersConfig) {
+        super(eventPublisher, providersConfig);
         this.accountDao = accountDao;
         this.roleDao = roleDao;
         this.orgsDao = orgsDao;
         this.demultiplexingUsersApi = demultiplexingUsersApi;
         this.georchestraGatewaySecurityConfigProperties = georchestraGatewaySecurityConfigProperties;
+        this.providersConfig = providersConfig;
     }
 
     /**
@@ -149,6 +153,11 @@ class LdapAccountsManager extends AbstractAccountsManager {
     @Override
     protected Optional<GeorchestraUser> findByUsername(@NonNull String username) {
         return demultiplexingUsersApi.findByUsername(username).map(this::ensureRolesPrefixed);
+    }
+
+    @Override
+    protected Optional<GeorchestraUser> findByEmail(@NonNull String email) {
+        return demultiplexingUsersApi.findByEmail(email).map(this::ensureRolesPrefixed);
     }
 
     /**
@@ -283,9 +292,12 @@ class LdapAccountsManager extends AbstractAccountsManager {
         String description = "";
         final @javax.annotation.Nullable String oAuth2Provider = preAuth.getOAuth2Provider();
         final @javax.annotation.Nullable String oAuth2Uid = preAuth.getOAuth2Uid();
+        final @javax.annotation.Nullable String oAuth2OrgId = preAuth.getOAuth2OrgId();
 
         Account newAccount = AccountFactory.createBrief(username, password, firstName, lastName, email, phone, title,
                 description, oAuth2Provider, oAuth2Uid);
+        // if provider org id exists, we will use it as uniqueOrgId
+        newAccount.setOAuth2OrgId(Optional.ofNullable(oAuth2OrgId).orElse(""));
         newAccount.setPending(false);
         String defaultOrg = this.georchestraGatewaySecurityConfigProperties.getDefaultOrganization();
         if (StringUtils.isEmpty(org) && !StringUtils.isBlank(defaultOrg)) {
@@ -299,11 +311,39 @@ class LdapAccountsManager extends AbstractAccountsManager {
     /**
      * @throws IllegalStateException if the org can't be created/updated
      */
+    @Override
+    protected void unlinkUserOrg(@NonNull GeorchestraUser user) {
+        if (user.getOrganization() != null) {
+            Account newAccount = mapToAccountBrief(user);
+            orgsDao.unlinkUser(newAccount);
+        }
+    }
+
+    /**
+     * @throws IllegalStateException if the org can't be created/updated
+     */
+    @Override
+    protected void ensureOrgExists(@NonNull GeorchestraUser mappedUser) {
+        Account newAccount = mapToAccountBrief(mappedUser);
+        ensureOrgExists(newAccount);
+    }
+
+    /**
+     * Retrieve LDAP organization from org value
+     * 
+     * @throws IllegalStateException if the org can't be created/updated
+     */
     private void ensureOrgExists(@NonNull Account newAccount) {
         final String orgId = newAccount.getOrg();
+        String orgUniqueId = Optional.ofNullable(newAccount.getOAuth2OrgId()).orElse("");
+
+        // search by orgUniqueId or CN
         if (!StringUtils.isEmpty(orgId)) {
-            findOrg(orgId).ifPresentOrElse(org -> addAccountToOrg(newAccount, org),
-                    () -> createOrgAndAddAccount(newAccount, orgId));
+            Optional<Org> existingOrg = StringUtils.isNotEmpty(orgUniqueId) ? findOrgById(orgId, orgUniqueId)
+                    : findOrg(orgId);
+
+            existingOrg.ifPresentOrElse(org -> addAccountToOrg(newAccount, org),
+                    () -> createOrgAndAddAccount(newAccount, orgId, orgUniqueId));
         }
     }
 
@@ -313,10 +353,10 @@ class LdapAccountsManager extends AbstractAccountsManager {
      * @param newAccount the user account to add to the new organization
      * @param orgId      the identifier of the organization
      */
-    private void createOrgAndAddAccount(Account newAccount, final String orgId) {
+    private void createOrgAndAddAccount(Account newAccount, final String orgId, final String orgUniqueId) {
         try {
             log.info("Org {} does not exist, trying to create it", orgId);
-            Org org = newOrg(orgId);
+            Org org = newOrg(orgId, orgUniqueId);
             org.getMembers().add(newAccount.getUid());
             orgsDao.insert(org);
         } catch (Exception orgError) {
@@ -330,6 +370,17 @@ class LdapAccountsManager extends AbstractAccountsManager {
         orgsDao.update(org);
     }
 
+    protected Optional<Org> findOrgById(String orgId, String orgUniqueId) {
+        orgUniqueId = (orgUniqueId == null || orgUniqueId.isEmpty()) ? null : orgUniqueId;
+        try {
+            String cn = Optional.ofNullable(orgUniqueId)
+                    .flatMap(id -> Optional.ofNullable(orgsDao.findByOrgUniqueId(id))).map(Org::getId).orElse(orgId);
+            return findOrg(cn);
+        } catch (NameNotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
     /**
      * Finds an organization by its identifier.
      *
@@ -337,7 +388,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
      * @return an {@link Optional} containing the organization if found, otherwise
      *         empty
      */
-    private Optional<Org> findOrg(String orgId) {
+    protected Optional<Org> findOrg(String orgId) {
         try {
             return Optional.of(orgsDao.findByCommonName(orgId));
         } catch (NameNotFoundException e) {
@@ -359,7 +410,24 @@ class LdapAccountsManager extends AbstractAccountsManager {
     }
 
     /**
-     * Factory method to create a new org with the given id and return it
+     * Factory method to create a new org with the given id. Will set orgUniqueId if
+     * not null.
+     * 
+     * @param orgId       organization ID to create (cn)
+     * @param orgUniqueId uniqueOrgId field value
+     * @return {@link Org} created organization
+     */
+    private Org newOrg(final String orgId, final String orgUniqueId) {
+        Org org = newOrg(orgId);
+        org.setOrgUniqueId(Optional.ofNullable(orgUniqueId).orElse(""));
+        return org;
+    }
+
+    /**
+     * Factory method to create a new org with the given id.
+     * 
+     * @param orgId organization ID to create (cn)
+     * @return {@link Org} created organization
      */
     private Org newOrg(final String orgId) {
         Org org = new Org();

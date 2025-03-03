@@ -128,6 +128,43 @@ public class DemultiplexingUsersApi {
     }
 
     /**
+     * Finds a user by email within a specific LDAP service.
+     *
+     * @param serviceName the LDAP service configuration name.
+     * @param email       the email to search for.
+     * @return an {@link Optional} containing the {@link ExtendedGeorchestraUser},
+     *         or empty if the user is not found.
+     * @throws NullPointerException if no {@link UsersApi} is registered for the
+     *                              given service.
+     */
+    public Optional<ExtendedGeorchestraUser> findByEmail(@NonNull String serviceName, @NonNull String email) {
+        UsersApi usersApi = usersByConfigName.get(serviceName);
+        Objects.requireNonNull(usersApi, () -> "No UsersApi found for config named " + serviceName);
+        Optional<GeorchestraUser> user = usersApi.findByEmail(email);
+
+        return extendUserWithOrganization(serviceName, user);
+    }
+
+    /**
+     * Finds a user by email in the first registered LDAP service.
+     * <p>
+     * This method is useful when only one LDAP service is expected, but may not be
+     * reliable when multiple LDAP configurations exist.
+     * </p>
+     *
+     * @param email the email to search for.
+     * @return an {@link Optional} containing the {@link ExtendedGeorchestraUser},
+     *         or empty if the user is not found.
+     */
+    public Optional<ExtendedGeorchestraUser> findByEmail(@NonNull String email) {
+        String serviceName = usersByConfigName.keySet().stream().findFirst().get();
+        UsersApi usersApi = usersByConfigName.get(serviceName);
+        Optional<GeorchestraUser> user = usersApi.findByEmail(email);
+
+        return extendUserWithOrganization(serviceName, user);
+    }
+
+    /**
      * Finds a user by their OAuth2 provider and unique identifier.
      * <p>
      * This method attempts to match an OAuth2-authenticated user within the first
