@@ -41,7 +41,7 @@ services:
     volumes:
       - datadir:/etc/georchestra
     environment:
-      - JAVA_TOOL_OPTIONS=-Dgeorchestra.datadir=/etc/georchestra -Dspring.profiles.active=docker -Xmx512M -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005
+      - JAVA_TOOL_OPTIONS=-Dgeorchestra.datadir=/etc/georchestra -Dspring.profiles.active=docker -Xmx512M -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005 -Dreactor.netty.http.server.accessLogEnabled=true
     restart: always
     ports:
       - 8080:8080
@@ -88,9 +88,8 @@ services:
     restart: always
     ports:
       - 10007:8080
-    
+
   echo:
     image: ealen/echo-server:latest
     ports:
       - 10009:80
-        
