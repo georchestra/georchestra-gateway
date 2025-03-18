@@ -93,7 +93,7 @@ public class QueryParamRoutePredicateFactory
 
             @Override
             public String toString() {
-                return String.format("Query: param=%s", config.getParam());
+                return "Query: param=%s".formatted(config.getParam());
             }
         };
     }

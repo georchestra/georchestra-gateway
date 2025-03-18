@@ -18,12 +18,12 @@
  */
 package org.georchestra.gateway.app;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
@@ -144,7 +144,7 @@ public class LoginLogoutController {
         if (oauth2ClientConfig != null) {
             oauth2ClientConfig.getRegistration().forEach((key, value) -> {
                 String clientName = Optional.ofNullable(value.getClientName()).orElse(key);
-                String providerPath = Paths.get("login/img/", key + ".png").toString();
+                String providerPath = Path.of("login/img/", key + ".png").toString();
                 String logo = new ClassPathResource("static/" + providerPath).exists() ? providerPath
                         : "login/img/default.png";
                 oauth2LoginLinks.put("/oauth2/authorization/" + key, Pair.of(clientName, logo));

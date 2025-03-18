@@ -85,7 +85,7 @@ public class SendMessageRabbitmqIT {
 
         console.start();
         System.setProperty("georchestra.console.url",
-                String.format("http://localhost:%d", console.getMappedConsolePort()));
+                "http://localhost:%d".formatted(console.getMappedConsolePort()));
     }
 
     public static @AfterAll void shutDownContainers() {

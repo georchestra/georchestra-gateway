@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.georchestra.ds.DataServiceException;
 import org.georchestra.ds.DuplicatedCommonNameException;
@@ -281,8 +282,8 @@ class LdapAccountsManager extends AbstractAccountsManager {
         String phone = "";
         String title = "";
         String description = "";
-        final @javax.annotation.Nullable String oAuth2Provider = preAuth.getOAuth2Provider();
-        final @javax.annotation.Nullable String oAuth2Uid = preAuth.getOAuth2Uid();
+        final @Nullable String oAuth2Provider = preAuth.getOAuth2Provider();
+        final @Nullable String oAuth2Uid = preAuth.getOAuth2Uid();
 
         Account newAccount = AccountFactory.createBrief(username, password, firstName, lastName, email, phone, title,
                 description, oAuth2Provider, oAuth2Uid);

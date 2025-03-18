@@ -18,7 +18,7 @@
  */
 package org.georchestra.gateway.autoconfigure.security;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.georchestra.gateway.security.oauth2.OAuth2Configuration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

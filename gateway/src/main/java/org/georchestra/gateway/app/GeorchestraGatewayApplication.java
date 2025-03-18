@@ -145,6 +145,6 @@ public class GeorchestraGatewayApplication {
             value = value / 1024d;
             unit = "GB";
         }
-        return String.format("%.2f %s", value, unit);
+        return "%.2f %s".formatted(value, unit);
     }
 }

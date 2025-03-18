@@ -20,7 +20,7 @@ package org.georchestra.gateway.autoconfigure.accounts;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.georchestra.gateway.accounts.admin.ldap.GeorchestraLdapAccountManagementConfiguration;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapAuthenticationConfiguration;

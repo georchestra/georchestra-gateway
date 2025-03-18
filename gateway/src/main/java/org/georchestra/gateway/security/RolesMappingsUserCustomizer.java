@@ -104,7 +104,7 @@ public class RolesMappingsUserCustomizer implements GeorchestraUserCustomizerExt
 
         @Override
         public String toString() {
-            return String.format("%s -> %s", pattern.pattern(), extraRoles);
+            return "%s -> %s".formatted(pattern.pattern(), extraRoles);
         }
     }
 
