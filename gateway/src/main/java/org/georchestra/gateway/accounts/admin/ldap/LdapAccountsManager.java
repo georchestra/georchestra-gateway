@@ -251,7 +251,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
             roleDao.findByCommonName(role);
         } catch (NameNotFoundException notFound) {
             try {
-                roleDao.insert(RoleFactory.create(role, null, null));
+                roleDao.insert(RoleFactory.create(role, null, false));
             } catch (DuplicatedCommonNameException e) {
                 throw new IllegalStateException(e);
             }
