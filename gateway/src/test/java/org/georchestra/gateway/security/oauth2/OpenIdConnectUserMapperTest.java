@@ -24,17 +24,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import io.jsonwebtoken.Jwts;
 import org.georchestra.security.model.GeorchestraUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.oidc.AddressStandardClaim;
 import org.springframework.security.oauth2.core.oidc.StandardClaimAccessor;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.util.JSONUtils;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoderFactory;
+
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * 
@@ -196,6 +205,41 @@ class OpenIdConnectUserMapperTest {
         GeorchestraUser target = new GeorchestraUser();
         mapper.applyGeorchestraNonStandardClaims(claims, target);
         assertEquals(icuid, target.getId());
+    }
+
+    @Test
+    void decodeFranceConnectV1Token() {
+        OAuth2Configuration oAuth2Configuration = new OAuth2Configuration();
+        ReactiveJwtDecoderFactory<ClientRegistration> toTest = oAuth2Configuration.idTokenDecoderFactory(null);
+        String algorithm = "HmacSHA256";
+        String secret = "keep1234keep1234keep1234keep1234keep1234keep1234keep1234keep1234";
+        SecretKeySpec key = new SecretKeySpec(secret.getBytes(), algorithm);
+        String token = Jwts.builder().issuer("https://issuer") //
+                .subject("SUB") //
+                .issuedAt(Date.from(Instant.now())) //
+                .expiration(Date.from(Instant.now().plusSeconds(300))) //
+                .claim("nonce", "NONCE") //
+                .claim("idp", "IDP") //
+                .claim("amr", null) //
+                .signWith(key) //
+                .compact();
+        ClientRegistration clientRegistration = ClientRegistration.withRegistrationId("provider") //
+                .clientId("client_id") //
+                .clientSecret(secret) //
+                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE) //
+                .redirectUri("https://redirect/uri") //
+                .authorizationUri("https://authorization/uri") //
+                .tokenUri("https://token/uri") //
+                .build();
+
+        Jwt decoded = toTest.createDecoder(clientRegistration).decode(token).block();
+
+        assertThat(decoded.getHeaders().get("alg")).isEqualTo("HS256");
+        assertThat(decoded.getIssuer().toString()).isEqualTo("https://issuer");
+        assertThat(decoded.getSubject()).isEqualTo("SUB");
+        assertThat(decoded.getClaims().get("nonce")).isEqualTo("NONCE");
+        assertThat(decoded.getClaims().get("idp")).isEqualTo("IDP");
+        assertThat(decoded.getClaims().get("amr")).isNull();
     }
 
     private Map<String, Object> sampleClaims() throws ParseException {
