@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.georchestra.gateway.security.ldap.LdapConfigBuilder;
 import org.georchestra.gateway.security.ldap.LdapConfigPropertiesValidations;

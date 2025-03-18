@@ -20,6 +20,8 @@ package org.georchestra.gateway.autoconfigure.app;
 
 import org.georchestra.gateway.handler.predicate.QueryParamRoutePredicateFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 
 /**

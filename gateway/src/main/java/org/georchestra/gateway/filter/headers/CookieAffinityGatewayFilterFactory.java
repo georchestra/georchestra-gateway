@@ -18,7 +18,7 @@
  */
 package org.georchestra.gateway.filter.headers;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import org.georchestra.gateway.filter.global.ResolveTargetGlobalFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilter;

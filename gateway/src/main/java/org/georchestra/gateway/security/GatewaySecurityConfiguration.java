@@ -112,13 +112,13 @@ public class GatewaySecurityConfiguration {
 
         log.info("Initializing security filter chain...");
 
-        http.csrf().disable();
-        http.headers().disable();
-        http.exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler());
+        http.csrf(csrf -> csrf.disable());
+        http.headers(headers -> headers.disable());
+        http.exceptionHandling(handling -> handling.accessDeniedHandler(new CustomAccessDeniedHandler()));
 
-        http.formLogin()
+        http.formLogin(login -> login
                 .authenticationFailureHandler(new ExtendedRedirectServerAuthenticationFailureHandler("login?error"))
-                .loginPage("/login");
+                .loginPage("/login"));
 
         sortedCustomizers(customizers).forEach(customizer -> {
             log.debug("Applying security customizer {}", customizer.getName());
@@ -130,11 +130,11 @@ public class GatewaySecurityConfiguration {
         RedirectServerLogoutSuccessHandler defaultRedirect = new RedirectServerLogoutSuccessHandler();
         defaultRedirect.setLogoutSuccessUrl(URI.create(georchestraLogoutUrl));
 
-        LogoutSpec logoutSpec = http.formLogin().loginPage("/login").and().logout()
+        ServerHttpSecurity logoutSpec = http.formLogin(login -> login.loginPage("/login")).logout(logout -> logout
                 .requiresLogout(ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET, "/logout"))
-                .logoutSuccessHandler(oidcLogoutSuccessHandler != null ? oidcLogoutSuccessHandler : defaultRedirect);
+                .logoutSuccessHandler(oidcLogoutSuccessHandler != null ? oidcLogoutSuccessHandler : defaultRedirect));
 
-        return logoutSpec.and().build();
+        return logoutSpec.build();
     }
 
     /**

@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotEmpty;
 
 import org.springframework.cloud.gateway.handler.predicate.AbstractRoutePredicateFactory;
 import org.springframework.cloud.gateway.handler.predicate.GatewayPredicate;

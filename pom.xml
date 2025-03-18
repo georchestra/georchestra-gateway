@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.18</version>
+    <version>3.4.3</version>
     <relativePath></relativePath>
     <!-- lookup parent from repository -->
   </parent>
@@ -36,7 +36,7 @@
     <imageTag>${project.version}</imageTag>
     <spring-boot.build-image.imageName>georchestra/gateway:${imageTag}</spring-boot.build-image.imageName>
     <lombok.version>1.18.34</lombok.version>
-    <logback.version>1.2.13</logback.version>
+    <logback.version>1.5.17</logback.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -88,22 +88,24 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-client</artifactId>
-        <version>5.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-core</artifactId>
-        <version>5.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-oauth2-jose</artifactId>
-        <version>5.6.2</version>
       </dependency>
       <dependency>
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-properties-migrator</artifactId>
+        <scope>runtime</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -167,6 +169,29 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.12.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.openrewrite.maven</groupId>
+          <artifactId>rewrite-maven-plugin</artifactId>
+          <version>6.3.1</version>
+          <configuration>
+            <exportDatatables>true</exportDatatables>
+            <activeRecipes>
+              <recipe>org.openrewrite.java.spring.security6.UpgradeSpringSecurity_6_0</recipe>
+            </activeRecipes>
+          </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.openrewrite.recipe</groupId>
+              <artifactId>rewrite-spring</artifactId>
+              <version>6.3.0</version>
+            </dependency>
+            <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-properties-migrator</artifactId>
+              <scope>runtime</scope>
+            </dependency>
+          </dependencies>
         </plugin>
       </plugins>
     </pluginManagement>

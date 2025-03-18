@@ -18,6 +18,8 @@
  */
 package org.georchestra.gateway.security.accessrules;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -64,7 +66,7 @@ public class AccessRulesCustomizer implements ServerHttpSecurityCustomizer {
     public void customize(ServerHttpSecurity http) {
         log.info("Configuring proxied applications access rules...");
 
-        AuthorizeExchangeSpec authorizeExchange = http.authorizeExchange();
+        AuthorizeExchangeSpec authorizeExchange = http.authorizeExchange(withDefaults()).authorizeExchange();
 
         // Apply service-specific rules before global rules.
         // This ensures that service-specific paths take precedence over general rules.

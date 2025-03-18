@@ -18,6 +18,8 @@
  */
 package org.georchestra.gateway.security.ldap;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -55,8 +57,8 @@ import lombok.extern.slf4j.Slf4j;
  * </p>
  * <p>
  * As a result, the {@link ServerHttpSecurity} will have HTTP Basic
- * authentication enabled, as well as {@link ServerHttpSecurity#formLogin() form
- * login}.
+ * authentication enabled, as well as
+ * {@link ServerHttpSecurity#formLogin(withDefaults()) form login}.
  * </p>
  * <p>
  * Upon successful authentication, an {@link Authentication} instance will be
@@ -96,7 +98,7 @@ public class LdapAuthenticationConfiguration {
          */
         public @Override void customize(ServerHttpSecurity http) {
             log.info("Enabling HTTP Basic authentication support for LDAP");
-            http.httpBasic().and().formLogin();
+            http.httpBasic(withDefaults()).formLogin(withDefaults());
         }
     }
 

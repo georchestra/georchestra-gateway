@@ -48,18 +48,6 @@ services:
       - 8090:8090
       - 5005:5005
 
-  header:
-    image: georchestra/header:latest
-    volumes:
-      - datadir:/etc/georchestra
-    environment:
-      - JAVA_OPTIONS=-Dorg.eclipse.jetty.annotations.AnnotationParser.LEVEL=OFF
-      - XMS=256M
-      - XMX=512M
-    restart: always
-    ports:
-      - 10003:8080
-
   geoserver:
     image: georchestra/geoserver:latest
     depends_on:
