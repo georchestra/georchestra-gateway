@@ -26,7 +26,7 @@
   <properties>
     <revision>1.2-SNAPSHOT</revision>
     <georchestra.version>24.1-SNAPSHOT</georchestra.version>
-    <spring-cloud.version>2021.0.9</spring-cloud.version>
+    <spring-cloud.version>2024.0.0</spring-cloud.version>
     <formatter-maven-plugin.version>2.10.0</formatter-maven-plugin.version>
     <fmt.skip>false</fmt.skip>
     <fmt.action>format</fmt.action>
