@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import lombok.RequiredArgsConstructor;
 import org.georchestra.gateway.security.GeorchestraUserMapper;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.security.model.GeorchestraUser;
@@ -42,6 +43,7 @@ import reactor.core.publisher.Mono;
  * </p>
  */
 @RestController
+@RequiredArgsConstructor
 public class WhoamiController {
 
     /**
@@ -49,17 +51,6 @@ public class WhoamiController {
      * {@link GeorchestraUser}.
      */
     private final GeorchestraUserMapper userMapper;
-
-    /**
-     * Constructs a {@code WhoamiController} with a user mapper for authentication
-     * resolution.
-     *
-     * @param userMapper the {@link GeorchestraUserMapper} used to resolve
-     *                   authentication details
-     */
-    public WhoamiController(GeorchestraUserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
 
     /**
      * Returns details about the currently authenticated user.
