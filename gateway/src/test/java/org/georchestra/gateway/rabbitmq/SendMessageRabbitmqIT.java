@@ -84,8 +84,7 @@ public class SendMessageRabbitmqIT {
                 .withEnv("smtpPort", String.valueOf(smtp.getMappedPort(SMTPPORT))).withLogToStdOut();
 
         console.start();
-        System.setProperty("georchestra.console.url",
-                "http://localhost:%d".formatted(console.getMappedConsolePort()));
+        System.setProperty("georchestra.console.url", "http://localhost:%d".formatted(console.getMappedConsolePort()));
     }
 
     public static @AfterAll void shutDownContainers() {
