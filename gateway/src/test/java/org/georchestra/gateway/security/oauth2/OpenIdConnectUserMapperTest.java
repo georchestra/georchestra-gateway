@@ -242,6 +242,40 @@ class OpenIdConnectUserMapperTest {
         assertThat(decoded.getClaims().get("amr")).isNull();
     }
 
+    @Test
+    public void customProviderClaimsMapper() {
+        OpenIdConnectCustomClaimsConfigProperties providerCustomConfig = new OpenIdConnectCustomClaimsConfigProperties();
+        providerCustomConfig.getId().getPath().add("$.non_existent_path");
+        providerCustomConfig.getId().getPath().add("$.custom_id");
+        providerCustomConfig.getRoles().getJson().getPath().add("$.custom_roles");
+        providerCustomConfig.getOrganization().getPath().add("$.custom_org");
+        providerCustomConfig.getOrganizationUid().getPath().add("$.custom_org_uid");
+        providerCustomConfig.getEmail().getPath().add("$.custom_email");
+        providerCustomConfig.getFamilyName().getPath().add("$.custom_family_name");
+        providerCustomConfig.getGivenName().getPath().add("$.custom_given_name");
+
+        GeorchestraUser georchestraUser = new GeorchestraUser();
+        mapper.applyProviderNonStandardClaims(providerCustomConfig, //
+                Map.of( //
+                        "custom_id", "id", //
+                        "custom_roles", "role", //
+                        "custom_org", "org", //
+                        "custom_org_uid", "org_uid", //
+                        "custom_email", "email", //
+                        "custom_family_name", "family_name", //
+                        "custom_given_name", "given_name" //
+                ), //
+                georchestraUser);
+
+        assertThat(georchestraUser.getId()).isEqualTo("id");
+        assertThat(georchestraUser.getRoles()).isEqualTo(List.of("ROLE"));
+        assertThat(georchestraUser.getOrganization()).isEqualTo("org");
+        assertThat(georchestraUser.getOAuth2OrgId()).isEqualTo("org_uid");
+        assertThat(georchestraUser.getEmail()).isEqualTo("email");
+        assertThat(georchestraUser.getLastName()).isEqualTo("family_name");
+        assertThat(georchestraUser.getFirstName()).isEqualTo("given_name");
+    }
+
     private Map<String, Object> sampleClaims() throws ParseException {
         String json = SAMPLE_CLAIMS;
         return sampleClaims(json);

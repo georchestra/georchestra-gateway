@@ -243,7 +243,8 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
         return log;
     }
 
-    public void applyProviderNonStandardClaims(OpenIdConnectCustomClaimsConfigProperties customProviderClaims,
+    @VisibleForTesting
+    void applyProviderNonStandardClaims(OpenIdConnectCustomClaimsConfigProperties customProviderClaims,
             Map<String, Object> claims, GeorchestraUser target) {
 
         customProviderClaims.id().map(jsonEvaluator -> jsonEvaluator.extract(claims))//
