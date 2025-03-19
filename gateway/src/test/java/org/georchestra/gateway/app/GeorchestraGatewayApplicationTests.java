@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.core.userdetails.User.withDefaultPasswordEncoder;
 
 import java.net.URI;
 import java.util.Map;
@@ -38,12 +39,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -64,6 +72,26 @@ class GeorchestraGatewayApplicationTests {
     private @Autowired WhoamiController whoamiController;
     private @Autowired StyleConfigController configController;
     private @Autowired ApplicationContext context;
+
+    /**
+     * Test configuration that provides a ReactiveAuthenticationManager for Spring
+     * Boot 3
+     */
+    @TestConfiguration
+    static class TestSecurityConfiguration {
+
+        @Bean
+        @Primary
+        public ReactiveAuthenticationManager testAuthenticationManager() {
+            return Mono::just;
+        }
+
+        @Bean
+        public MapReactiveUserDetailsService userDetailsService() {
+            UserDetails user = withDefaultPasswordEncoder().username("user").password("password").roles("USER").build();
+            return new MapReactiveUserDetailsService(user);
+        }
+    }
 
     @Test
     void contextLoadsFromDatadir() {
