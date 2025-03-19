@@ -17,10 +17,10 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.github.tomakehurst</groupId>
-        <artifactId>wiremock-jre8</artifactId>
-        <!-- override provided version 2.26.3 -->
-        <version>2.35.2</version>
+        <groupId>org.wiremock</groupId>
+        <artifactId>wiremock-jakarta</artifactId>
+        <!-- Jakarta EE compatible version for Spring Boot 3 -->
+        <version>3.4.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -105,8 +105,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8</artifactId>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-standalone</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
