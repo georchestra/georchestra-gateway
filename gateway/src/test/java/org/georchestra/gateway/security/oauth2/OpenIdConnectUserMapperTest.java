@@ -208,6 +208,34 @@ class OpenIdConnectUserMapperTest {
     }
 
     @Test
+    void applyNonStandardClaims_fixedValue_multiple_values() throws ParseException {
+        nonStandardClaimsConfig.getRoles().getJson().getValue().add("role1");
+        nonStandardClaimsConfig.getRoles().getJson().getValue().add("role2");
+
+        GeorchestraUser target = new GeorchestraUser();
+        mapper.applyGeorchestraNonStandardClaims(Map.of(), target);
+
+        List<String> expected = List.of("ROLE1", "ROLE2");
+        List<String> actual = target.getRoles();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void applyNonStandardClaims_fixedValue_to_organization() throws ParseException {
+
+        final String fixedValue = "organization";
+        nonStandardClaimsConfig.getOrganization().getValue().add(fixedValue);
+
+        GeorchestraUser target = new GeorchestraUser();
+        target.setOrganization("unexpected");
+        mapper.applyGeorchestraNonStandardClaims(Map.of(), target);
+
+        String expected = "organization";
+        String actual = target.getOrganization();
+        assertEquals(expected, actual);
+    }
+
+    @Test
     void decodeFranceConnectV1Token() {
         OAuth2Configuration oAuth2Configuration = new OAuth2Configuration();
         ReactiveJwtDecoderFactory<ClientRegistration> toTest = oAuth2Configuration.idTokenDecoderFactory(null);
@@ -269,6 +297,30 @@ class OpenIdConnectUserMapperTest {
 
         assertThat(georchestraUser.getId()).isEqualTo("id");
         assertThat(georchestraUser.getRoles()).isEqualTo(List.of("ROLE"));
+        assertThat(georchestraUser.getOrganization()).isEqualTo("org");
+        assertThat(georchestraUser.getOAuth2OrgId()).isEqualTo("org_uid");
+        assertThat(georchestraUser.getEmail()).isEqualTo("email");
+        assertThat(georchestraUser.getLastName()).isEqualTo("family_name");
+        assertThat(georchestraUser.getFirstName()).isEqualTo("given_name");
+    }
+
+    @Test
+    public void customProviderValuesMapper() {
+        OpenIdConnectCustomClaimsConfigProperties providerCustomConfig = new OpenIdConnectCustomClaimsConfigProperties();
+        providerCustomConfig.getId().getValue().add("id");
+        providerCustomConfig.getRoles().getJson().getValue().add("role1");
+        providerCustomConfig.getRoles().getJson().getValue().add("role2");
+        providerCustomConfig.getOrganization().getValue().add("org");
+        providerCustomConfig.getOrganizationUid().getValue().add("org_uid");
+        providerCustomConfig.getEmail().getValue().add("email");
+        providerCustomConfig.getFamilyName().getValue().add("family_name");
+        providerCustomConfig.getGivenName().getValue().add("given_name");
+
+        GeorchestraUser georchestraUser = new GeorchestraUser();
+        mapper.applyProviderNonStandardClaims(providerCustomConfig, Map.of(), georchestraUser);
+
+        assertThat(georchestraUser.getId()).isEqualTo("id");
+        assertThat(georchestraUser.getRoles()).isEqualTo(List.of("ROLE1", "ROLE2"));
         assertThat(georchestraUser.getOrganization()).isEqualTo("org");
         assertThat(georchestraUser.getOAuth2OrgId()).isEqualTo("org_uid");
         assertThat(georchestraUser.getEmail()).isEqualTo("email");

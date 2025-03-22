@@ -282,12 +282,14 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
          */
         private List<String> path = new ArrayList<>();
 
+        private List<String> value = new ArrayList<>();
+
         public JsonPathExtractor() {
         }
 
         /**
          * Constructor to pass path param directly.
-         * 
+         *
          * @param path
          */
         public JsonPathExtractor(List<String> path) {
@@ -302,8 +304,13 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
          * @return A list of extracted values.
          */
         public @NonNull List<String> extract(@NonNull Map<String, Object> claims) {
-            return this.path.stream().map(jsonPathExpression -> this.extract(jsonPathExpression, claims))
+            List<String> result = this.path.stream().map(jsonPathExpression -> this.extract(jsonPathExpression, claims))
                     .flatMap(List::stream).toList();
+            if (!result.isEmpty()) {
+                return result;
+            } else {
+                return value;
+            }
         }
 
         /**
