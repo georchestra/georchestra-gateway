@@ -18,6 +18,8 @@
  */
 package org.georchestra.gateway.security.oauth2;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -87,7 +89,7 @@ public class OAuth2Configuration {
         @Override
         public void customize(ServerHttpSecurity http) {
             log.info("Enabling authentication support using an OAuth 2.0 and/or OpenID Connect 1.0 Provider");
-            http.oauth2Login();
+            http.oauth2Login(withDefaults());
         }
     }
 

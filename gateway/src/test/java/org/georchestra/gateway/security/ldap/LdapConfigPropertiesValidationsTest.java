@@ -258,7 +258,7 @@ class LdapConfigPropertiesValidationsTest {
             assertThat(config.simpleEnabled()).hasSize(1);
             assertThat(config.extendedEnabled()).isEmpty();
 
-            LdapServerConfig basic = config.simpleEnabled().get(0);
+            LdapServerConfig basic = config.simpleEnabled().getFirst();
             assertThat(basic).hasFieldOrPropertyWithValue("name", "ldap1");
             assertThat(basic).hasFieldOrPropertyWithValue("enabled", true);
             assertThat(basic).hasFieldOrPropertyWithValue("url", "ldap://ldap1.test.com:839");
@@ -290,7 +290,7 @@ class LdapConfigPropertiesValidationsTest {
             assertThat(config.simpleEnabled()).isEmpty();
             assertThat(config.extendedEnabled()).hasSize(1);
 
-            ExtendedLdapConfig extended = config.extendedEnabled().get(0);
+            ExtendedLdapConfig extended = config.extendedEnabled().getFirst();
             assertThat(extended).hasFieldOrPropertyWithValue("name", "ldap1");
             assertThat(extended).hasFieldOrPropertyWithValue("enabled", true);
             assertThat(extended).hasFieldOrPropertyWithValue("url", "ldap://ldap1.test.com:839");

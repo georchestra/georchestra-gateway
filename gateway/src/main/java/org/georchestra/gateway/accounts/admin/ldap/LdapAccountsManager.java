@@ -46,6 +46,7 @@ import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.ldap.NameNotFoundException;
 
+import jakarta.annotation.Nullable;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -290,9 +291,9 @@ class LdapAccountsManager extends AbstractAccountsManager {
         String phone = "";
         String title = "";
         String description = "";
-        final @javax.annotation.Nullable String oAuth2Provider = preAuth.getOAuth2Provider();
-        final @javax.annotation.Nullable String oAuth2Uid = preAuth.getOAuth2Uid();
-        final @javax.annotation.Nullable String oAuth2OrgId = preAuth.getOAuth2OrgId();
+        final @Nullable String oAuth2Provider = preAuth.getOAuth2Provider();
+        final @Nullable String oAuth2Uid = preAuth.getOAuth2Uid();
+        final @Nullable String oAuth2OrgId = preAuth.getOAuth2OrgId();
 
         Account newAccount = AccountFactory.createBrief(username, password, firstName, lastName, email, phone, title,
                 description, oAuth2Provider, oAuth2Uid);

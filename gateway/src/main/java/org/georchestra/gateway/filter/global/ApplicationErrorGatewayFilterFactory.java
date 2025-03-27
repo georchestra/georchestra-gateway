@@ -26,7 +26,7 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.cloud.gateway.filter.factory.GatewayFilterFactory;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -163,8 +163,8 @@ public class ApplicationErrorGatewayFilterFactory extends AbstractGatewayFilterF
      * @return {@code true} if the method is idempotent, {@code false} otherwise
      */
     boolean methodIsIdempotent(HttpMethod method) {
-        return switch (method) {
-        case GET, HEAD, OPTIONS, TRACE -> true;
+        return switch (method.name()) {
+        case "GET", "HEAD", "OPTIONS", "TRACE" -> true;
         default -> false;
         };
     }
@@ -203,7 +203,7 @@ public class ApplicationErrorGatewayFilterFactory extends AbstractGatewayFilterF
          * or 5xx range, allowing the gateway to apply custom error handling.
          */
         private void checkStatusCode() {
-            HttpStatus statusCode = getStatusCode();
+            HttpStatusCode statusCode = getStatusCode();
             log.debug("native status code: {}", statusCode);
             if (statusCode.is4xxClientError() || statusCode.is5xxServerError()) {
                 log.debug("Conveying {} response status", statusCode);

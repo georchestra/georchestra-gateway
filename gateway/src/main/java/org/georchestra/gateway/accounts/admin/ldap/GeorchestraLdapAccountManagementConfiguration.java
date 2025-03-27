@@ -105,7 +105,7 @@ public class GeorchestraLdapAccountManagementConfiguration {
      */
     @Bean
     LdapContextSource singleContextSource(GeorchestraGatewaySecurityConfigProperties config) {
-        ExtendedLdapConfig ldapConfig = config.extendedEnabled().get(0);
+        ExtendedLdapConfig ldapConfig = config.extendedEnabled().getFirst();
         LdapContextSource singleContextSource = new LdapContextSource();
         singleContextSource.setUrl(ldapConfig.getUrl());
         singleContextSource.setBase(ldapConfig.getBaseDn());
@@ -156,7 +156,7 @@ public class GeorchestraLdapAccountManagementConfiguration {
     RoleDao roleDao(LdapTemplate ldapTemplate, GeorchestraGatewaySecurityConfigProperties config) {
         RoleDaoImpl impl = new RoleDaoImpl();
         impl.setLdapTemplate(ldapTemplate);
-        impl.setRoleSearchBaseDN(config.extendedEnabled().get(0).getRolesRdn());
+        impl.setRoleSearchBaseDN(config.extendedEnabled().getFirst().getRolesRdn());
         return impl;
     }
 
@@ -171,7 +171,7 @@ public class GeorchestraLdapAccountManagementConfiguration {
     OrgsDao orgsDao(LdapTemplate ldapTemplate, GeorchestraGatewaySecurityConfigProperties config) {
         OrgsDaoImpl impl = new OrgsDaoImpl();
         impl.setLdapTemplate(ldapTemplate);
-        ExtendedLdapConfig ldapConfig = config.extendedEnabled().get(0);
+        ExtendedLdapConfig ldapConfig = config.extendedEnabled().getFirst();
         impl.setBasePath(ldapConfig.getBaseDn());
         impl.setOrgSearchBaseDN(ldapConfig.getOrgsRdn());
         impl.setPendingOrgSearchBaseDN(ldapConfig.getPendingOrgsRdn());
@@ -188,7 +188,7 @@ public class GeorchestraLdapAccountManagementConfiguration {
      */
     @Bean
     AccountDao accountDao(LdapTemplate ldapTemplate, GeorchestraGatewaySecurityConfigProperties config) {
-        ExtendedLdapConfig ldapConfig = config.extendedEnabled().get(0);
+        ExtendedLdapConfig ldapConfig = config.extendedEnabled().getFirst();
         AccountDaoImpl impl = new AccountDaoImpl(ldapTemplate);
         impl.setBasePath(ldapConfig.getBaseDn());
         impl.setUserSearchBaseDN(ldapConfig.getUsersRdn());

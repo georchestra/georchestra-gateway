@@ -11,8 +11,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import javax.validation.constraints.NotEmpty;
-
 import org.springframework.cloud.gateway.handler.predicate.AbstractRoutePredicateFactory;
 import org.springframework.cloud.gateway.handler.predicate.GatewayPredicate;
 import org.springframework.cloud.gateway.handler.predicate.QueryRoutePredicateFactory;
@@ -20,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ServerWebExchange;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -133,7 +132,7 @@ public class RegExpQueryRoutePredicateFactory
          */
         @Override
         public String toString() {
-            return String.format("Query: param regexp='%s' value regexp='%s'", config.getParamRegexp(),
+            return "Query: param regexp='%s' value regexp='%s'".formatted(config.getParamRegexp(),
                     config.getValueRegexp());
         }
     }

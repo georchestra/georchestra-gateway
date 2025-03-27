@@ -20,14 +20,13 @@ package org.georchestra.gateway.autoconfigure.accounts;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.georchestra.gateway.accounts.admin.ldap.GeorchestraLdapAccountManagementConfiguration;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapAuthenticationConfiguration;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapConfig;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Import;
 
+import jakarta.annotation.PostConstruct;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 

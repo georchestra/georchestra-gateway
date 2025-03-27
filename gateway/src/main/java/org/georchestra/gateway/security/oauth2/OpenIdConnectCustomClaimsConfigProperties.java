@@ -346,7 +346,7 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
                 return List.of();
             }
 
-            final List<?> list = (matched instanceof List) ? (List<?>) matched : List.of(matched);
+            final List<?> list = (matched instanceof List<?> l) ? l : List.of(matched);
 
             return IntStream.range(0, list.size()).mapToObj(list::get).filter(Objects::nonNull)
                     .map(value -> validateValueIsString(jsonPathExpression, value)).toList();
@@ -364,8 +364,7 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
             if (value instanceof String val) {
                 return val;
             }
-            throw new IllegalStateException(String.format(
-                    "The JSONPath expression %s evaluates to %s instead of String. Value: %s",
+            throw new IllegalStateException("The JSONPath expression %s evaluates to %s instead of String. Value: %s".formatted(
                     jsonPathExpression, value.getClass().getCanonicalName(), value));
         }
     }

@@ -18,6 +18,7 @@
  */
 package org.georchestra.gateway.security.ldap.extended;
 
+import java.io.Serial;
 import java.util.Collection;
 
 import org.georchestra.security.api.UsersApi;
@@ -45,6 +46,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GeorchestraUserNamePasswordAuthenticationToken implements Authentication {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**

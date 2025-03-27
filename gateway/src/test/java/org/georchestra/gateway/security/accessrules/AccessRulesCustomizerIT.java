@@ -111,7 +111,7 @@ class AccessRulesCustomizerIT {
         WireMockRuntimeInfo runtimeInfo = mockService.getRuntimeInfo();
         String httpBaseUrl = runtimeInfo.getHttpBaseUrl();
         String proxiedURI = URI.create(httpBaseUrl + "/" + targetBaseURI).normalize().toString();
-        String propertyName = String.format("georchestra.gateway.services.%s.target", serviceName);
+        String propertyName = "georchestra.gateway.services.%s.target".formatted(serviceName);
         registry.add(propertyName, () -> proxiedURI);
         log.debug("overridden dynamic target {}={}", propertyName, proxiedURI);
     }

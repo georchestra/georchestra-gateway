@@ -18,14 +18,13 @@
  */
 package org.georchestra.gateway.autoconfigure.security;
 
-import javax.annotation.PostConstruct;
-
 import org.georchestra.gateway.security.oauth2.OAuth2Configuration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 /**

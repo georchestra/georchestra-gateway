@@ -124,7 +124,7 @@ class JsonPayloadHeadersContributorTest {
 
         List<String> val = target.get(headerName);
         assertNotNull(val);
-        String base64Ecnoded = val.get(0);
+        String base64Ecnoded = val.getFirst();
         String json = SecurityHeaders.decode(base64Ecnoded);
         Object decoded = new ObjectMapper().readValue(json, object.getClass());
         assertEquals(object, decoded);

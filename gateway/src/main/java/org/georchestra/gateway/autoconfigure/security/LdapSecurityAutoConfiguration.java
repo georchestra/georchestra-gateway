@@ -18,12 +18,11 @@
  */
 package org.georchestra.gateway.autoconfigure.security;
 
-import javax.annotation.PostConstruct;
-
 import org.georchestra.gateway.security.ldap.LdapAuthenticationConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Import;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 /**

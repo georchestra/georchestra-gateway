@@ -18,8 +18,6 @@
  */
 package org.georchestra.gateway.filter.headers;
 
-import javax.validation.constraints.NotEmpty;
-
 import org.georchestra.gateway.filter.global.ResolveTargetGlobalFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -29,6 +27,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ServerWebExchange;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

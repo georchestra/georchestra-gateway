@@ -99,7 +99,7 @@ class AccessRulesCustomizerTest {
         doNothing().when(customizer).apply(any(), any());
         customizer.customize(http);
         verify(customizer, times(4)).apply(any(), ruleCaptor.capture());
-        assertSame(service1Rule1, ruleCaptor.getAllValues().get(0));
+        assertSame(service1Rule1, ruleCaptor.getAllValues().getFirst());
         assertSame(service1Rule2, ruleCaptor.getAllValues().get(1));
         assertSame(global1, ruleCaptor.getAllValues().get(2));
         assertSame(global2, ruleCaptor.getAllValues().get(3));

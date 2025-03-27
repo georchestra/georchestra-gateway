@@ -18,7 +18,6 @@
  */
 package org.georchestra.gateway.security.ldap;
 
-import static java.lang.String.format;
 import static org.springframework.validation.ValidationUtils.rejectIfEmptyOrWhitespace;
 
 import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties.Server;
@@ -61,7 +60,7 @@ public class LdapConfigPropertiesValidations {
         }
 
         // Ensure the LDAP URL is defined
-        final String url = format("ldap.[%s].url", name);
+        final String url = "ldap.[%s].url".formatted(name);
         rejectIfEmptyOrWhitespace(errors, url, "", "LDAP URL is required (e.g., ldap://my.ldap.com:389)");
 
         // Validate base LDAP configuration
@@ -88,16 +87,16 @@ public class LdapConfigPropertiesValidations {
      * @param errors the validation error object
      */
     private void validateSimpleLdap(String name, Server config, Errors errors) {
-        rejectIfEmptyOrWhitespace(errors, format("ldap.[%s].baseDn", name), "",
+        rejectIfEmptyOrWhitespace(errors, "ldap.[%s].baseDn".formatted(name), "",
                 "LDAP base DN is required (e.g., dc=georchestra,dc=org)");
 
-        rejectIfEmptyOrWhitespace(errors, format("ldap.[%s].users.rdn", name), "",
+        rejectIfEmptyOrWhitespace(errors, "ldap.[%s].users.rdn".formatted(name), "",
                 "LDAP users RDN (Relative Distinguished Name) is required (e.g., ou=users,dc=georchestra,dc=org)");
 
-        rejectIfEmptyOrWhitespace(errors, format("ldap.[%s].roles.rdn", name), "",
+        rejectIfEmptyOrWhitespace(errors, "ldap.[%s].roles.rdn".formatted(name), "",
                 "Roles Relative Distinguished Name is required (e.g., ou=roles)");
 
-        rejectIfEmptyOrWhitespace(errors, format("ldap.[%s].roles.searchFilter", name), "",
+        rejectIfEmptyOrWhitespace(errors, "ldap.[%s].roles.searchFilter".formatted(name), "",
                 "Roles search filter is required (e.g., (member={0}))");
     }
 
@@ -109,7 +108,7 @@ public class LdapConfigPropertiesValidations {
      * @param errors the validation error object
      */
     private void validateUsersSearchFilterMandatory(String name, Errors errors) {
-        rejectIfEmptyOrWhitespace(errors, format("ldap.[%s].users.searchFilter", name), "",
+        rejectIfEmptyOrWhitespace(errors, "ldap.[%s].users.searchFilter".formatted(name), "",
                 "LDAP users search filter is required for standard LDAP configurations (e.g., (uid={0})), "
                         + "but optional for Active Directory (e.g., (&(objectClass=user)(userPrincipalName={0})))");
     }
@@ -122,7 +121,7 @@ public class LdapConfigPropertiesValidations {
      * @param errors the validation error object
      */
     private void validateGeorchestraExtensions(String name, Server config, Errors errors) {
-        rejectIfEmptyOrWhitespace(errors, format("ldap.[%s].orgs.rdn", name), "",
+        rejectIfEmptyOrWhitespace(errors, "ldap.[%s].orgs.rdn".formatted(name), "",
                 "Organizations search base RDN is required if 'extended' is true (e.g., ou=orgs)");
     }
 

@@ -48,7 +48,7 @@ class PreauthGatewaySecurityCustomizerIT {
         WireMockRuntimeInfo runtimeInfo = mockService.getRuntimeInfo();
         String httpBaseUrl = runtimeInfo.getHttpBaseUrl();
         String proxiedURI = URI.create(httpBaseUrl + "/" + "test").normalize().toString();
-        String propertyName = String.format("georchestra.gateway.services.%s.target", "test");
+        String propertyName = "georchestra.gateway.services.%s.target".formatted("test");
         registry.add(propertyName, () -> proxiedURI);
         registry.add("spring.cloud.gateway.routes[0].id", () -> "test");
         registry.add("spring.cloud.gateway.routes[0].uri", () -> proxiedURI);

@@ -13,14 +13,27 @@
     <java.version>21</java.version>
     <imageTag>${project.version}</imageTag>
     <spring-boot.build-image.imageName>georchestra/gateway:${imageTag}</spring-boot.build-image.imageName>
+    <mockito.version>5.14.2</mockito.version>
   </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>com.github.tomakehurst</groupId>
-        <artifactId>wiremock-jre8</artifactId>
-        <!-- override provided version 2.26.3 -->
-        <version>2.35.1</version>
+        <!-- https://wiremock.org/docs/spring-boot/ -->
+        <groupId>org.wiremock.integrations</groupId>
+        <artifactId>wiremock-spring-boot</artifactId>
+        <version>3.9.0</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>wiremock-jetty12</artifactId>
+            <groupId>org.wiremock</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.wiremock</groupId>
+        <artifactId>wiremock-standalone</artifactId>
+        <version>3.12.1</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -28,6 +41,16 @@
     <dependency>
       <groupId>org.georchestra</groupId>
       <artifactId>georchestra-ldap-account-management</artifactId>
+      <exclusions>
+        <exclusion>
+          <artifactId>junit</artifactId>
+          <groupId>junit</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>junit-vintage-engine</artifactId>
+          <groupId>org.junit.vintage</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -76,8 +99,7 @@
     </dependency>
     <dependency>
       <!-- Annotation processor that generates metadata about classes annotated with @ConfigurationProperties. -->
-      <!-- This metadata is used by IDEs to provide auto-completion and documentation for the properties when editing application.properties 
-        and application.yaml -->
+      <!-- This metadata is used by IDEs to provide auto-completion and documentation for the properties when editing application.properties and application.yaml -->
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>
       <optional>true</optional>
@@ -99,10 +121,22 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <!-- Exclude vaadin JSON to avoid conflict with org.json:json -->
+        <exclusion>
+          <artifactId>android-json</artifactId>
+          <groupId>com.vaadin.external.google</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.github.tomakehurst</groupId>
-      <artifactId>wiremock-jre8</artifactId>
+      <groupId>org.wiremock.integrations</groupId>
+      <artifactId>wiremock-spring-boot</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.wiremock</groupId>
+      <artifactId>wiremock-standalone</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -110,9 +144,9 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
-    <!-- ldaptive-netscape dependecy is added to include netscape.ldap.ber.stream.BERTagDecoder
-      class required in org.springframework.security.ldap.ppolicy.PasswordPolicyResponseControl class.
-      Dependency required to handle password policy errors received from LDAP.-->
+    <!-- ldaptive-netscape dependecy is added to include netscape.ldap.ber.stream.BERTagDecoder class required
+    in org.springframework.security.ldap.ppolicy.PasswordPolicyResponseControl class.
+    Dependency required to handle password policy errors received from LDAP.-->
     <dependency>
       <groupId>org.ldaptive</groupId>
       <artifactId>ldaptive-netscape</artifactId>
@@ -135,6 +169,12 @@
       <groupId>org.georchestra</groupId>
       <artifactId>georchestra-testcontainers</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>junit-vintage-engine</artifactId>
+          <groupId>org.junit.vintage</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
@@ -159,15 +199,25 @@
     <pluginManagement>
       <plugins>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <!-- override provided version 2.22.2 -->
-          <version>3.0.0-M6</version>
-        </plugin>
-        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.11</version>
+          <version>0.8.12</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+            -Xshare:off</argLine>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <configuration>
+            <argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar
+            -Xshare:off</argLine>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -337,12 +387,16 @@
             <path>
               <groupId>org.springframework.boot</groupId>
               <artifactId>spring-boot-configuration-processor</artifactId>
-              <version>2.7.12</version>
             </path>
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
               <version>${lombok.version}</version>
+            </path>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok-mapstruct-binding</artifactId>
+              <version>0.2.0</version>
             </path>
           </annotationProcessorPaths>
         </configuration>

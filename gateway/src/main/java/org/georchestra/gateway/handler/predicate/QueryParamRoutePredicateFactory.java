@@ -22,12 +22,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-import javax.validation.constraints.NotEmpty;
-
 import org.springframework.cloud.gateway.handler.predicate.AbstractRoutePredicateFactory;
 import org.springframework.cloud.gateway.handler.predicate.GatewayPredicate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ServerWebExchange;
+
+import jakarta.validation.constraints.NotEmpty;
 
 /**
  * A route predicate factory that evaluates whether an HTTP request contains a
@@ -93,7 +93,7 @@ public class QueryParamRoutePredicateFactory
 
             @Override
             public String toString() {
-                return String.format("Query: param=%s", config.getParam());
+                return "Query: param=%s".formatted(config.getParam());
             }
         };
     }

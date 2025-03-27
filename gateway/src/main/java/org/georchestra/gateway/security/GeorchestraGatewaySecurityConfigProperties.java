@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
-
 import org.georchestra.gateway.security.ldap.LdapConfigBuilder;
 import org.georchestra.gateway.security.ldap.LdapConfigPropertiesValidations;
 import org.georchestra.gateway.security.ldap.basic.LdapServerConfig;
@@ -34,6 +32,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.Generated;
 import lombok.Setter;
