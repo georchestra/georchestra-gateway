@@ -19,14 +19,14 @@
 
 package org.georchestra.gateway.security.ldap.extended;
 
-import static java.util.Objects.requireNonNull;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.georchestra.ds.orgs.OrgsDao;
+import org.georchestra.ds.LdapDaoProperties;
+import org.georchestra.ds.orgs.OrgExtLdapWrapper;
+import org.georchestra.ds.orgs.OrgLdapWrapper;
 import org.georchestra.ds.orgs.OrgsDaoImpl;
 import org.georchestra.ds.roles.RoleDao;
 import org.georchestra.ds.roles.RoleDaoImpl;
@@ -40,7 +40,6 @@ import org.georchestra.ds.users.AccountDao;
 import org.georchestra.ds.users.AccountDaoImpl;
 import org.georchestra.ds.users.UserRule;
 import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
-import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties.Server;
 import org.georchestra.gateway.security.GeorchestraUserMapperExtension;
 import org.georchestra.gateway.security.ldap.basic.LdapAuthenticatorProviderBuilder;
 import org.georchestra.security.api.OrganizationsApi;
@@ -134,7 +133,11 @@ public class ExtendedLdapAuthenticationConfiguration {
         final LdapTemplate ldapTemplate;
         try {
             ldapTemplate = ldapTemplate(config);
-            final AccountDao accountsDao = accountsDao(ldapTemplate, config);
+            LdapDaoProperties ldapDaoProperties = new LdapDaoProperties() //
+                    .setBasePath(config.getBaseDn()).setOrgSearchBaseDN(config.getOrgsRdn())
+                    .setPendingOrgSearchBaseDN(config.getPendingOrgsRdn()).setRoleSearchBaseDN(config.getRolesRdn())
+                    .setUserSearchBaseDN(config.getUsersRdn()).setPendingUserSearchBaseDN("ou=pendingusers");
+            final AccountDao accountsDao = accountsDao(ldapTemplate, ldapDaoProperties);
             ExtendedLdapAuthenticationProvider delegate = new LdapAuthenticatorProviderBuilder()//
                     .url(config.getUrl())//
                     .baseDn(config.getBaseDn())//
@@ -164,10 +167,16 @@ public class ExtendedLdapAuthenticationConfiguration {
         Map<String, OrganizationsApi> orgsByConfigName = new HashMap<>();
         for (ExtendedLdapConfig config : configs) {
             try {
+                LdapDaoProperties ldapDaoProperties = new LdapDaoProperties() //
+                        .setBasePath(config.getBaseDn()).setOrgSearchBaseDN(config.getOrgsRdn())
+                        .setPendingOrgSearchBaseDN(config.getPendingOrgsRdn()).setRoleSearchBaseDN(config.getRolesRdn())
+                        .setUserSearchBaseDN(config.getUsersRdn()).setPendingUserSearchBaseDN("ou=pendingusers");
                 LdapTemplate ldapTemplate = ldapTemplate(config);
-                AccountDao accountsDao = accountsDao(ldapTemplate, config);
-                UsersApi usersApi = createUsersApi(config, ldapTemplate, accountsDao);
-                OrganizationsApi orgsApi = createOrgsApi(config, ldapTemplate, accountsDao);
+                AccountDaoImpl accountsDao = accountsDao(ldapTemplate, ldapDaoProperties);
+                OrgsDaoImpl orgsDao = orgsDao(ldapTemplate, ldapDaoProperties, accountsDao);
+                RoleDaoImpl roleDao = roleDao(ldapTemplate, ldapDaoProperties, accountsDao, orgsDao);
+                OrganizationsApi orgsApi = createOrgsApi(orgsDao);
+                UsersApi usersApi = createUsersApi(accountsDao, roleDao);
                 usersByConfigName.put(config.getName(), usersApi);
                 orgsByConfigName.put(config.getName(), orgsApi);
             } catch (Exception ex) {
@@ -182,30 +191,19 @@ public class ExtendedLdapAuthenticationConfiguration {
     /// Low level LDAP account management beans
     //////////////////////////////////////////////
 
-    private OrganizationsApi createOrgsApi(ExtendedLdapConfig ldapConfig, LdapTemplate ldapTemplate,
-            AccountDao accountsDao) {
+    private OrganizationsApi createOrgsApi(OrgsDaoImpl orgsDaoImpl) {
         OrganizationsApiImpl impl = new OrganizationsApiImpl();
-        OrgsDaoImpl orgsDao = new OrgsDaoImpl();
-        orgsDao.setLdapTemplate(ldapTemplate);
-        orgsDao.setAccountDao(accountsDao);
-        orgsDao.setBasePath(ldapConfig.getBaseDn());
-        orgsDao.setOrgSearchBaseDN(ldapConfig.getOrgsRdn());
-        orgsDao.setPendingOrgSearchBaseDN(ldapConfig.getPendingOrgsRdn());
-        impl.setOrgsDao(orgsDao);
+        impl.setOrgsDao(orgsDaoImpl);
         impl.setOrgMapper(new OrganizationMapperImpl());
         return impl;
     }
 
-    private UsersApi createUsersApi(ExtendedLdapConfig ldapConfig, LdapTemplate ldapTemplate, AccountDao accountsDao) {
-        final RoleDao roleDao = roleDao(ldapTemplate, ldapConfig, accountsDao);
-
+    private UsersApi createUsersApi(AccountDaoImpl accountsDaoImpl, RoleDaoImpl roleDao) {
         final UserMapper ldapUserMapper = createUserMapper(roleDao);
-        UserRule userRule = ldapUserRule();
-
         UsersApiImpl impl = new UsersApiImpl();
-        impl.setAccountsDao(accountsDao);
+        impl.setAccountsDao(accountsDaoImpl);
         impl.setMapper(ldapUserMapper);
-        impl.setUserRule(userRule);
+        impl.setUserRule(ldapUserRule());
         return impl;
     }
 
@@ -226,54 +224,38 @@ public class ExtendedLdapAuthenticationConfiguration {
         return ldapTemplate;
     }
 
-    private AccountDao accountsDao(LdapTemplate ldapTemplate, ExtendedLdapConfig ldapConfig) {
-        String baseDn = ldapConfig.getBaseDn();
-        String userSearchBaseDN = ldapConfig.getUsersRdn();
-        String roleSearchBaseDN = ldapConfig.getRolesRdn();
-
-        // we don't need a configuration property for this,
-        // we don't allow pending users to log in. The LdapAuthenticationProvider won't
-        // even look them up.
-        final String pendingUsersSearchBaseDN = "ou=pendingusers";
-
+    private AccountDaoImpl accountsDao(LdapTemplate ldapTemplate, LdapDaoProperties ldapDaoProperties) {
         AccountDaoImpl impl = new AccountDaoImpl(ldapTemplate);
-        impl.setBasePath(baseDn);
-        impl.setUserSearchBaseDN(userSearchBaseDN);
-        impl.setRoleSearchBaseDN(roleSearchBaseDN);
-        impl.setPendingUserSearchBaseDN(pendingUsersSearchBaseDN);
-
-        String orgSearchBaseDN = ldapConfig.getOrgsRdn();
-        requireNonNull(orgSearchBaseDN);
-        impl.setOrgSearchBaseDN(orgSearchBaseDN);
-
-        // not needed here, only console cares, we shouldn't allow to authenticate
-        // pending users, should we?
-        final String pendingOrgSearchBaseDN = "ou=pendingorgs";
-        impl.setPendingOrgSearchBaseDN(pendingOrgSearchBaseDN);
-
+        impl.setLdapDaoProperties(ldapDaoProperties);
         impl.init();
         return impl;
     }
 
-    private RoleDao roleDao(LdapTemplate ldapTemplate, ExtendedLdapConfig ldapConfig, AccountDao accountDao) {
-        final String rolesRdn = ldapConfig.getRolesRdn();
+    private RoleDaoImpl roleDao(LdapTemplate ldapTemplate, LdapDaoProperties ldapDaoProperties,
+            AccountDaoImpl accountDaoImpl, OrgsDaoImpl orgsDaoImpl) {
         RoleDaoImpl impl = new RoleDaoImpl();
         impl.setLdapTemplate(ldapTemplate);
-        impl.setRoleSearchBaseDN(rolesRdn);
-        impl.setAccountDao(accountDao);
+        impl.setLdapDaoProperties(ldapDaoProperties);
+        impl.setAccountDao(accountDaoImpl);
+        impl.setOrgDao(orgsDaoImpl);
         impl.setRoles(ldapProtectedRoles());
         return impl;
     }
 
-    @SuppressWarnings("unused")
-    private OrgsDao orgsDao(LdapTemplate ldapTemplate, Server ldapConfig) {
+    private OrgsDaoImpl orgsDao(LdapTemplate ldapTemplate, LdapDaoProperties ldapDaoProperties,
+            AccountDaoImpl accountDaoImpl) {
         OrgsDaoImpl impl = new OrgsDaoImpl();
+        OrgLdapWrapper orgLdapWrapper = new OrgLdapWrapper();
+        orgLdapWrapper.setLdapTemplate(ldapTemplate);
+        orgLdapWrapper.setLdapDaoProperties(ldapDaoProperties);
+        orgLdapWrapper.setAccountDao(accountDaoImpl);
+        OrgExtLdapWrapper orgExtLdapWrapper = new OrgExtLdapWrapper();
+        orgExtLdapWrapper.setLdapTemplate(ldapTemplate);
+        orgExtLdapWrapper.setLdapDaoProperties(ldapDaoProperties);
         impl.setLdapTemplate(ldapTemplate);
-        impl.setBasePath(ldapConfig.getBaseDn());
-        impl.setOrgSearchBaseDN(ldapConfig.getOrgs().getRdn());
-
-        final String pendingOrgSearchBaseDN = "ou=pendingorgs";
-        impl.setPendingOrgSearchBaseDN(pendingOrgSearchBaseDN);
+        impl.setOrgExtLdapWrapper(orgExtLdapWrapper);
+        impl.setOrgLdapWrapper(orgLdapWrapper);
+        impl.setLdapDaoProperties(ldapDaoProperties);
         return impl;
     }
 
