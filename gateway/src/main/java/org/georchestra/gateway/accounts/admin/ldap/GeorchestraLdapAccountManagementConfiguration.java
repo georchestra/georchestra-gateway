@@ -18,8 +18,9 @@
  */
 package org.georchestra.gateway.accounts.admin.ldap;
 
-import static java.util.Objects.requireNonNull;
-
+import org.georchestra.ds.LdapDaoProperties;
+import org.georchestra.ds.orgs.OrgExtLdapWrapper;
+import org.georchestra.ds.orgs.OrgLdapWrapper;
 import org.georchestra.ds.orgs.OrgsDao;
 import org.georchestra.ds.orgs.OrgsDaoImpl;
 import org.georchestra.ds.roles.RoleDao;
@@ -145,57 +146,93 @@ public class GeorchestraLdapAccountManagementConfiguration {
         return new LdapTemplate(contextSource);
     }
 
+    @Bean
+    LdapDaoProperties ldapDaoProperties(GeorchestraGatewaySecurityConfigProperties config) {
+        ExtendedLdapConfig ldapConfig = config.extendedEnabled().getFirst();
+        return new LdapDaoProperties() //
+                .setBasePath(ldapConfig.getBaseDn()) //
+                .setOrgSearchBaseDN(ldapConfig.getOrgsRdn()) //
+                .setPendingOrgSearchBaseDN(ldapConfig.getPendingOrgsRdn()) //
+                .setRoleSearchBaseDN(ldapConfig.getRolesRdn()) //
+                .setUserSearchBaseDN(ldapConfig.getUsersRdn()) //
+                // we don't need a configuration property for this, we don't allow pending users
+                // to log in, the LdapAuthenticationProvider won't even look them up.
+                .setPendingUserSearchBaseDN("ou=pendingusers");
+    }
+
     /**
      * Creates a {@link RoleDao} implementation for managing LDAP roles.
      *
-     * @param ldapTemplate the LDAP template for querying LDAP
-     * @param config       the security configuration properties
+     * @param ldapTemplate      the LDAP template for querying LDAP
+     * @param ldapDaoProperties the ldap dao properties
+     * @param accountDaoImpl    the account dao impl
+     * @param orgsDaoImpl       the orgs dao impl
+     * @param roleProtected     protected roles
      * @return a configured {@link RoleDaoImpl}
      */
     @Bean
-    RoleDao roleDao(LdapTemplate ldapTemplate, GeorchestraGatewaySecurityConfigProperties config) {
+    RoleDaoImpl roleDao(LdapTemplate ldapTemplate, LdapDaoProperties ldapDaoProperties, AccountDaoImpl accountDaoImpl,
+            OrgsDaoImpl orgsDaoImpl, RoleProtected roleProtected) {
         RoleDaoImpl impl = new RoleDaoImpl();
         impl.setLdapTemplate(ldapTemplate);
-        impl.setRoleSearchBaseDN(config.extendedEnabled().getFirst().getRolesRdn());
+        impl.setAccountDao(accountDaoImpl);
+        impl.setOrgDao(orgsDaoImpl);
+        impl.setLdapDaoProperties(ldapDaoProperties);
+        impl.setRoles(roleProtected);
         return impl;
     }
 
     /**
      * Creates an {@link OrgsDao} implementation for managing LDAP organizations.
      *
-     * @param ldapTemplate the LDAP template for querying LDAP
-     * @param config       the security configuration properties
+     * @param ldapTemplate      the LDAP template for querying LDAP
+     * @param ldapDaoProperties the ldap dao properties
+     * @param orgLdapWrapper    the org ldap wrapper
+     * @param orgExtLdapWrapper the orgext ldap wrapper
      * @return a configured {@link OrgsDaoImpl}
      */
     @Bean
-    OrgsDao orgsDao(LdapTemplate ldapTemplate, GeorchestraGatewaySecurityConfigProperties config) {
+    OrgsDaoImpl orgsDao(LdapTemplate ldapTemplate, LdapDaoProperties ldapDaoProperties, OrgLdapWrapper orgLdapWrapper,
+            OrgExtLdapWrapper orgExtLdapWrapper) {
         OrgsDaoImpl impl = new OrgsDaoImpl();
         impl.setLdapTemplate(ldapTemplate);
-        ExtendedLdapConfig ldapConfig = config.extendedEnabled().getFirst();
-        impl.setBasePath(ldapConfig.getBaseDn());
-        impl.setOrgSearchBaseDN(ldapConfig.getOrgsRdn());
-        impl.setPendingOrgSearchBaseDN(ldapConfig.getPendingOrgsRdn());
+        impl.setLdapDaoProperties(ldapDaoProperties);
+        impl.setOrgLdapWrapper(orgLdapWrapper);
+        impl.setOrgExtLdapWrapper(orgExtLdapWrapper);
         return impl;
+    }
+
+    @Bean
+    OrgLdapWrapper orgLdapWrapper(LdapTemplate ldapTemplate, LdapDaoProperties ldapDaoProperties,
+            AccountDaoImpl accountDaoImpl) {
+        OrgLdapWrapper orgLdapWrapper = new OrgLdapWrapper();
+        orgLdapWrapper.setLdapTemplate(ldapTemplate);
+        orgLdapWrapper.setLdapDaoProperties(ldapDaoProperties);
+        orgLdapWrapper.setAccountDao(accountDaoImpl);
+        return orgLdapWrapper;
+    }
+
+    @Bean
+    OrgExtLdapWrapper orgExtLdapWrapper(LdapTemplate ldapTemplate, LdapDaoProperties ldapDaoProperties) {
+        OrgExtLdapWrapper orgExtLdapWrapper = new OrgExtLdapWrapper();
+        orgExtLdapWrapper.setLdapTemplate(ldapTemplate);
+        orgExtLdapWrapper.setLdapDaoProperties(ldapDaoProperties);
+        return orgExtLdapWrapper;
     }
 
     /**
      * Creates an {@link AccountDao} implementation for managing user accounts in
      * LDAP.
      *
-     * @param ldapTemplate the LDAP template for querying LDAP
-     * @param config       the security configuration properties
+     * @param ldapTemplate      the LDAP template for querying LDAP
+     * @param ldapDaoProperties the ldap dao properties
      * @return a configured {@link AccountDaoImpl}
      */
     @Bean
-    AccountDao accountDao(LdapTemplate ldapTemplate, GeorchestraGatewaySecurityConfigProperties config) {
-        ExtendedLdapConfig ldapConfig = config.extendedEnabled().getFirst();
+    AccountDaoImpl accountDao(LdapTemplate ldapTemplate, LdapDaoProperties ldapDaoProperties) {
         AccountDaoImpl impl = new AccountDaoImpl(ldapTemplate);
-        impl.setBasePath(ldapConfig.getBaseDn());
-        impl.setUserSearchBaseDN(ldapConfig.getUsersRdn());
-        impl.setRoleSearchBaseDN(ldapConfig.getRolesRdn());
-        impl.setPendingUserSearchBaseDN("ou=pendingusers");
-        impl.setOrgSearchBaseDN(requireNonNull(ldapConfig.getOrgsRdn()));
-        impl.setPendingOrgSearchBaseDN("ou=pendingorgs");
+        impl.setLdapTemplate(ldapTemplate);
+        impl.setLdapDaoProperties(ldapDaoProperties);
         impl.init();
         return impl;
     }
