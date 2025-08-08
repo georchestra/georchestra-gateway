@@ -44,6 +44,7 @@ public class ErrorControllerAdvice {
         model.addAttribute("georchestraStylesheet", georchestraStylesheet);
         model.addAttribute("logoUrl", logoUrl);
         exchange.getResponse().setStatusCode(status);
+        //If template does not exist, fallback to 500 error page with an error log.
         return Mono.just(template);
     }
 
