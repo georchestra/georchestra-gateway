@@ -62,7 +62,6 @@ class GeorchestraGatewayApplicationTests {
     private @Autowired WebTestClient testClient;
 
     private @Autowired WhoamiController whoamiController;
-    private @Autowired StyleConfigController configController;
     private @Autowired ApplicationContext context;
 
     @Test
@@ -123,13 +122,5 @@ class GeorchestraGatewayApplicationTests {
         testClient.get().uri("/path/to/unavailable/service")//
                 .header("Host", "localhost")//
                 .exchange().expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    @Test
-    void testStyleConfigController() {
-        Mono<Map<String, Object>> response = configController.styleConfig();
-        assertThat(response).isNotNull();
-        Map<String, Object> config = response.block();
-        assertThat(config).containsKey("stylesheet").containsKey("logo");
     }
 }

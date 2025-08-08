@@ -8,7 +8,8 @@
     <meta http-equiv="refresh" content="5">
     <title>Site in maintenance</title>
     <link href="/login/error.css" rel="stylesheet"/>
-    <script src="/login/getConfig.js"></script>
+    <link th:if="${georchestraStylesheet != null and !#strings.isEmpty(georchestraStylesheet)}"
+      th:href="${georchestraStylesheet}" rel="stylesheet"/>
 </head>
 <body lang=EN>
 <div id="wrapper">

@@ -9,7 +9,8 @@
     <script th:src="${headerScript}"></script>
     <link href="login/bootstrap5.min.css?v5.3.3" rel="stylesheet">
     <link href="login/signin.css" rel="stylesheet"/>
-    <link th:href="${georchestraStylesheet}" rel="stylesheet"/>
+    <link th:if="${georchestraStylesheet != null and !#strings.isEmpty(georchestraStylesheet)}"
+      th:href="${georchestraStylesheet}" rel="stylesheet"/>
 </head>
 <body class="d-flex flex-column" id="georchestra-login-page">
 <header th:if="${headerEnabled}">

@@ -5,21 +5,19 @@
     <meta http-equiv="pragma" content="no-cache"/>
     <meta name="robots" content="none"/>
     <meta name="googlebot" content="noarchive"/>
-    <meta http-equiv="refresh" content="5">
-    <title>Site in maintenance</title>
+    <title>Access forbidden</title>
     <link href="/login/error.css" rel="stylesheet"/>
     <link th:if="${georchestraStylesheet != null and !#strings.isEmpty(georchestraStylesheet)}"
       th:href="${georchestraStylesheet}" rel="stylesheet"/>
 </head>
-<body lang=EN>
+<body lang="EN">
 <div id="wrapper">
-    <div class="error-code">500</div>
-    <p class="error-desc">Site in maintenance</p>
-    <p>
-        Due to maintenance, this service is temporarily unavailable.
-    </p>
-    <p>We're sorry for the inconvenience !</p>
-    <p class="error-hint">Hint: do not close the tab - the requested page will show up in a few seconds.</p>
+    <div class="error-code">Oops</div>
+    <img src="" alt="" style="display: none" id="error-img">
+    <p class="error-desc">An error has occured</p>
+    <p>Please ask an administrator of the platform.</p>
+    <a href="/" class="error-back">Return to the homepage</a>
 </div>
 </body>
 </html>
+
