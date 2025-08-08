@@ -20,9 +20,12 @@ package org.georchestra.gateway.app;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.ui.Model;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 @ControllerAdvice
 public class ErrorControllerAdvice {
@@ -34,12 +37,14 @@ public class ErrorControllerAdvice {
     private @Value("${logoUrl:}") String logoUrl;
 
     @ExceptionHandler(ErrorResponseException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public String exception(final ErrorResponseException throwable, final Model model) {
-        String template = "error/" + (throwable != null ? throwable.getStatusCode().value() : "generic");
+    public Mono<String> exception(final ErrorResponseException throwable, final Model model,
+                                  ServerWebExchange exchange) {
+        HttpStatusCode status = throwable != null ? throwable.getStatusCode() : HttpStatus.INTERNAL_SERVER_ERROR;
+        String template = "error/" + (throwable != null ? status.value() : "generic");
         model.addAttribute("georchestraStylesheet", georchestraStylesheet);
         model.addAttribute("logoUrl", logoUrl);
-        return template;
+        exchange.getResponse().setStatusCode(status);
+        return Mono.just(template);
     }
 
 }
