@@ -25,7 +25,7 @@ import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.annotation.*;
 
 @ControllerAdvice
-public class ErrorController {
+public class ErrorControllerAdvice {
 
     /** Path to the geOrchestra custom stylesheet, if configured. */
     private @Value("${georchestraStylesheet:}") String georchestraStylesheet;
