@@ -52,8 +52,8 @@ public class ErrorControllerAdvice {
     @ExceptionHandler(ErrorResponseException.class)
     public Mono<String> exception(final ErrorResponseException throwable, final Model model,
                                   ServerWebExchange exchange) {
-        HttpStatusCode status = throwable != null ? throwable.getStatusCode() : HttpStatus.INTERNAL_SERVER_ERROR;
-        String template = "error/" + (throwable != null ? status.value() : "generic");
+        HttpStatusCode status = throwable.getStatusCode();
+        String template = "error/" + status.value();
         model.addAttribute("georchestraStylesheet", georchestraStylesheet);
         model.addAttribute("logoUrl", logoUrl);
         exchange.getResponse().setStatusCode(status);
