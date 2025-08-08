@@ -18,7 +18,10 @@
  */
 package org.georchestra.gateway.app;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.ui.Model;
@@ -27,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @ControllerAdvice
 public class ErrorControllerAdvice {
 
@@ -36,6 +40,15 @@ public class ErrorControllerAdvice {
     /** URL of the logo displayed in the header. */
     private @Value("${logoUrl:}") String logoUrl;
 
+    @Value("${spring.thymeleaf.prefix:classpath:/templates/}")
+    private String thymeleafPrefix;
+
+    private final ResourceLoader resourceLoader;
+
+    public ErrorControllerAdvice(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
+    }
+
     @ExceptionHandler(ErrorResponseException.class)
     public Mono<String> exception(final ErrorResponseException throwable, final Model model,
                                   ServerWebExchange exchange) {
@@ -44,8 +57,16 @@ public class ErrorControllerAdvice {
         model.addAttribute("georchestraStylesheet", georchestraStylesheet);
         model.addAttribute("logoUrl", logoUrl);
         exchange.getResponse().setStatusCode(status);
-        //If template does not exist, fallback to 500 error page with an error log.
+        if (!templateExists(template)) {
+            log.error("Template '{}' not found, falling back to 'error/generic'", template);
+            template = "error/generic";
+        }
         return Mono.just(template);
     }
 
+    private boolean templateExists(String templateName) {
+        String resourcePath = thymeleafPrefix + templateName + ".html";
+        Resource resource = resourceLoader.getResource(resourcePath);
+        return resource.exists() && resource.isReadable();
+    }
 }
