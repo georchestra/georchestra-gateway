@@ -58,7 +58,7 @@ public class ErrorControllerAdvice {
         model.addAttribute("logoUrl", logoUrl);
         exchange.getResponse().setStatusCode(status);
         if (!templateExists(template)) {
-            log.error("Template '{}' not found, falling back to 'error/generic'", template);
+            log.warn("Template '{}' not found, falling back to 'error/generic'", template);
             template = "error/generic";
         }
         return Mono.just(template);
