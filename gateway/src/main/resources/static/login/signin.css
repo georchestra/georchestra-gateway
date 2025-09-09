@@ -11,12 +11,12 @@ body {
 .btn-primary {
   background-color: var(--georchestra);
   border-color: var(--georchestra);
-  opacity: 0.8;
+  opacity: 1;
 }
 .btn-primary:hover, .btn-primary:not(:disabled):not(.disabled):active {
   background-color: var(--georchestra);
   border-color: var(--georchestra);
-  opacity: 1;
+  opacity: 0.8;
 }
 .btn-primary.focus, .btn-primary:focus, .btn-primary:not(:disabled):not(.disabled):active:focus {
   box-shadow: 0 0 0 0.2rem rgba(133, 18, 125,.25);
