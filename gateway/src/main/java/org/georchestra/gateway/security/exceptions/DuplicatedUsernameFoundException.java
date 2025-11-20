@@ -18,6 +18,8 @@
  */
 package org.georchestra.gateway.security.exceptions;
 
+import org.springframework.security.core.AuthenticationException;
+
 /**
  * Exception thrown when multiple user accounts are found with the same
  * username.
@@ -27,7 +29,7 @@ package org.georchestra.gateway.security.exceptions;
  * </p>
  */
 @SuppressWarnings("serial")
-public class DuplicatedUsernameFoundException extends RuntimeException {
+public class DuplicatedUsernameFoundException extends AuthenticationException {
 
     /**
      * Constructs a new {@code DuplicatedUsernameFoundException} with the specified
@@ -44,5 +46,6 @@ public class DuplicatedUsernameFoundException extends RuntimeException {
      * message.
      */
     public DuplicatedUsernameFoundException() {
+        super("Duplicate username");
     }
 }

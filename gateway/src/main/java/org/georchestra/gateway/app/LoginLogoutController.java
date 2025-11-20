@@ -186,6 +186,7 @@ public class LoginLogoutController {
         model.addAttribute("passwordExpired", "expired_password".equals(allRequestParams.get("error")));
         model.addAttribute("invalidCredentials", "invalid_credentials".equals(allRequestParams.get("error")));
         model.addAttribute("duplicateAccount", "duplicate_account".equals(allRequestParams.get("error")));
+        model.addAttribute("pendingUser", "pending_user".equals(allRequestParams.get("error")));
 
         return "login";
     }

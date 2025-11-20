@@ -37,6 +37,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -134,9 +135,15 @@ public class GatewaySecurityConfiguration {
     }
 
     @Bean
+    ExtendedRedirectServerAuthenticationFailureHandler authenticationFailureHandler() {
+        return new ExtendedRedirectServerAuthenticationFailureHandler("login?error");
+    }
+
+    @Bean
     SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
             List<ServerHttpSecurityCustomizer> customizers, ReactiveAuthenticationManager authenticationManager,
-            RedirectServerAuthenticationEntryPoint redirectServerAuthenticationEntryPoint) throws Exception {
+            RedirectServerAuthenticationEntryPoint redirectServerAuthenticationEntryPoint,
+            ExtendedRedirectServerAuthenticationFailureHandler authenticationFailureHandler) throws Exception {
 
         log.info("Initializing security filter chain...");
 
@@ -147,8 +154,7 @@ public class GatewaySecurityConfiguration {
         // Set the authentication manager
         http.authenticationManager(authenticationManager);
 
-        http.formLogin(login -> login
-                .authenticationFailureHandler(new ExtendedRedirectServerAuthenticationFailureHandler("login?error"))
+        http.formLogin(login -> login.authenticationFailureHandler(authenticationFailureHandler)
                 .requiresAuthenticationMatcher(
                         ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, new String[] { LOGIN_PAGE }))
                 .authenticationEntryPoint(redirectServerAuthenticationEntryPoint));
@@ -202,8 +208,9 @@ public class GatewaySecurityConfiguration {
      * @return an instance of {@link ResolveGeorchestraUserGlobalFilter}
      */
     @Bean
-    ResolveGeorchestraUserGlobalFilter resolveGeorchestraUserGlobalFilter(GeorchestraUserMapper resolver) {
-        return new ResolveGeorchestraUserGlobalFilter(resolver);
+    ResolveGeorchestraUserGlobalFilter resolveGeorchestraUserGlobalFilter(GeorchestraUserMapper resolver,
+            ServerAuthenticationFailureHandler authenticationFailureHandler) {
+        return new ResolveGeorchestraUserGlobalFilter(resolver, authenticationFailureHandler);
     }
 
     /**

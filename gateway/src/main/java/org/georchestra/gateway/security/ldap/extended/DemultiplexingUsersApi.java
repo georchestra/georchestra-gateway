@@ -164,6 +164,14 @@ public class DemultiplexingUsersApi {
         return extendUserWithOrganization(serviceName, user);
     }
 
+    public Optional<ExtendedGeorchestraUser> findByEmail(@NonNull String email, boolean filterPending) {
+        String serviceName = usersByConfigName.keySet().stream().findFirst().get();
+        UsersApi usersApi = usersByConfigName.get(serviceName);
+        Optional<GeorchestraUser> user = usersApi.findByEmail(email, filterPending);
+
+        return extendUserWithOrganization(serviceName, user);
+    }
+
     /**
      * Finds a user by their OAuth2 provider and unique identifier.
      * <p>

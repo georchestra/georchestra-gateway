@@ -24,6 +24,7 @@ import java.util.WeakHashMap;
 
 import org.georchestra.gateway.security.GeorchestraUserCustomizerExtension;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
+import org.georchestra.gateway.security.exceptions.PendingUserException;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.core.Ordered;
 import org.springframework.security.core.Authentication;
@@ -82,6 +83,9 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
                 }
             } else {
                 user = accounts.getOrCreate(mappedUser);
+                if (user.isPending()) {
+                    throw new PendingUserException("User is pending approval.");
+                }
                 accounts.createUserOrgUniqueIdIfMissing(mappedUser);
             }
             user.setIsExternalAuth(true);

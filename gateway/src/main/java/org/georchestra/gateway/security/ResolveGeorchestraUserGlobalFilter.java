@@ -23,6 +23,8 @@ import java.net.URI;
 import org.georchestra.gateway.model.GeorchestraOrganizations;
 import org.georchestra.gateway.model.GeorchestraUsers;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
+import org.georchestra.gateway.security.exceptions.DuplicatedUsernameFoundException;
+import org.georchestra.gateway.security.exceptions.PendingUserException;
 import org.georchestra.gateway.security.ldap.extended.ExtendedGeorchestraUser;
 import org.georchestra.security.model.GeorchestraUser;
 import org.georchestra.security.model.Organization;
@@ -34,7 +36,10 @@ import org.springframework.core.Ordered;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.DefaultServerRedirectStrategy;
 import org.springframework.security.web.server.ServerRedirectStrategy;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilterChain;
 import org.springframework.web.server.WebSession;
 
 import lombok.NonNull;
@@ -74,6 +79,8 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
     public static final int ORDER = RouteToRequestUrlFilter.ROUTE_TO_URL_FILTER_ORDER + 1;
 
     private final @NonNull GeorchestraUserMapper resolver;
+
+    private final @NonNull ServerAuthenticationFailureHandler authenticationFailureHandler;
 
     private final ServerRedirectStrategy redirectStrategy = new DefaultServerRedirectStrategy();
 
@@ -118,7 +125,10 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
                 .filter(Authentication.class::isInstance).map(Authentication.class::cast).map(resolver::resolve)
                 .map(user -> storeUserAndOrganization(exchange, user.orElse(null))).defaultIfEmpty(exchange)
                 .flatMap(chain::filter)
-                .onErrorResume(DuplicatedEmailFoundException.class, error -> handleDuplicateEmailError(exchange));
+                .onErrorResume(DuplicatedEmailFoundException.class, error -> handleDuplicateEmailError(exchange))
+                .onErrorResume(PendingUserException.class, error -> handlePendingUserError(exchange, error))
+                .onErrorResume(DuplicatedUsernameFoundException.class,
+                        error -> handleDuplicateUsernameError(exchange, error));
     }
 
     /**
@@ -150,6 +160,21 @@ public class ResolveGeorchestraUserGlobalFilter implements GlobalFilter, Ordered
      */
     private Mono<Void> handleDuplicateEmailError(ServerWebExchange exchange) {
         return redirectStrategy.sendRedirect(exchange, URI.create("/login?error=" + DUPLICATE_ACCOUNT_ERROR))
+                .then(exchange.getSession().flatMap(WebSession::invalidate));
+    }
+
+    private Mono<Void> handlePendingUserError(ServerWebExchange exchange, PendingUserException exception) {
+        WebFilterChain noopChain = webExchange -> Mono.empty();
+        WebFilterExchange webFilterExchange = new WebFilterExchange(exchange, noopChain);
+        return authenticationFailureHandler.onAuthenticationFailure(webFilterExchange, exception)
+                .then(exchange.getSession().flatMap(WebSession::invalidate));
+    }
+
+    private Mono<Void> handleDuplicateUsernameError(ServerWebExchange exchange,
+            DuplicatedUsernameFoundException exception) {
+        WebFilterChain noopChain = webExchange -> Mono.empty();
+        WebFilterExchange webFilterExchange = new WebFilterExchange(exchange, noopChain);
+        return authenticationFailureHandler.onAuthenticationFailure(webFilterExchange, exception)
                 .then(exchange.getSession().flatMap(WebSession::invalidate));
     }
 }

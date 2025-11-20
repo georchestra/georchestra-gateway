@@ -117,7 +117,11 @@ public abstract class AbstractAccountsManager implements AccountManager {
         if (oAuth2Provider != null && oAuth2UId != null) {
             // search user by email or by OAuth2Uid
             Boolean useEmail = providersConfig.useEmail(oAuth2Provider);
-            return useEmail ? findByEmail(mappedUser.getEmail()) : findByOAuth2Uid(oAuth2Provider, oAuth2UId);
+            if (useEmail) {
+                Optional<GeorchestraUser> ldapUser = findByEmail(mappedUser.getEmail(), false);
+                return ldapUser;
+            }
+            return findByOAuth2Uid(oAuth2Provider, oAuth2UId);
         }
         return findByUsername(mappedUser.getUsername());
     }
@@ -194,7 +198,8 @@ public abstract class AbstractAccountsManager implements AccountManager {
             GeorchestraUser existing = findInternal(mapped).orElse(null);
             if (existing == null) {
                 createInternal(mapped);
-                existing = findInternal(mapped).orElseThrow(() -> new IllegalStateException(
+                Optional<GeorchestraUser> user = findInternal(mapped);
+                existing = user.orElseThrow(() -> new IllegalStateException(
                         "User " + mapped.getUsername() + " not found immediately after creation"));
                 eventPublisher.publishEvent(new AccountCreated(existing));
             }
@@ -235,7 +240,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
     protected abstract Optional<GeorchestraUser> findByUsername(String username);
 
     /**
-     * Finds a user by their email.
+     * Finds not pending user by their email.
      * <p>
      * Implementations must provide a concrete method for retrieving users from
      * storage.
@@ -246,6 +251,20 @@ public abstract class AbstractAccountsManager implements AccountManager {
      *         {@link Optional} if not found
      */
     protected abstract Optional<GeorchestraUser> findByEmail(String email);
+
+    /**
+     * Finds pending or valid user by their email.
+     * <p>
+     * Implementations must provide a concrete method for retrieving users from
+     * storage.
+     * </p>
+     *
+     * @param email         the email to search for
+     * @param filterPending boolean to filter pending or not
+     * @return an {@link Optional} containing the found user, or an empty
+     *         {@link Optional} if not found
+     */
+    protected abstract Optional<GeorchestraUser> findByEmail(String email, boolean filterPending);
 
     /**
      * Affect a user to an organization according to user's credentials.

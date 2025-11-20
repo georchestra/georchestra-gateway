@@ -34,13 +34,14 @@
                     <h2 class="form-signin-heading"><span th:text="#{login_message_title}"/></h2>
                     <h4 class="fs-6 fw-light"><span th:text="#{login_message_subtitle}"/></h4>
                     <div class="my-4 text-danger text-center"
-                         th:if="${invalidCredentials or passwordExpired or duplicateAccount} ">
+                         th:if="${invalidCredentials or passwordExpired or duplicateAccount or pendingUser} ">
                         <div th:if="${invalidCredentials}"><span th:text="#{invalid_credentials}"></span></div>
                         <div th:if="${passwordExpired}"><span th:text="#{expired_password}"></span>
                             <a href="/console/account/passwordRecovery"> <span
                                     th:text="#{expired_password_link}"></span> </a>
                         </div>
                         <div th:if="${duplicateAccount}"><span th:text="#{duplicate_account}"></span></div>
+                        <div th:if="${pendingUser}"><span th:text="#{pending_user}"></span></div>
                     </div>
                     <p class="my-4">
                         <label for="username" class="sr-only fs-7"><span th:text="#{username}"></span></label>

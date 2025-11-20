@@ -4,6 +4,8 @@
 georchestra:
   gateway:
     security:
+      # from datadir
+      moderatedSignup: ${moderatedSignup:false}
       createNonExistingUsersInLDAP: false
       events:
         rabbitmq:
