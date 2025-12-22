@@ -159,6 +159,11 @@ public abstract class AbstractAccountsManager implements AccountManager {
             GeorchestraUser existing = findInternal(mapped).orElse(null);
             // verify if user org match between ldap and OAuth2 info
             if (!isSameOrgUniqueId(mapped, existing)) {
+                // force username from ldap instead unknown external username
+                // See issue #231 : https://github.com/georchestra/georchestra-gateway/issues/231
+                if (existing != null) {
+                    mapped.setUsername(existing.getUsername());
+                }
                 // we find or create org from this orgUniqueId and add user to this org
                 // unlink
                 unlinkUserOrg(existing);
