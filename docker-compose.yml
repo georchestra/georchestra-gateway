@@ -1,5 +1,6 @@
 volumes:
   postgresql_data:
+  redis_data:  # Uncomment when using Redis for session storage
   datadir:
     driver_opts:
       type: none
@@ -13,7 +14,7 @@ services:
       - POSTGRES_USER=georchestra
       - POSTGRES_PASSWORD=georchestra
     volumes:
-      - postgresql_data:/var/lib/postgresql/data
+      - postgresql_data:/var/lib/postgresql
     restart: always
     ports:
       - 54321:5432
@@ -32,6 +33,17 @@ services:
       - ./datadir/secrets:/run/secrets
     ports:
       - 3891:389
+      - 389:389
+
+  # Uncomment to enable Redis for distributed session storage
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
 
   gateway:
     image: georchestra/gateway:latest
