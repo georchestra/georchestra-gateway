@@ -462,6 +462,71 @@ Role mappings are defined in the `roles-mappings.yaml` file and allow extending 
   - ROLE_ADMINISTRATOR
 ```
 
+## Session Management
+
+The Gateway provides flexible session management options to support different deployment scenarios.
+
+### In-Memory Sessions (Default)
+
+By default, the Gateway stores user sessions in memory. This is suitable for single-instance deployments or development environments.
+
+Session timeout can be configured in `application.yaml`:
+
+```yaml
+server:
+  reactive:
+    session:
+      timeout: 1440m # 24 hours
+```
+
+### Redis-Backed Sessions
+
+For production deployments with multiple Gateway instances, Redis-backed session storage enables session sharing across instances and persistence across restarts.
+
+#### Enabling Redis Sessions
+
+To enable Redis session storage, configure the following in `security.yaml`:
+
+```yaml
+georchestra:
+  gateway:
+    session:
+      redis:
+        enabled: true
+        host: localhost
+        port: 6379
+        password: your-redis-password  # Optional
+        database: 0
+        timeout: 3000  # Connection timeout in milliseconds
+```
+
+These values can be overridden using properties from `default.properties`:
+
+```properties
+sessionRedisEnabled=true
+sessionRedisHost=redis-server.example.com
+sessionRedisPort=6379
+sessionRedisPassword=your-secure-password
+sessionRedisDatabase=0
+sessionRedisTimeout=3000
+```
+
+#### Benefits of Redis Sessions
+
+- **Horizontal Scaling**: Multiple Gateway instances can share the same session store
+- **Session Persistence**: Sessions survive Gateway restarts and redeployments
+- **High Availability**: Redis replication provides session data redundancy
+- **Centralized Management**: All sessions stored in a single, manageable location
+
+#### Requirements
+
+When using Redis sessions, ensure:
+
+1. Redis server is running and accessible from all Gateway instances
+2. Network connectivity between Gateway and Redis is reliable
+3. Redis is properly secured with authentication if exposed on a network
+4. Appropriate Redis persistence settings are configured for your requirements
+
 ## Metrics and Monitoring
 
 The Gateway provides comprehensive monitoring and management capabilities through Spring Boot Actuator. By default, these endpoints are exposed on port 8090.
