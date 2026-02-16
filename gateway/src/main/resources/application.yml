@@ -31,6 +31,8 @@ spring:
     exclude:
     - org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration
     - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+    - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+    - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
   cloud:
     gateway:
       enabled: true
