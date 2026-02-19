@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,7 @@ import org.georchestra.ds.DataServiceException;
 import org.georchestra.ds.DuplicatedCommonNameException;
 import org.georchestra.ds.orgs.Org;
 import org.georchestra.ds.orgs.OrgsDao;
+import org.georchestra.ds.roles.Role;
 import org.georchestra.ds.roles.RoleDao;
 import org.georchestra.ds.roles.RoleFactory;
 import org.georchestra.ds.users.Account;
@@ -235,6 +237,11 @@ class LdapAccountsManager extends AbstractAccountsManager {
         try {// account created, add roles
             if (!mapped.getRoles().contains("ROLE_USER")) {
                 roleDao.addUser("USER", newAccount);
+            }
+            if (newAccount.getOrg() != null) {
+                List<Role> r = roleDao.findAllForOrg(orgsDao.findByCommonName(newAccount.getOrg()));
+                if (!r.isEmpty())
+                    roleDao.addUsersInRoles(r.stream().map(Role::getName).collect(Collectors.toList()), List.of(newAccount));
             }
             for (String role : mapped.getRoles()) {
                 role = role.replaceFirst("^ROLE_", "");
