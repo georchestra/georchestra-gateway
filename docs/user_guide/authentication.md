@@ -5,6 +5,7 @@ geOrchestra Gateway supports multiple authentication methods:
 1. LDAP authentication
 2. OAuth2/OpenID Connect authentication
 3. Pre-authentication via HTTP headers
+4. Redirection
 
 ## LDAP Authentication
 
@@ -608,6 +609,49 @@ docker compose -f docker-compose-preauth.yaml up
 ```
 
 This setup uses an Nginx proxy that automatically logs you in as `testadmin` without requiring credentials.
+
+## Redirection
+
+The Gateway supports redirecting users after login, using a `redirect` query parameter. The target
+URL must be allowed by `georchestra.gateway.loginRedirectAllowList` (prefix match) to avoid open
+redirects.
+
+Configure the allow list in `gateway.yaml`:
+
+```yaml
+georchestra:
+  gateway:
+    loginRedirectAllowList: >
+      https://georchestra.example.fr/geoserver/,
+      https://georchestra.example.fr/mapstore/
+```
+
+There are two supported flows:
+
+1. Redirect from the geOrchestra login page
+
+When accessing the login page, you can provide a `redirect` parameter. After successful
+authentication, the user is sent to the requested resource.
+
+```text
+https://georchestra.example.fr/login?redirect=https://georchestra.example.fr/mapstore/
+```
+
+2. Redirect from an external portal (OAuth2 authorization endpoint)
+
+An external portal can link directly to the OAuth2 authorization endpoint with a `redirect` target.
+This allows a user already authenticated with an external IdP (for example Keycloak) to land
+directly on a geOrchestra application without seeing the geOrchestra login page.
+
+```text
+https://georchestra.example.fr/oauth2/authorization/enrs?redirect=https://georchestra.example.fr/mapstore/%23/context/secretcontext
+```
+
+After successful OAuth2 login, the user is redirected to:
+
+```text
+https://georchestra.example.fr/mapstore/#/context/secretcontext
+```
 
 ## Login Page Customization
 

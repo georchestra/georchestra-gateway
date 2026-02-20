@@ -46,6 +46,8 @@ import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoderFactory;
+import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
@@ -138,6 +140,42 @@ public class OAuth2Configuration {
     @Bean
     ServerHttpSecurityCustomizer oauth2LoginEnablingCustomizer() {
         return new OAuth2AuthenticationCustomizer();
+    }
+
+    /**
+     * Stores an optional redirect target passed as query param when initiating the
+     * OAuth2 authorization code flow, and uses it right after login.
+     */
+    @Bean
+    OAuth2RedirectQueryParamWebFilter oauth2RedirectQueryParamWebFilter() {
+        return new OAuth2RedirectQueryParamWebFilter();
+    }
+
+    @Bean
+    ServerAuthenticationSuccessHandler oauth2RedirectAuthenticationSuccessHandler() {
+        return new OAuth2RedirectAuthenticationSuccessHandler(
+                OAuth2RedirectQueryParamWebFilter.REDIRECT_SESSION_ATTRIBUTE);
+    }
+
+    @Bean
+    ServerHttpSecurityCustomizer oauth2RedirectSupportCustomizer(
+            OAuth2RedirectQueryParamWebFilter redirectQueryParamWebFilter,
+            ServerAuthenticationSuccessHandler oauth2RedirectAuthenticationSuccessHandler) {
+
+        return new ServerHttpSecurityCustomizer() {
+            @Override
+            public void customize(ServerHttpSecurity http) {
+                http.addFilterAt(redirectQueryParamWebFilter, SecurityWebFiltersOrder.FIRST);
+                http.oauth2Login(
+                        oauth2 -> oauth2.authenticationSuccessHandler(oauth2RedirectAuthenticationSuccessHandler));
+            }
+
+            @Override
+            public int getOrder() {
+                // Run after the OAuth2AuthenticationCustomizer so it only tweaks the handler.
+                return 1;
+            }
+        };
     }
 
     /**

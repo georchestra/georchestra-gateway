@@ -64,7 +64,6 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @ConfigurationProperties(prefix = "georchestra.gateway.security")
 public class GeorchestraGatewaySecurityConfigProperties implements Validator {
-
     /**
      * Flag indicating whether non-existing users should be created in LDAP
      * automatically.
@@ -75,6 +74,8 @@ public class GeorchestraGatewaySecurityConfigProperties implements Validator {
      * Default organization assigned to users when no specific organization is set.
      */
     private String defaultOrganization = "";
+
+    private boolean moderatedSignup = false;
 
     /**
      * LDAP server configurations mapped by their respective names.

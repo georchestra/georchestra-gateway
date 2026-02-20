@@ -22,10 +22,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
 
+import org.georchestra.ds.DataServiceException;
+import org.georchestra.ds.users.Account;
+import org.georchestra.ds.users.AccountDao;
 import org.georchestra.gateway.security.GeorchestraUserCustomizerExtension;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
+import org.georchestra.gateway.security.exceptions.PendingUserException;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.core.Ordered;
+import org.springframework.ldap.NameNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -42,6 +47,7 @@ import lombok.RequiredArgsConstructor;
 public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExtension, Ordered {
 
     private final @NonNull AccountManager accounts;
+    private final @NonNull AccountDao accountDao;
 
     private final WeakHashMap<Authentication, GeorchestraUser> loggedInUsers = new WeakHashMap<>();
 
@@ -75,6 +81,7 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
         }
         if (isOauth2 || isPreAuth) {
             GeorchestraUser user = loggedInUsers.get(auth);
+            boolean ensureOrgUniqueId = false;
             if (user != null) {
                 Optional<GeorchestraUser> ldapUser = accounts.find(mappedUser);
                 if (ldapUser.isPresent()) {
@@ -82,6 +89,12 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
                 }
             } else {
                 user = accounts.getOrCreate(mappedUser);
+                ensureOrgUniqueId = true;
+            }
+            if (isPendingAccount(user)) {
+                throw new PendingUserException("User is pending approval.");
+            }
+            if (ensureOrgUniqueId) {
                 accounts.createUserOrgUniqueIdIfMissing(mappedUser);
             }
             user.setIsExternalAuth(true);
@@ -89,5 +102,25 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
             return user;
         }
         return mappedUser;
+    }
+
+    /**
+     * Checks the pending status against the original LDAP account using
+     * {@link AccountDao#findByUID(String)}.
+     *
+     * @param user the resolved user whose UID will be looked up
+     * @return {@code true} if the stored account is marked pending
+     * @throws IllegalStateException if the account cannot be retrieved
+     */
+    private boolean isPendingAccount(@NonNull GeorchestraUser user) {
+        final String uid = Objects.requireNonNull(user.getUsername(), "GeorchestraUser.username is null");
+        try {
+            Account originalAccount = this.accountDao.findByUID(uid);
+            return originalAccount.isPending();
+        } catch (NameNotFoundException e) {
+            throw new IllegalStateException("Account " + uid + " not found after login", e);
+        } catch (DataServiceException e) {
+            throw new IllegalStateException("Error retrieving account " + uid, e);
+        }
     }
 }

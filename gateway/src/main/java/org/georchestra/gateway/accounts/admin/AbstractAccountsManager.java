@@ -27,6 +27,7 @@ import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException
 import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomConfig;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.util.StringUtils;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -117,7 +118,11 @@ public abstract class AbstractAccountsManager implements AccountManager {
         if (oAuth2Provider != null && oAuth2UId != null) {
             // search user by email or by OAuth2Uid
             Boolean useEmail = providersConfig.useEmail(oAuth2Provider);
-            return useEmail ? findByEmail(mappedUser.getEmail()) : findByOAuth2Uid(oAuth2Provider, oAuth2UId);
+            if (useEmail) {
+                Optional<GeorchestraUser> ldapUser = findByEmail(mappedUser.getEmail(), false);
+                return ldapUser;
+            }
+            return findByOAuth2Uid(oAuth2Provider, oAuth2UId);
         }
         return findByUsername(mappedUser.getUsername());
     }
@@ -136,19 +141,52 @@ public abstract class AbstractAccountsManager implements AccountManager {
      *         orgUniqueId
      */
     public Boolean isSameOrgUniqueId(GeorchestraUser mapped, GeorchestraUser existingUser) {
+        if (existingUser == null) {
+            return true;
+        }
+
+        // If provider doesn't supply orgUniqueId, don't enforce a change.
+        String mappedOrgUniqueId = normalizeOrgUniqueId(mapped.getOAuth2OrgId());
+        if (mappedOrgUniqueId.isEmpty()) {
+            return true;
+        }
+
         if (null == existingUser.getOrganization()) {
             return false;
         }
 
         // Compare mapped orgUniqueId with existing user's org uniqueOrgId
         Org existUserOrg = findOrgByUser(existingUser);
+        if (existUserOrg == null) {
+            return false;
+        }
 
         // Optional.ofNullable to consider that Null and empty are the same
-        String existOrgUniqueId = Optional.ofNullable(existUserOrg.getOrgUniqueId()).orElse("");
-        String mappedOrgUniqueId = Optional.ofNullable(mapped.getOAuth2OrgId()).orElse("");
+        String existOrgUniqueId = normalizeOrgUniqueId(existUserOrg.getOrgUniqueId());
         // return false if provider user's orgUniqueId is not
         // same as LDAP user's orgUniqueId
         return mappedOrgUniqueId.equals(existOrgUniqueId);
+    }
+
+    /**
+     * Normalizes an organization unique id for safe comparisons.
+     * <p>
+     * Returns an empty string when the input is null, blank, or the literal
+     * {@code "null"} (case-insensitive); otherwise returns the trimmed value.
+     * </p>
+     *
+     * @param value the raw organization unique id
+     * @return a normalized non-null value
+     */
+    private static String normalizeOrgUniqueId(String value) {
+        if (!StringUtils.hasText(value)) {
+            return "";
+        }
+        String trimmed = value.trim();
+        if (trimmed.isEmpty() || "null".equalsIgnoreCase(trimmed)) {
+            return "";
+        }
+        return trimmed;
     }
 
     @Override
@@ -157,19 +195,22 @@ public abstract class AbstractAccountsManager implements AccountManager {
         try {
             // verify if user exist
             GeorchestraUser existing = findInternal(mapped).orElse(null);
-            // verify if user org match between ldap and OAuth2 info
-            if (!isSameOrgUniqueId(mapped, existing)) {
-                // force username from ldap instead unknown external username
-                // See issue #231 : https://github.com/georchestra/georchestra-gateway/issues/231
-                if (existing != null) {
-                    mapped.setUsername(existing.getUsername());
-                }
-                // we find or create org from this orgUniqueId and add user to this org
-                // unlink
-                unlinkUserOrg(existing);
-                // create org if necessary and add user to org
-                ensureOrgExists(mapped);
+            if (existing == null) {
+                return;
             }
+
+            // Provider did not send orgUniqueId (or mapping resolves to empty) -> keep org unchanged
+            String mappedOrgUniqueId = normalizeOrgUniqueId(mapped.getOAuth2OrgId());
+            if (mappedOrgUniqueId.isEmpty()) {
+                return;
+            }
+
+            // Provider sent orgUniqueId: unlink current org before reassigning.
+            if (existing.getOrganization() != null) {
+                unlinkUserOrg(existing);
+            }
+            // create org if necessary and add user to org
+            ensureOrgExists(mapped);
         } finally {
             lock.writeLock().unlock();
         }
@@ -194,7 +235,8 @@ public abstract class AbstractAccountsManager implements AccountManager {
             GeorchestraUser existing = findInternal(mapped).orElse(null);
             if (existing == null) {
                 createInternal(mapped);
-                existing = findInternal(mapped).orElseThrow(() -> new IllegalStateException(
+                Optional<GeorchestraUser> user = findInternal(mapped);
+                existing = user.orElseThrow(() -> new IllegalStateException(
                         "User " + mapped.getUsername() + " not found immediately after creation"));
                 eventPublisher.publishEvent(new AccountCreated(existing));
             }
@@ -235,7 +277,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
     protected abstract Optional<GeorchestraUser> findByUsername(String username);
 
     /**
-     * Finds a user by their email.
+     * Finds not pending user by their email.
      * <p>
      * Implementations must provide a concrete method for retrieving users from
      * storage.
@@ -246,6 +288,20 @@ public abstract class AbstractAccountsManager implements AccountManager {
      *         {@link Optional} if not found
      */
     protected abstract Optional<GeorchestraUser> findByEmail(String email);
+
+    /**
+     * Finds pending or valid user by their email.
+     * <p>
+     * Implementations must provide a concrete method for retrieving users from
+     * storage.
+     * </p>
+     *
+     * @param email         the email to search for
+     * @param filterPending boolean to filter pending or not
+     * @return an {@link Optional} containing the found user, or an empty
+     *         {@link Optional} if not found
+     */
+    protected abstract Optional<GeorchestraUser> findByEmail(String email, boolean filterPending);
 
     /**
      * Affect a user to an organization according to user's credentials.
