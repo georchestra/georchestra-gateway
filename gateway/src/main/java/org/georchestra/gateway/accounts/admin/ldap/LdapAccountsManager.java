@@ -164,6 +164,11 @@ class LdapAccountsManager extends AbstractAccountsManager {
         return demultiplexingUsersApi.findByEmail(email).map(this::ensureRolesPrefixed);
     }
 
+    @Override
+    protected Optional<GeorchestraUser> findByEmail(@NonNull String email, boolean filterPending) {
+        return demultiplexingUsersApi.findByEmail(email, filterPending).map(this::ensureRolesPrefixed);
+    }
+
     /**
      * Ensures all roles assigned to a user are prefixed with {@code "ROLE_"}.
      * <p>
@@ -309,7 +314,11 @@ class LdapAccountsManager extends AbstractAccountsManager {
                 description, oAuth2Provider, oAuth2Uid);
         // if provider org id exists, we will use it as uniqueOrgId
         newAccount.setOAuth2OrgId(Optional.ofNullable(oAuth2OrgId).orElse(""));
-        newAccount.setPending(false);
+        // use default.properties param or params from provider gateway's config
+        boolean defaultModeratedSignup = this.georchestraGatewaySecurityConfigProperties.isModeratedSignup();
+        boolean moderatedSignup = Optional.ofNullable(oAuth2Provider).filter(StringUtils::isNotBlank)
+                .map(providersConfig::moderatedSignup).orElse(defaultModeratedSignup);
+        newAccount.setPending(moderatedSignup);
         String defaultOrg = this.georchestraGatewaySecurityConfigProperties.getDefaultOrganization();
         if (StringUtils.isEmpty(org) && !StringUtils.isBlank(defaultOrg)) {
             newAccount.setOrg(defaultOrg);
@@ -327,6 +336,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
         if (user.getOrganization() != null) {
             Account newAccount = mapToAccountBrief(user);
             orgsDao.unlinkUser(newAccount);
+            verifySingleOrgMembership(newAccount, null);
         }
     }
 
@@ -370,6 +380,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
             Org org = newOrg(orgId, orgUniqueId);
             org.getMembers().add(newAccount.getUid());
             orgsDao.insert(org);
+            verifySingleOrgMembership(newAccount, org.getId());
         } catch (Exception orgError) {
             throw new IllegalStateException(orgError);
         }
@@ -379,6 +390,49 @@ class LdapAccountsManager extends AbstractAccountsManager {
         // org already in the LDAP, add the newly created account to it
         org.getMembers().add(newAccount.getUid());
         orgsDao.update(org);
+        verifySingleOrgMembership(newAccount, org.getId());
+    }
+
+    @VisibleForTesting
+    void verifySingleOrgMembership(@NonNull Account account, @Nullable String expectedOrgId) {
+        try {
+            final String uid = account.getUid();
+            if (StringUtils.isBlank(uid)) {
+                throw new IllegalStateException("Cannot verify org membership for account with blank uid");
+            }
+
+            long memberships = orgsDao.findAll().stream().filter(Objects::nonNull)
+                    .filter(org -> org.getMembers() != null).filter(org -> org.getMembers().contains(uid)).count();
+
+            if (memberships > 1) {
+                throw new IllegalStateException(
+                        String.format("User %s is linked to %d organizations; expected at most one", uid, memberships));
+            }
+
+            if (expectedOrgId == null) {
+                if (memberships != 0) {
+                    throw new IllegalStateException(
+                            String.format("User %s is still linked to an organization after unlink", uid));
+                }
+                return;
+            }
+
+            if (memberships != 1) {
+                throw new IllegalStateException(String
+                        .format("User %s membership count is %d after link; expected exactly one", uid, memberships));
+            }
+
+            Org linkedOrg = orgsDao.findByUser(account);
+            if (linkedOrg == null || !expectedOrgId.equals(linkedOrg.getId())) {
+                throw new IllegalStateException(String.format("User %s linked org mismatch, expected '%s', got '%s'",
+                        uid, expectedOrgId, linkedOrg == null ? null : linkedOrg.getId()));
+            }
+        } catch (Exception e) {
+            if (e instanceof IllegalStateException) {
+                throw (IllegalStateException) e;
+            }
+            throw new IllegalStateException("Error while verifying single-organization membership", e);
+        }
     }
 
     protected Optional<Org> findOrgById(String orgId, String orgUniqueId) {

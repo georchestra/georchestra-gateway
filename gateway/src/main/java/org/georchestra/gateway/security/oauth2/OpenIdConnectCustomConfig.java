@@ -38,6 +38,12 @@ import lombok.NonNull;
  * For example, if you want to search a provider's user into georchestra's users
  * by email, you need to set the searchEmail parameter to true under :
  * georchestra.gateway.security.oidc.config.provider.[provider].searchEmail
+ * 
+ * Else, If moderatedSignup is enabled, any new user will be marked as pending and will wait for administrator approval before their account becomes active :
+ * georchestra.gateway.security.oidc.config.provider.[provider].moderatedSignup
+ * 
+ * Note that moderatedSignup can be configured either in the datadir’s default.properties file or in the gateway configuration.
+ * 
  * </p>
  * 
  * <p>
@@ -55,8 +61,10 @@ import lombok.NonNull;
  *           provider:
  *              proconnect:
  *                  searchEmail: true
+ *                  moderatedSignup: true
  *              google:
  *                  searchEmail: false
+ *                  moderatedSignup: false
  * </code>
  * </pre>
  */
@@ -65,6 +73,8 @@ import lombok.NonNull;
 public class OpenIdConnectCustomConfig {
 
     private Boolean searchEmail;
+
+    private Boolean moderatedSignup;
 
     private Map<String, OpenIdConnectCustomConfig> provider = new HashMap<>();
 
@@ -92,5 +102,19 @@ public class OpenIdConnectCustomConfig {
                 .map(OpenIdConnectCustomConfig::getSearchEmail)
                 // orf fallback general config
                 .orElse(searchEmail != null ? searchEmail : false);
+    }
+
+    /**
+     * Determines if a new user will be set as pending (false by default).
+     * 
+     * @param providerName provider id in use
+     * @return {@Boolean} true if user will be set as pending on creation
+     */
+    public boolean moderatedSignup(@NonNull String providerName) {
+        return getProviderConfig(providerName)
+                // provider config
+                .map(OpenIdConnectCustomConfig::getModeratedSignup)
+                // orf fallback general config
+                .orElse(moderatedSignup != null ? moderatedSignup : false);
     }
 }

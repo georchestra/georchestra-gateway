@@ -42,6 +42,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.web.server.ServerWebExchange;
 
 import reactor.core.publisher.Mono;
@@ -54,6 +55,7 @@ class ResolveGeorchestraUserGlobalFilterTest {
 
     private ResolveGeorchestraUserGlobalFilter filter;
     private GeorchestraUserMapper mockMapper;
+    private ServerAuthenticationFailureHandler mockFailureHandler;
 
     private GatewayFilterChain mockChain;
     private MockServerHttpRequest request;
@@ -65,7 +67,8 @@ class ResolveGeorchestraUserGlobalFilterTest {
     @BeforeEach
     void setUp() throws Exception {
         mockMapper = mock(GeorchestraUserMapper.class);
-        filter = new ResolveGeorchestraUserGlobalFilter(mockMapper);
+        mockFailureHandler = mock(ServerAuthenticationFailureHandler.class);
+        filter = new ResolveGeorchestraUserGlobalFilter(mockMapper, mockFailureHandler);
         mockChain = mock(GatewayFilterChain.class);
         when(mockChain.filter(any())).thenReturn(Mono.empty());
         request = MockServerHttpRequest.get("/test").build();
