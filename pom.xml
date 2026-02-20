@@ -36,8 +36,8 @@
   </distributionManagement>
   <properties>
     <java.version>21</java.version>
-    <revision>2.0.5-SNAPSHOT</revision>
-    <georchestra.version>25.0.1</georchestra.version>
+    <revision>2.0.5</revision>
+    <georchestra.version>25.0.2</georchestra.version>
     <formatter-maven-plugin.version>2.10.0</formatter-maven-plugin.version>
     <fmt.skip>false</fmt.skip>
     <fmt.action>format</fmt.action>
