@@ -59,7 +59,7 @@ spring:
           enabled: true
           disable: # NOTE: header names must be lower-case
           - content-security-policy
-          frame-options: SAMEORIGIN
+          - x-frame-options
           xss-protection-header: 0
           referrer-policy: no-referrer
           #content-security-policy: script-src 'self' 'unsafe-eval'; object-src 'self';
