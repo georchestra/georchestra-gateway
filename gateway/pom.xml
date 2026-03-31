@@ -245,6 +245,9 @@
             <configuration>
               <image>
                 <pullPolicy>IF_NOT_PRESENT</pullPolicy>
+                <env>
+                  <BP_OPENTELEMETRY_ENABLED>true</BP_OPENTELEMETRY_ENABLED>
+                </env>
               </image>
               <jvmOptions>-XX:MaxRAMPercentage=80 -XX:+UseParallelGC</jvmOptions>
             </configuration>
