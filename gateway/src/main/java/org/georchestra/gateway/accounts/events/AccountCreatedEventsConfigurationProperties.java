@@ -48,7 +48,7 @@ import lombok.Generated;
  *     security:
  *       events:
  *         accountcreated:
- *           uri: true
+ *           url: true
  * </pre>
  *
  * @see org.springframework.boot.context.properties.ConfigurationProperties
@@ -62,7 +62,7 @@ public class AccountCreatedEventsConfigurationProperties {
     /** The prefix for accountcretad configuration properties. */
     public static final String PREFIX = "georchestra.gateway.security.events.accountcreated";
 
-    /** The configuration key to enable or disable RabbitMQ event dispatching. */
+    /** The configuration key to enable or disable event dispatching. */
     public static final String PROPERTY_EXISTS = PREFIX + ".url";
 
     /**
