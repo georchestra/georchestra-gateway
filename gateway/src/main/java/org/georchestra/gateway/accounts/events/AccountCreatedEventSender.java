@@ -33,13 +33,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * A service bean that listens for {@link AccountCreated} events and publishes a
- * distributed event through RabbitMQ to the {@literal OAUTH2-ACCOUNT-CREATION}
+ * A service bean that listens for {@link AccountCreated} events and post user to url set in properties
  * queue.
  * <p>
  * This class is responsible for notifying other services when a new user
  * account is created via OAuth2 authentication. It transforms the event data
- * into a JSON message and sends it to the configured RabbitMQ routing key.
+ * into a JSON message and sends it to the URL configured .
  * </p>
  *
  * @see AccountCreated
@@ -55,8 +54,7 @@ public class AccountCreatedEventSender {
     private final HttpClient httpClient;
 
     /**
-     * Handles {@link AccountCreated} events and sends a message to the RabbitMQ
-     * queue if the new account was created via an OAuth2 provider.
+     * Handles {@link AccountCreated} events and sends a message.
      *
      * @param event the {@link AccountCreated} event containing user details
      */
@@ -77,12 +75,8 @@ public class AccountCreatedEventSender {
     }
 
     /**
-     * Sends a message to RabbitMQ indicating that a new OAuth2 user account has
+     * Sends a message to the specified URL indicating that a new OAuth2 user account has
      * been created.
-     * <p>
-     * This method constructs a JSON object containing user details and publishes it
-     * to the RabbitMQ exchange with the routing key {@code routing-gateway}.
-     * </p>
      *
      * <p>
      * <b>Example JSON output:</b>
