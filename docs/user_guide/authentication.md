@@ -513,6 +513,17 @@ georchestra:
             pendingOrgSearchBaseDN: ou=pendingorgs
 ```
 
+If you also want to send an email to administrators, fill console's account creation endpoint:
+
+```yaml
+georchestra:
+  gateway:
+    security:
+      events:
+        accountcreated:
+          url: "http://console:8080/console/internal/events/accountcreated"
+```
+
 ### Security Considerations
 
 !!! warning "Security Warning"
