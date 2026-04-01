@@ -47,7 +47,6 @@ The geOrchestra Gateway consists of several key containers and components:
 ### External Containers
 
 1. **LDAP Directory**: Stores user accounts, attributes, and group memberships
-2. **Message Broker (RabbitMQ)**: Enables event-driven communication with other geOrchestra components
 
 ### Target Backend Services
 
