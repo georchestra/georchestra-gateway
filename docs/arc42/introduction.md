@@ -8,7 +8,6 @@ geOrchestra Gateway is a specialization of Spring Cloud Gateway that provides au
 
 - **Framework**: Spring Cloud Gateway
 - **Authentication**: LDAP, OAuth2/OpenID Connect
-- **Event Handling**: RabbitMQ (sends account creation events)
 - **Security**: Custom Spring Security extensions for role extraction and header forwarding
 
 ## Key Requirements

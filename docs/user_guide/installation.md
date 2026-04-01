@@ -46,7 +46,7 @@ cd docker
 docker-compose up -d
 ```
 
-This will deploy the Gateway along with all required services (LDAP, PostgreSQL, RabbitMQ, etc.) and other geOrchestra components. Note that while PostgreSQL is used by other geOrchestra components, the Gateway itself does not use a database.
+This will deploy the Gateway along with all required services (LDAP, PostgreSQL, etc.) and other geOrchestra components. Note that while PostgreSQL is used by other geOrchestra components, the Gateway itself does not use a database.
 
 ### Custom Docker Compose Setup
 
