@@ -30,7 +30,6 @@ spring:
   autoconfigure:
     exclude:
     - org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration
-    - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
   cloud:
     gateway:
       enabled: true
@@ -73,14 +72,6 @@ georchestra:
       defaultOrganization: ${defaultOrganization:}
       header-authentication:
         enabled: false
-      events:
-        rabbitmq:
-          # Note usually enableRabbitmqEvents, rabbitmqHost, etc. come from georchestra's default.properties
-          enabled: ${enableRabbitmqEvents:false}
-          host: ${rabbitmqHost}
-          port: ${rabbitmqPort}
-          user: ${rabbitmqUser}
-          password: ${rabbitmqPassword}
       oauth2:
         enabled: false
         proxy:
