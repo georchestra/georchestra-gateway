@@ -60,7 +60,7 @@ spring:
           disable: # NOTE: header names must be lower-case
           - content-security-policy
           - x-frame-options
-          xss-protection-header: 0
+          - xss-protection-header
           referrer-policy: no-referrer
           #content-security-policy: script-src 'self' 'unsafe-eval'; object-src 'self';
       #routes: ought to be loaded from gateway.yaml, preferrably from georchestra's datadir
