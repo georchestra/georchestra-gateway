@@ -214,10 +214,8 @@ public class LoginLogoutController {
     /**
      * Checks if a given URL is in the safe redirect allow list.
      *
-     * Example gateway.yaml:
-     * loginRedirectAllowList: >
-     *   http://localhost:8080/geoserver/,
-     *   http://localhost:8080/console/
+     * Example gateway.yaml: loginRedirectAllowList: >
+     * http://localhost:8080/geoserver/, http://localhost:8080/console/
      *
      * @param url the URL to check
      * @return {@code true} if the URL is allowed for redirection, {@code false}

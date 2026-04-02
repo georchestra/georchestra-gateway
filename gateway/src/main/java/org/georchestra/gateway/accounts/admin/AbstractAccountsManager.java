@@ -199,7 +199,8 @@ public abstract class AbstractAccountsManager implements AccountManager {
                 return;
             }
 
-            // Provider did not send orgUniqueId (or mapping resolves to empty) -> keep org unchanged
+            // Provider did not send orgUniqueId (or mapping resolves to empty) -> keep org
+            // unchanged
             String mappedOrgUniqueId = normalizeOrgUniqueId(mapped.getOAuth2OrgId());
             if (mappedOrgUniqueId.isEmpty()) {
                 return;
