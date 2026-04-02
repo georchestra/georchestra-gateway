@@ -25,17 +25,12 @@ import lombok.Data;
 import lombok.Generated;
 
 /**
- * Configuration properties for RabbitMQ event dispatching related to account
+ * Configuration properties for event dispatching related to account
  * creation.
  * <p>
- * These properties define how geOrchestra should publish events to RabbitMQ
+ * These properties define how geOrchestra should publish events
  * when a new LDAP account is created following a user's first successful login
  * via OAuth2 authentication.
- * </p>
- * <p>
- * The properties are prefixed with
- * {@code georchestra.gateway.security.events.rabbitmq} and can be configured in
- * the application's configuration file (e.g., {@code application.yml}).
  * </p>
  *
  * <p>
