@@ -39,10 +39,13 @@ import lombok.NonNull;
  * by email, you need to set the searchEmail parameter to true under :
  * georchestra.gateway.security.oidc.config.provider.[provider].searchEmail
  * 
- * Else, If moderatedSignup is enabled, any new user will be marked as pending and will wait for administrator approval before their account becomes active :
+ * Else, If moderatedSignup is enabled, any new user will be marked as pending
+ * and will wait for administrator approval before their account becomes active
+ * :
  * georchestra.gateway.security.oidc.config.provider.[provider].moderatedSignup
  * 
- * Note that moderatedSignup can be configured either in the datadir’s default.properties file or in the gateway configuration.
+ * Note that moderatedSignup can be configured either in the datadir’s
+ * default.properties file or in the gateway configuration.
  * 
  * </p>
  * 

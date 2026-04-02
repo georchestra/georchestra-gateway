@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-parent</artifactId>
-    <version>2024.0.3</version>
+    <version>2025.0.1</version>
     <relativePath></relativePath>
     <!-- lookup parent from repository -->
   </parent>
@@ -114,6 +114,11 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.owasp</groupId>
+          <artifactId>dependency-check-maven</artifactId>
+          <version>12.2.0</version>
+        </plugin>
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
