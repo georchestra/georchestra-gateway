@@ -2,7 +2,6 @@ workspace "geOrchestra Gateway Dynamic Views" {
 
     model {
         user = person "User" "A user of the geOrchestra platform"
-        messageBroker = softwareSystem "Message Broker" "RabbitMQ"
         
         sdi = softwareSystem "geOrchestra SDI" {
             gateway = container "Gateway" "Spring Boot" {
@@ -11,12 +10,10 @@ workspace "geOrchestra Gateway Dynamic Views" {
                 resolveTargetFilter = component "Resolve Target Filter" "WebFilter"
                 headerFilters = component "Header Filters" "Gateway Filter"
                 routingHandler = component "Routing Handler" "Spring Cloud Gateway"
-                eventSender = component "Event Sender" "RabbitMQ Client" "Publishes events to the message broker"
             }
             
             targetService = container "Target Service" "Any geOrchestra service"
             console = container "Console" "Java" "Administration interface" {
-                consoleEventListener = component "Event Listener" "RabbitMQ Client" "Consumes events from the message broker"
             }
         }
         
@@ -43,11 +40,8 @@ workspace "geOrchestra Gateway Dynamic Views" {
         
         routingHandler -> targetService "Routes request" "HTTP"
         
-        # Message broker relationships
-        gateway -> messageBroker "Publishes events to"
+        gateway -> console "Publishes events to"
         securityFilter -> eventSender "Sends user events"
-        eventSender -> messageBroker "Publishes events" "AMQP"
-        messageBroker -> consoleEventListener "Delivers events" "AMQP"
     }
     
     views {

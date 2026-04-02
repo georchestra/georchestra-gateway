@@ -4,7 +4,6 @@ workspace "geOrchestra Gateway" "Software architecture diagrams for the geOrches
         user = person "User" "A user of the geOrchestra platform"
         identityProviders = softwareSystem "External Identity Providers" "OAuth2/OpenID Connect providers"
         ldapServer = softwareSystem "LDAP Server" "Stores user and organization information"
-        messageBroker = softwareSystem "Message Broker" "RabbitMQ message queue system"
 
         sdi = softwareSystem "geOrchestra SDI" "Spatial Data Infrastructure platform with various geospatial services" {
             gateway = container "Gateway" "Spring Boot" "Provides authentication, authorization, and routing for geOrchestra services" {
@@ -40,9 +39,8 @@ workspace "geOrchestra Gateway" "Software architecture diagrams for the geOrches
         user -> gateway "Uses"
         gateway -> identityProviders "Authenticates with"
         gateway -> ldapServer "Authenticates and authorizes using"
-        gateway -> messageBroker "Publishes events to"
-        console -> messageBroker "Consumes events from"
-        
+        gateway -> console "Publishes events to"
+
         // Internal relationships
         gateway -> geoserver "Routes requests to"
         gateway -> console "Routes requests to"
