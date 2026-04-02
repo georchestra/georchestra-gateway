@@ -245,6 +245,10 @@
             <configuration>
               <image>
                 <pullPolicy>IF_NOT_PRESENT</pullPolicy>
+                <buildpacks>
+                  <buildpack>urn:cnb:builder:paketo-buildpacks/java</buildpack>
+                  <buildpack>paketobuildpacks/opentelemetry</buildpack>
+                </buildpacks>
                 <env>
                   <BP_OPENTELEMETRY_ENABLED>true</BP_OPENTELEMETRY_ENABLED>
                 </env>
