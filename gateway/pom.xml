@@ -94,10 +94,6 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-amqp</artifactId>
-    </dependency>
-    <dependency>
       <!-- Annotation processor that generates metadata about classes annotated with @ConfigurationProperties. -->
       <!-- This metadata is used by IDEs to provide auto-completion and documentation for the properties when editing application.properties and application.yaml -->
       <groupId>org.springframework.boot</groupId>

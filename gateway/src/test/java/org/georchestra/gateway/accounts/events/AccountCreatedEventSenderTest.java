@@ -122,15 +122,9 @@ class AccountCreatedEventSenderTest {
         // Execute
         eventSender.on(event);
 
-        // Verify - wait a bit to ensure no request is made
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-
-        // Should not have sent any request
-        wireMockServer.verify(0, WireMock.postRequestedFor(WireMock.urlEqualTo("/events")));
+        // Should not have sent any request during a short observation window
+        await().during(Duration.ofMillis(500)).atMost(Duration.ofSeconds(1)).untilAsserted(
+                () -> wireMockServer.verify(0, WireMock.postRequestedFor(WireMock.urlEqualTo("/events"))));
     }
 
     @Test
@@ -199,7 +193,9 @@ class AccountCreatedEventSenderTest {
 
         // Verify JSON structure
         await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
-            String requestBody = wireMockServer.getAllServeEvents().getFirst().getRequest().getBodyAsString();
+            var serveEvents = wireMockServer.getAllServeEvents();
+            assertThat(serveEvents).isNotEmpty();
+            String requestBody = serveEvents.getFirst().getRequest().getBodyAsString();
             JSONObject json = new JSONObject(requestBody);
 
             // Verify all required fields are present

@@ -79,7 +79,6 @@ The Gateway uses the following communication protocols:
 
 - HTTP/HTTPS for web traffic
 - LDAP for directory service communication
-- AMQP for message broker communication
 
 ## Business Context
 
@@ -133,4 +132,3 @@ The Gateway is not responsible for:
 | OAuth2 Providers | OAuth2/OIDC protocol | Authentication, user attributes |
 | Backend Services | HTTP proxying | Forwarded requests, security headers |
 | Database | SQL queries | Used by other components, not by Gateway |
-| Message Broker | AMQP messages | Event notifications |

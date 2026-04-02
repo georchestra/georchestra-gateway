@@ -36,14 +36,14 @@ import lombok.Generated;
  * <p>
  * <b>Example Configuration:</b>
  * </p>
- * 
+ *
  * <pre>
  * georchestra:
  *   gateway:
  *     security:
  *       events:
  *         accountcreated:
- *           url: true
+ *           url: http://myconsoleurl:8080/console/internal/events/accountcreated
  * </pre>
  *
  * @see org.springframework.boot.context.properties.ConfigurationProperties
@@ -63,6 +63,6 @@ public class AccountCreatedEventsConfigurationProperties {
     /**
      * The server endpoint, execute a POST on this url.
      */
-    public String url;
+    private String url;
 
 }
