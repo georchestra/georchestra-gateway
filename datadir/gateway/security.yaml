@@ -7,10 +7,6 @@ georchestra:
       # from datadir
       moderatedSignup: ${moderatedSignup:false}
       createNonExistingUsersInLDAP: false
-      # Set to true to disable the UID prefix
-      # Warning : this can lead to uid collision between providers
-      # Cf. https://github.com/georchestra/georchestra-gateway/issues/241#issuecomment-3932844657
-      disableUidPrefix: false
 #      events:
 #        accountcreated:
 #          # Set this url to console's endpoint to be able to receive an email when a new user logs in
@@ -102,7 +98,6 @@ georchestra:
 #            #token-uri:
 #            #user-info-uri:
 #            userNameAttribute: preferred_username
-
 
 ---
 spring.config.activate.on-profile: preauth
