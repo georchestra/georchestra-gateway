@@ -7,6 +7,9 @@ georchestra:
       # from datadir
       moderatedSignup: ${moderatedSignup:false}
       createNonExistingUsersInLDAP: false
+      # You can disable UID transformation for an IDP by its identifier
+      # This lead to not prefixing or sanitize the UID from this IDP
+      #disableUidTransformation: 'icu'
       events:
         rabbitmq:
           # Note usually enableRabbitmqEvents, rabbitmqHost, etc. come from georchestra's default.properties

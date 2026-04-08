@@ -71,6 +71,14 @@ public class GeorchestraGatewaySecurityConfigProperties implements Validator {
     private boolean createNonExistingUsersInLDAP = true;
 
     /**
+     * Identifier of the Identity Provider for which UID transformation is disabled.
+     * When this value matches an IDP's id, the username from that provider is used
+     * as-is (no prefixing and no sanitization). If empty or not matching, UID
+     * transformation is applied normally.
+     */
+    private String disableUidTransformation = "";
+
+    /**
      * Default organization assigned to users when no specific organization is set.
      */
     private String defaultOrganization = "";
