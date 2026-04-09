@@ -28,14 +28,19 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import io.jsonwebtoken.Jwts;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.georchestra.security.model.GeorchestraUser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.oidc.AddressStandardClaim;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.oidc.StandardClaimAccessor;
 
 import com.nimbusds.oauth2.sdk.ParseException;
@@ -52,6 +57,7 @@ class OpenIdConnectUserMapperTest {
 
     OpenIdConnectUserMapper mapper;
     OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig;
+    GeorchestraGatewaySecurityConfigProperties securityConfigProperties;
     ExtendedOAuth2ClientProperties properties;
 
     /**
@@ -60,7 +66,8 @@ class OpenIdConnectUserMapperTest {
     @BeforeEach
     void setUp() throws Exception {
         nonStandardClaimsConfig = new OpenIdConnectCustomClaimsConfigProperties();
-        mapper = new OpenIdConnectUserMapper(nonStandardClaimsConfig);
+        securityConfigProperties = new GeorchestraGatewaySecurityConfigProperties();
+        mapper = new OpenIdConnectUserMapper(nonStandardClaimsConfig, securityConfigProperties);
     }
 
     @Test
@@ -326,6 +333,90 @@ class OpenIdConnectUserMapperTest {
         assertThat(georchestraUser.getEmail()).isEqualTo("email");
         assertThat(georchestraUser.getLastName()).isEqualTo("family_name");
         assertThat(georchestraUser.getFirstName()).isEqualTo("given_name");
+    }
+
+    @Test
+    void map_shouldTransformUsernameWhenDisableUidTransformationIsEmpty() {
+        OpenIdConnectUserMapper mapper = newMapper("");
+
+        OAuth2AuthenticationToken token = mock(OAuth2AuthenticationToken.class);
+        OidcUser oidcUser = mock(OidcUser.class);
+
+        when(token.getPrincipal()).thenReturn(oidcUser);
+        when(token.getAuthorizedClientRegistrationId()).thenReturn("google");
+        when(token.getAuthorities()).thenReturn(AuthorityUtils.NO_AUTHORITIES);
+
+        when(oidcUser.getSubject()).thenReturn("b7f3dd13-f9cc-4573-8482-b4fccf8e1977");
+        when(oidcUser.getPreferredUsername()).thenReturn("John.Doe@test.com");
+        when(oidcUser.getGivenName()).thenReturn("John");
+        when(oidcUser.getFamilyName()).thenReturn("Doe");
+        when(oidcUser.getEmail()).thenReturn("jdoe@test.com");
+        when(oidcUser.getPhoneNumber()).thenReturn("+123");
+        when(oidcUser.getAddress()).thenReturn(null);
+        when(oidcUser.getClaims()).thenReturn(Map.of());
+
+        Optional<GeorchestraUser> result = mapper.map(token);
+
+        assertThat(result).isPresent();
+        assertThat(result.orElseThrow().getUsername()).isEqualTo("google_john_doe_test_com");
+    }
+
+    @Test
+    void map_shouldTransformUsernameWhenDisableUidTransformationDoesNotMatchProvider() {
+        OpenIdConnectUserMapper mapper = newMapper("github");
+
+        OAuth2AuthenticationToken token = mock(OAuth2AuthenticationToken.class);
+        OidcUser oidcUser = mock(OidcUser.class);
+
+        when(token.getPrincipal()).thenReturn(oidcUser);
+        when(token.getAuthorizedClientRegistrationId()).thenReturn("google");
+        when(token.getAuthorities()).thenReturn(AuthorityUtils.NO_AUTHORITIES);
+
+        when(oidcUser.getSubject()).thenReturn("b7f3dd13-f9cc-4573-8482-b4fccf8e1977");
+        when(oidcUser.getPreferredUsername()).thenReturn("John.Doe@test.com");
+        when(oidcUser.getGivenName()).thenReturn("John");
+        when(oidcUser.getFamilyName()).thenReturn("Doe");
+        when(oidcUser.getEmail()).thenReturn("jdoe@test.com");
+        when(oidcUser.getPhoneNumber()).thenReturn("+123");
+        when(oidcUser.getAddress()).thenReturn(null);
+        when(oidcUser.getClaims()).thenReturn(Map.of());
+
+        Optional<GeorchestraUser> result = mapper.map(token);
+
+        assertThat(result).isPresent();
+        assertThat(result.orElseThrow().getUsername()).isEqualTo("google_john_doe_test_com");
+    }
+
+    @Test
+    void map_shouldNotTransformUsernameWhenDisableUidTransformationMatchesProvider() {
+        OpenIdConnectUserMapper mapper = newMapper("google");
+
+        OAuth2AuthenticationToken token = mock(OAuth2AuthenticationToken.class);
+        OidcUser oidcUser = mock(OidcUser.class);
+
+        when(token.getPrincipal()).thenReturn(oidcUser);
+        when(token.getAuthorizedClientRegistrationId()).thenReturn("google");
+        when(token.getAuthorities()).thenReturn(AuthorityUtils.NO_AUTHORITIES);
+
+        when(oidcUser.getSubject()).thenReturn("b7f3dd13-f9cc-4573-8482-b4fccf8e1977");
+        when(oidcUser.getPreferredUsername()).thenReturn("John.Doe@test.com");
+        when(oidcUser.getGivenName()).thenReturn("John");
+        when(oidcUser.getFamilyName()).thenReturn("Doe");
+        when(oidcUser.getEmail()).thenReturn("jdoe@test.com");
+        when(oidcUser.getPhoneNumber()).thenReturn("+123");
+        when(oidcUser.getAddress()).thenReturn(null);
+        when(oidcUser.getClaims()).thenReturn(Map.of());
+
+        Optional<GeorchestraUser> result = mapper.map(token);
+
+        assertThat(result).isPresent();
+        assertThat(result.orElseThrow().getUsername()).isEqualTo("John.Doe@test.com");
+    }
+
+    private OpenIdConnectUserMapper newMapper(String disableUidTransformation) {
+        GeorchestraGatewaySecurityConfigProperties securityConfigProperties = new GeorchestraGatewaySecurityConfigProperties();
+        securityConfigProperties.setDisableUidTransformation(disableUidTransformation);
+        return new OpenIdConnectUserMapper(nonStandardClaimsConfig, securityConfigProperties);
     }
 
     private Map<String, Object> sampleClaims() throws ParseException {
