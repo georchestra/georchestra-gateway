@@ -43,7 +43,6 @@ This document outlines the primary architectural goals of the geOrchestra Gatewa
 - Built on Spring WebFlux and Project Reactor
 - Non-blocking I/O throughout the application
 - Reactive data access where possible
-- Asynchronous event handling via RabbitMQ
 
 ### 4. Observability
 
