@@ -58,11 +58,11 @@ spring:
               #content-security-policy: script-src 'self' 'unsafe-eval'; object-src 'self';
           # Uncomment the following to allow cross-origin requests from any methods coming from anywhere.
           # See https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/cors-configuration.html for more info.
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                  allowedOrigins: "*"
-                  allowedHeaders: "*"
+          #globalcors:
+          #  cors-configurations:
+          #    '[/**]':
+          #        allowedOrigins: "*"
+          #        allowedHeaders: "*"
       #routes: ought to be loaded from gateway.yaml, preferrably from georchestra's datadir
 
 georchestra:
