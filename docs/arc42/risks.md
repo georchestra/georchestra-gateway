@@ -132,7 +132,7 @@ Risks are assessed using the following criteria:
 
 ### Dependency Availability
 
-**Description**: The Gateway depends on external services (LDAP, OAuth providers, RabbitMQ) that might become unavailable or perform poorly.
+**Description**: The Gateway depends on external services (LDAP, OAuth providers) that might become unavailable or perform poorly.
 
 **Impact**: High (Authentication failures or service disruption)
 

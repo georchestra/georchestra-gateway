@@ -34,13 +34,12 @@ flowchart TD
         subgraph Infrastructure [Infrastructure Services]
             LDAP[(LDAP<br/><font size=2>User Directory</font>)]:::database
             Database[(PostgreSQL<br/><font size=2>Database</font>)]:::database
-            RabbitMQ[(RabbitMQ<br/><font size=2>Message Broker</font>)]:::database
             DataDir[Datadir<br/><font size=2>Configuration Volume</font>]:::service
         end
 
         Gateway -- "Reads configuration<br/>from" --> DataDir
         Gateway -- "Authenticates<br/>users via" --> LDAP
-        Gateway -- "Publishes events<br/>to" --> RabbitMQ
+        Gateway -- "Publishes events<br/>to" --> Console
 
         Gateway -- "Routes to" --> GeoServer
         Gateway -- "Routes to" --> GeoNetwork
@@ -51,7 +50,6 @@ flowchart TD
 
         Console -- "Manages users in" --> LDAP
         Console -- "Uses" --> Database
-        Console -- "Consumes events from" --> RabbitMQ
         GeoServer -- "Connects to" --> Database
         GeoNetwork -- "Connects to" --> Database
         Analytics -- "Reads from" --> Database
@@ -152,7 +150,6 @@ Key runtime dependencies:
 
 - Java 21+ runtime environment
 - LDAP directory service for user authentication and management
-- RabbitMQ for event notification
 - Shared configuration volume (datadir)
 
 ## Scaling Strategies

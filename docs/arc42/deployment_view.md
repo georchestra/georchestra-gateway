@@ -31,12 +31,6 @@ flowchart TB
                 analytics[Analytics]:::container
             end
 
-            subgraph infra["Infrastructure"]
-                ldap[LDAP]:::container
-                postgres[PostgreSQL]:::container  %% Used by other services, not Gateway
-                rabbitmq[RabbitMQ]:::container
-            end
-
             subgraph vol["Volumes"]
                 datadir[Data Directory]:::volume
                 geoserver_data[GeoServer Data]:::volume
@@ -75,7 +69,6 @@ The geOrchestra Gateway is deployed as a Docker container with the following cha
 - **Ports**: Exposes port `8080` internally
 - **Dependencies**:
     - LDAP for authentication
-    - RabbitMQ for event messaging
 
 ### Configuration Volume
 
@@ -102,11 +95,6 @@ The Gateway depends on several infrastructure services:
      - Used by other geOrchestra components (Console, GeoServer, etc.), but not by the Gateway itself
      - Typically deployed as `postgres:14` container
      - Requires persistent volume for data
-
-3. **RabbitMQ Message Broker**:
-     - Handles event communication between services
-     - Typically deployed as `rabbitmq:3-management` container
-     - Used for account creation events and other notifications
 
 ### Load Balancer
 
@@ -186,7 +174,6 @@ services:
     image: georchestra/gateway:latest
     depends_on:
       - ldap
-      - rabbitmq
     volumes:
       - georchestra_datadir:/etc/georchestra
     environment:
@@ -264,13 +251,12 @@ spec:
 
 - **LDAP Directory Service**: Compatible with OpenLDAP, Active Directory
 - **PostgreSQL Database**: Version 12 or higher (used by other geOrchestra components, not by Gateway itself)
-- **RabbitMQ**: Version 3.8 or higher
 
 ### Network Requirements
 
 - Internal network for service-to-service communication
 - External network access for user requests
-- Internal network connectivity to LDAP, PostgreSQL (for other components), and RabbitMQ
+- Internal network connectivity to LDAP, PostgreSQL (for other components)
 - Optional external network access for OAuth2/OpenID Connect providers
 
 ## Scaling Strategies

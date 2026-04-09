@@ -11,7 +11,6 @@ The geOrchestra Gateway provides all the functionality of the security-proxy but
 - **Reactive Programming Model**: Non-blocking architecture for better resource utilization
 - **Simplified Configuration**: YAML-based configuration instead of XML/Properties files
 - **Advanced Security Features**: Enhanced role-based access control and header management
-- **Event-driven Architecture**: RabbitMQ integration for cross-service communication
 
 ## Configuration File Mapping
 
@@ -227,8 +226,6 @@ The Gateway offers several capabilities not available in the security-proxy:
 3. **Header Pre-authentication**: For integration with upstream proxies
 
 4. **Structured Logging**: JSON format logging with MDC propagation
-
-5. **Event Messaging**: RabbitMQ integration for publishing events between services
 
 ## Common Migration Issues
 
