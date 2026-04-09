@@ -33,8 +33,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * A service bean that listens for {@link AccountCreated} events and post user to url set in properties
- * queue.
+ * A service bean that listens for {@link AccountCreated} events and post user
+ * to url set in properties queue.
  * <p>
  * This class is responsible for notifying other services when a new user
  * account is created via OAuth2 authentication. It transforms the event data
@@ -75,8 +75,8 @@ public class AccountCreatedEventSender {
     }
 
     /**
-     * Sends a message to the specified URL indicating that a new OAuth2 user account has
-     * been created.
+     * Sends a message to the specified URL indicating that a new OAuth2 user
+     * account has been created.
      *
      * <p>
      * <b>Example JSON output:</b>

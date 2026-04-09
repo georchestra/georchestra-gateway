@@ -25,12 +25,11 @@ import lombok.Data;
 import lombok.Generated;
 
 /**
- * Configuration properties for event dispatching related to account
- * creation.
+ * Configuration properties for event dispatching related to account creation.
  * <p>
- * These properties define how geOrchestra should publish events
- * when a new LDAP account is created following a user's first successful login
- * via OAuth2 authentication.
+ * These properties define how geOrchestra should publish events when a new LDAP
+ * account is created following a user's first successful login via OAuth2
+ * authentication.
  * </p>
  *
  * <p>
