@@ -26,6 +26,7 @@ import java.time.Duration;
 
 import org.georchestra.gateway.accounts.admin.AccountCreated;
 import org.georchestra.security.model.GeorchestraUser;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +64,7 @@ class AccountCreatedEventSenderTest {
     }
 
     @Test
-    void testOnAccountCreatedWithOAuth2Provider() {
+    void testOnAccountCreatedWithOAuth2Provider() throws JSONException {
         // Setup WireMock stub
         wireMockServer.stubFor(WireMock.post(WireMock.urlEqualTo("/events")).willReturn(WireMock.aResponse()
                 .withStatus(200).withHeader("Content-Type", "application/json").withBody("{\"status\":\"success\"}")));
