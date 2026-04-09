@@ -130,6 +130,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OpenIdConnectUserMapper extends OAuth2UserMapper {
 
     private final @NonNull OpenIdConnectCustomClaimsConfigProperties nonStandardClaimsConfig;
+    private final @NonNull GeorchestraGatewaySecurityConfigProperties securityConfigProperties;
 
     /**
      * Filters authentication tokens to process only {@link OidcUser}-based
@@ -180,8 +181,13 @@ public class OpenIdConnectUserMapper extends OAuth2UserMapper {
             if (customProviderClaims.isPresent()) {
                 applyProviderNonStandardClaims(customProviderClaims.get(), oidcUser.getClaims(), user);
             }
-            user.setUsername((token.getAuthorizedClientRegistrationId() + "_" + user.getUsername())
-                    .replaceAll("[^a-zA-Z0-9-_]", "_").toLowerCase());
+
+            boolean disableTransformation = clientId.equals(securityConfigProperties.getDisableUidTransformation());
+
+            if (!disableTransformation) {
+                user.setUsername((clientId + "_" + user.getUsername()).replaceAll("[^a-zA-Z0-9-_]", "_").toLowerCase());
+            }
+
         } catch (Exception e) {
             log.error("Error mapping non-standard OIDC claims for authenticated user", e);
             throw new IllegalStateException(e);
