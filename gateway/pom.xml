@@ -21,7 +21,7 @@
         <!-- https://wiremock.org/docs/spring-boot/ -->
         <groupId>org.wiremock.integrations</groupId>
         <artifactId>wiremock-spring-boot</artifactId>
-        <version>3.9.0</version>
+        <version>4.2.1</version>
         <exclusions>
           <exclusion>
             <artifactId>wiremock-jetty12</artifactId>
@@ -146,12 +146,12 @@
     <dependency>
       <groupId>org.ldaptive</groupId>
       <artifactId>ldaptive-netscape</artifactId>
-      <version>1.0</version>
+      <version>1.0.13</version>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20240303</version>
+      <version>20251224</version>
     </dependency>
     <dependency>
       <groupId>org.georchestra</groupId>
@@ -167,25 +167,25 @@
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
-      <version>0.12.5</version>
+      <version>0.13.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-impl</artifactId>
-      <version>0.12.5</version>
+      <version>0.13.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-jackson</artifactId>
-      <version>0.12.5</version>
+      <version>0.13.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.2.0</version>
+      <version>4.3.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -244,11 +244,11 @@
       </build>
     </profile>
     <profile>
-        <id>docker-debug</id>
-        <properties>
-            <spring-boot.build-image.builder>paketobuildpacks/builder-jammy-base</spring-boot.build-image.builder>
-            <spring-boot.build-image.imageName>georchestra/gateway:${imageTag}-debug</spring-boot.build-image.imageName>
-        </properties>
+      <id>docker-debug</id>
+      <properties>
+        <spring-boot.build-image.builder>paketobuildpacks/builder-jammy-base</spring-boot.build-image.builder>
+        <spring-boot.build-image.imageName>georchestra/gateway:${imageTag}-debug</spring-boot.build-image.imageName>
+      </properties>
     </profile>
     <profile>
       <id>debianPackage</id>

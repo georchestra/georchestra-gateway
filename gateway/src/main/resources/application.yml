@@ -32,36 +32,37 @@ spring:
     - org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration
   cloud:
     gateway:
-      enabled: true
-      global-filter.websocket-routing.enabled: true
-      metrics.enabled: true
-      # Uncomment the following to allow cross-origin requests from any methods coming from anywhere.
-      # See https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/cors-configuration.html for more info.
-      #globalcors:
-      #  cors-configurations:
-      #    '[/**]':
-      #      allowedOrigins: "*"
-      #      allowedHeaders: "*"
-      #      allowedMethods: "*"
-
-      default-filters:
-      - SecureHeaders # add security-related HTTP headers to responses sent from the gateway to clients. See https://blog.appcanary.com/2017/http-security-headers.html
-      - RemoveSecurityHeaders # removing incoming sec-* headers to prevent impersonation
-      - AddSecHeaders # append resolved sec-* headers to proxied requests based on the currently authenticated user
-      - PreserveHostHeader # ensure that the original Host header from the incoming HTTP request is preserved and passed along to the downstream service
-      - ApplicationError # use gateway's custom error pages when a downstream request returns an error code
-      - LoginParamRedirect # redirect to /login if the request contains a ?login query param and is not already authenticated
-      global-filter:
-        websocket-routing.enabled: true
-      filter:
-        secure-headers:
+      server:
+        webflux:
           enabled: true
-          disable: # NOTE: header names must be lower-case
-          - content-security-policy
-          - x-frame-options
-          - xss-protection-header
-          referrer-policy: no-referrer
-          #content-security-policy: script-src 'self' 'unsafe-eval'; object-src 'self';
+          global-filter:
+            websocket-routing:
+              enabled: true
+          metrics:
+            enabled: true
+          default-filters:
+            - SecureHeaders # add security-related HTTP headers to responses sent from the gateway to clients. See https://blog.appcanary.com/2017/http-security-headers.html
+            - RemoveSecurityHeaders # removing incoming sec-* headers to prevent impersonation
+            - AddSecHeaders # append resolved sec-* headers to proxied requests based on the currently authenticated user
+            - PreserveHostHeader # ensure that the original Host header from the incoming HTTP request is preserved and passed along to the downstream service
+            - ApplicationError # use gateway's custom error pages when a downstream request returns an error code
+            - LoginParamRedirect # redirect to /login if the request contains a ?login query param and is not already authenticated
+          filter:
+            secure-headers:
+              enabled: true
+              disable:
+                - content-security-policy
+                - x-frame-options
+                - xss-protection-header
+              referrer-policy: no-referrer
+              #content-security-policy: script-src 'self' 'unsafe-eval'; object-src 'self';
+          # Uncomment the following to allow cross-origin requests from any methods coming from anywhere.
+          # See https://docs.spring.io/spring-cloud-gateway/reference/spring-cloud-gateway/cors-configuration.html for more info.
+          #globalcors:
+          #  cors-configurations:
+          #    '[/**]':
+          #        allowedOrigins: "*"
+          #        allowedHeaders: "*"
       #routes: ought to be loaded from gateway.yaml, preferrably from georchestra's datadir
 
 georchestra:
@@ -111,16 +112,20 @@ management:
       enabled: true
       mode: simple
   endpoints:
-    enabled-by-default: true
     web.exposure.include: "*"
+    access:
+      default:
   endpoint:
-    info.enabled: true
-    metrics.enabled: true
-    shutdown.enabled: true
     health:
-      enabled: true
       probes.enabled: true
       show-details: always
+      access: unrestricted
+    info:
+      access: unrestricted
+    metrics:
+      access: unrestricted
+    shutdown:
+      access: unrestricted
 
 logging:
   level:
