@@ -246,7 +246,8 @@ class LdapAccountsManager extends AbstractAccountsManager {
             if (newAccount.getOrg() != null) {
                 List<Role> r = roleDao.findAllForOrg(orgsDao.findByCommonName(newAccount.getOrg()));
                 if (!r.isEmpty())
-                    roleDao.addUsersInRoles(r.stream().map(Role::getName).collect(Collectors.toList()), List.of(newAccount));
+                    roleDao.addUsersInRoles(r.stream().map(Role::getName).collect(Collectors.toList()),
+                            List.of(newAccount));
             }
             for (String role : mapped.getRoles()) {
                 role = role.replaceFirst("^ROLE_", "");
