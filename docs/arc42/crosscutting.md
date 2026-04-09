@@ -158,13 +158,6 @@ For loose coupling between components:
 
 - **Event Publishers**: Components that emit events.
 - **Event Listeners**: Components that react to events.
-- **RabbitMQ Integration**: For cross-service communication.
-
-Key components:
-
-- `RabbitmqEventsConfiguration`: Configures event publishing via RabbitMQ.
-- `RabbitmqAccountCreatedEventSender`: Sends account creation events.
-- `RabbitmqEventsListener`: Listens for events from other services.
 
 ## Testing Utilities
 

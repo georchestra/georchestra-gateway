@@ -32,14 +32,6 @@ georchestra:
             searchFilter: (member={0})
           orgs:
             rdn: ou=orgs
-      events:
-        rabbitmq:
-          # Note usually enableRabbitmqEvents, rabbitmqHost, etc. come from georchestra's default.properties
-          enabled: true
-          host: ${rabbitmqHost}
-          port: ${rabbitmqPort}
-          user: guest
-          password: guest
 spring:
   main:
     web-application-type: reactive

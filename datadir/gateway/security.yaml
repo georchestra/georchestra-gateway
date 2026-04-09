@@ -10,14 +10,11 @@ georchestra:
       # You can disable UID transformation for an IDP by its identifier
       # This lead to not prefixing or sanitize the UID from this IDP
       #disableUidTransformation: 'icu'
-      events:
-        rabbitmq:
-          # Note usually enableRabbitmqEvents, rabbitmqHost, etc. come from georchestra's default.properties
-          enabled: ${enableRabbitmqEvents:false}
-          host: ${rabbitmqHost}
-          port: ${rabbitmqPort}
-          user: ${rabbitmqUser}
-          password: ${rabbitmqPassword}
+      #events:
+      #  accountcreated:
+      #    # Set this url to console's endpoint to be able to receive an email when a new user logs in
+      #    #  for the first time with an IDP and is created in LDAP.
+      #    url: "http://console:8080/console/internal/events/accountcreated"
       oauth2:
         # if enabled, make sure to have at least one OAuth2 client
         # set up at spring.security.oauth2.client below 

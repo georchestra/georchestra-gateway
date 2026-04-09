@@ -54,7 +54,6 @@ Contains data models and configuration properties classes used throughout the ap
 Handles user account management functionality, including:
 
 - Account creation
-- Event handling (via RabbitMQ)
 - LDAP account management
 
 ### `org.georchestra.gateway.autoconfigure`

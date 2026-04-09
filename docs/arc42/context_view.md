@@ -17,7 +17,6 @@ The diagram shows the following key components and relationships:
 3. The **geOrchestra SDI** interacts with external systems:
      - **External Identity Providers** for OAuth2/OpenID Connect authentication
      - **LDAP Server** for user authentication and organization information
-     - **Message Broker** (RabbitMQ) for event publishing
 
 > Note: This diagram is generated from the Structurizr DSL definition in `/docs/structurizr/workspace.dsl`. See the [Using Structurizr](using-structurizr.md) guide for more information.
 
@@ -26,7 +25,6 @@ This system context diagram shows how the geOrchestra SDI platform (which includ
 - **Users** interact with the geOrchestra SDI platform via HTTPS requests
 - The **geOrchestra SDI** authenticates users with **External Identity Providers** via OAuth2/OpenID Connect
 - The **geOrchestra SDI** uses the **LDAP Server** for authentication and organization information
-- The **geOrchestra SDI** publishes events to the **Message Broker** (RabbitMQ)
 
 ## External Interfaces
 
@@ -61,7 +59,6 @@ The Gateway interacts with several external systems:
 2. **Infrastructure Services**
      - LDAP Directory: For user lookups and account management
      - Database (PostgreSQL): Used by other geOrchestra components, not by the Gateway itself
-     - Message Broker (RabbitMQ): For event notifications
 
 ## Technical Context
 
@@ -82,7 +79,6 @@ The Gateway uses the following communication protocols:
 
 - HTTP/HTTPS for web traffic
 - LDAP for directory service communication
-- AMQP for message broker communication
 
 ## Business Context
 
@@ -136,4 +132,3 @@ The Gateway is not responsible for:
 | OAuth2 Providers | OAuth2/OIDC protocol | Authentication, user attributes |
 | Backend Services | HTTP proxying | Forwarded requests, security headers |
 | Database | SQL queries | Used by other components, not by Gateway |
-| Message Broker | AMQP messages | Event notifications |

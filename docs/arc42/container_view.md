@@ -47,7 +47,6 @@ The geOrchestra Gateway consists of several key containers and components:
 ### External Containers
 
 1. **LDAP Directory**: Stores user accounts, attributes, and group memberships
-2. **Message Broker (RabbitMQ)**: Enables event-driven communication with other geOrchestra components
 
 ### Target Backend Services
 
@@ -74,4 +73,3 @@ The Gateway routes requests to various geOrchestra platform services:
 - After successful authentication, the routing engine forwards the request to the appropriate backend service
 - Communication with backend services is over HTTP/HTTPS
 - The LDAP directory is used for authentication and user data retrieval
-- The message broker is used for event notification (e.g., user creation events)

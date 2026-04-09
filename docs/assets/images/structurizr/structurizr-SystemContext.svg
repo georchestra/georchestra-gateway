@@ -1,1 +1,280 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" data-diagram-type="DESCRIPTION" height="654px" preserveAspectRatio="none" style="width:673px;height:654px;background:#FFFFFF;" version="1.1" viewBox="0 0 673 654" width="673px" zoomAndPan="magnify"><title>geOrchestra SDI - System Context</title><defs/><g><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="269.7666" x="194.7344" y="22.9951">geOrchestra SDI - System Context</text><!--entity User--><g class="entity" data-entity="User" data-source-line="374" data-uid="ent0002" id="entity_User"><rect fill="#08427B" height="135.5156" rx="2.5" ry="2.5" style="stroke:#073B6F;stroke-width:0.5;" width="200.9609" x="230.5" y="44.2969"/><image height="48" width="48" x="306.9805" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACMElEQVR4Xu2YvUrFQBCFb+kj+Ai+gq3Y2PgA+gCCtZ2V2AhqaSNiqY1gYWMjaCvXykoEKy21sLCNfELgMscksz8mWfDAB3Kuye7sTmYnmcwtbU9KRozSECOVla3T6uTqvrqZPlcPT68/XNw+VtvH19XC+sGe/f9UxIhl8/Cy+vj8qrpEYIsbR1N7fSxihDK/urvMKoeKHbH3ikGMEJi8Z9WbtH92lxyEGCHErLwVqWfvG4IYXkiBXGIn7f29iOGBAe0kUkTVsmN4EcMD255bdgwvYnigFOYW54cdx4MYHlIqT5Niy6oYHuzgORRbUsXwYAfPoV4DeHl7t+MnK/Y8EMMDzVlu9foQ5y6jFAU7hhcxvOSsRLH5D2J4KbqVqMlxoK3tnEevPogRAiuXUpFiD69ZxIghZidSV75GjFiYkGc3KMEpOW8RIxXed0kNJsrOAO0ypTfnxGvEKA0xSkMMD3zfIedJFQ4hCPlUwrX1daQWbURseonRBhNue1D5rc53JkVQwN9c21Wt+D20JxLjN7hpztahSwTi3RExLDlbhhCxm55PkWLMkrvrDBW73rUTYtSQu/aGQ4h0snNzBdD1wPWptrZDDBjL6tfiebBzbA2AUjg2NT3QYkBbrR9KTS/9YoC9eAxqeu0UI/eH21yiu7VzLSqApnIqxn8Af6TiA3A/A9Bn5+lV0xcMMWDoJs6qrakTo4a6OwZxqLa97YkxC1HzMkMzNQRtE3cFUAJilMY3OGTNL0NDLqIAAAAASUVORK5CYII=" y="54.2969"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="41.2578" x="310.3516" y="117.1484">User</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="328.7554" y="133.917">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="9.5771" x="240.5" y="150.2139">A</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="250.0771" y="150.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30.5361" x="254.5273" y="150.2139">user</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="285.0635" y="150.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="13.4941" x="289.5137" y="150.2139">of</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="303.0078" y="150.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="22.9756" x="307.458" y="150.2139">the</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="330.4336" y="150.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="86.5771" x="334.8838" y="150.2139">geOrchestra</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59.7324" x="301.1143" y="166.5107">platform</text></g><!--entity ExternalIdentityProviders--><g class="entity" data-entity="ExternalIdentityProviders" data-source-line="393" data-uid="ent0003" id="entity_ExternalIdentityProviders"><rect fill="#1168BD" height="106.1406" rx="2.5" ry="2.5" style="stroke:#3C7FC0;stroke-width:0.5;" width="192.0947" x="7" y="448.2969"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="75.3125" x="27.1763" y="473.1484">External</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="5.5703" x="102.4888" y="473.1484">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="70.8594" x="108.0591" y="473.1484">Identity</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="86.2422" x="59.9263" y="491.7734">Providers</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="100.8223" y="508.542">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109.7578" x="17" y="524.8389">OAuth2/OpenID</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="126.7578" y="524.8389">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57.8867" x="131.208" y="524.8389">Connect</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="65.9326" x="70.0811" y="541.1357">providers</text></g><!--entity LDAPServer--><g class="entity" data-entity="LDAPServer" data-source-line="393" data-uid="ent0004" id="entity_LDAPServer"><rect fill="#1168BD" height="87.5156" rx="2.5" ry="2.5" style="stroke:#3C7FC0;stroke-width:0.5;" width="192.792" x="234.5" y="457.2969"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="47.5859" x="274.5991" y="482.1484">LDAP</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="5.5703" x="322.1851" y="482.1484">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="59.4375" x="327.7554" y="482.1484">Server</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="328.6709" y="498.917">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="44.6045" x="275.7061" y="515.2139">Stores</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="320.3105" y="515.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30.5361" x="324.7607" y="515.2139">user</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="355.2969" y="515.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="26.3389" x="359.7471" y="515.2139">and</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="87.2949" x="244.5" y="531.5107">organization</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="331.7949" y="531.5107">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.0469" x="336.2451" y="531.5107">information</text></g><!--entity MessageBroker--><g class="entity" data-entity="MessageBroker" data-source-line="393" data-uid="ent0005" id="entity_MessageBroker"><rect fill="#1168BD" height="87.5156" rx="2.5" ry="2.5" style="stroke:#3C7FC0;stroke-width:0.5;" width="204.2354" x="463" y="457.2969"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="78.9219" x="492.6411" y="482.1484">Message</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="5.5703" x="571.563" y="482.1484">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="60.4609" x="577.1333" y="482.1484">Broker</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="562.8926" y="498.917">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="68.5576" x="473" y="515.2139">RabbitMQ</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="541.5576" y="515.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="62.918" x="546.0078" y="515.2139">message</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="608.9258" y="515.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="43.8594" x="613.376" y="515.2139">queue</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="50.6133" x="539.811" y="531.5107">system</text></g><!--entity geOrchestraSDI--><g class="entity" data-entity="geOrchestraSDI" data-source-line="393" data-uid="ent0006" id="entity_geOrchestraSDI"><rect fill="#1168BD" height="103.8125" rx="2.5" ry="2.5" style="stroke:#3C7FC0;stroke-width:0.5;" width="206.6348" x="227.5" y="255.2969"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="111.3828" x="256.9619" y="280.1484">geOrchestra</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="5.5703" x="368.3447" y="280.1484">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing" textLength="30.7578" x="373.915" y="280.1484">SDI</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="328.5923" y="296.917">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="48.2002" x="237.5" y="313.2139">Spatial</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="285.7002" y="313.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="33.4277" x="290.1504" y="313.2139">Data</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="323.5781" y="313.2139">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96.1064" x="328.0283" y="313.2139">Infrastructure</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59.7324" x="256.0288" y="329.5107">platform</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="315.7612" y="329.5107">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="29.7021" x="320.2114" y="329.5107">with</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="349.9136" y="329.5107">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="51.2422" x="354.3638" y="329.5107">various</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.6729" x="263.5347" y="345.8076">geospatial</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="336.2075" y="345.8076">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57.4424" x="340.6577" y="345.8076">services</text></g><!--link User to geOrchestraSDI--><g class="link" data-entity-1="User" data-entity-2="geOrchestraSDI" data-source-line="1578" data-uid="lnk7" id="link_User_geOrchestraSDI"><path d="M331,180.5269 C331,205.0069 331,224.2569 331,247.1169" fill="none" id="User-to-geOrchestraSDI" style="stroke:#666666;stroke-width:1;"/><polygon fill="#666666" points="331,255.1169,334,247.1169,328,247.1169,331,255.1169" style="stroke:#666666;stroke-width:1;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="32.168" x="332" y="222.4355">Uses</text></g><!--link geOrchestraSDI to ExternalIdentityProviders--><g class="link" data-entity-1="geOrchestraSDI" data-entity-2="ExternalIdentityProviders" data-source-line="1578" data-uid="lnk8" id="link_geOrchestraSDI_ExternalIdentityProviders"><path d="M233.69,359.3869 C219.46,368.5469 205.43,378.6069 193,389.2969 C173.06,406.4369 159.0707,422.0705 143.8207,441.9405" fill="none" id="geOrchestraSDI-to-ExternalIdentityProviders" style="stroke:#666666;stroke-width:1;"/><polygon fill="#666666" points="138.95,448.2869,146.2006,443.7671,141.4409,440.114,138.95,448.2869" style="stroke:#666666;stroke-width:1;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="94.8691" x="194" y="408.4355">Authenticates</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="4.1777" x="288.8691" y="408.4355">&#160;</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="29.4785" x="293.0469" y="408.4355">with</text></g><!--link geOrchestraSDI to LDAPServer--><g class="link" data-entity-1="geOrchestraSDI" data-entity-2="LDAPServer" data-source-line="1578" data-uid="lnk9" id="link_geOrchestraSDI_LDAPServer"><path d="M331,359.4969 C331,389.9369 331,420.1169 331,449.0369" fill="none" id="geOrchestraSDI-to-LDAPServer" style="stroke:#666666;stroke-width:1;"/><polygon fill="#666666" points="331,457.0369,334,449.0369,328,449.0369,331,457.0369" style="stroke:#666666;stroke-width:1;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="94.8691" x="332" y="401.4355">Authenticates</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="4.1777" x="426.8691" y="401.4355">&#160;</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="25.2305" x="431.0469" y="401.4355">and</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="71.4609" x="337.8535" y="415.4043">authorizes</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="4.1777" x="409.3145" y="415.4043">&#160;</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="36.9316" x="413.4922" y="415.4043">using</text></g><!--link geOrchestraSDI to MessageBroker--><g class="link" data-entity-1="geOrchestraSDI" data-entity-2="MessageBroker" data-source-line="1578" data-uid="lnk10" id="link_geOrchestraSDI_MessageBroker"><path d="M423.55,359.3069 C437.92,368.6069 452.22,378.7369 465,389.2969 C489.29,409.3669 507.913,429.264 526.173,451.064" fill="none" id="geOrchestraSDI-to-MessageBroker" style="stroke:#666666;stroke-width:1;"/><polygon fill="#666666" points="531.31,457.1969,528.4729,449.1377,523.8732,452.9904,531.31,457.1969" style="stroke:#666666;stroke-width:1;"/><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="65.1211" x="496" y="408.4355">Publishes</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="4.1777" x="561.1211" y="408.4355">&#160;</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="45.5215" x="565.2988" y="408.4355">events</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="4.1777" x="610.8203" y="408.4355">&#160;</text><text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing" textLength="13.9805" x="614.998" y="408.4355">to</text></g><rect fill="none" height="16.2969" style="stroke:none;stroke-width:1;" width="94.3936" x="547.8418" y="578.4375"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="57.9209" x="547.8418" y="591.4326">Legend</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="610.6367" y="591.4326">&#160;</text><rect fill="#08427B" height="16.2969" style="stroke:none;stroke-width:1;" width="94.3936" x="547.8418" y="594.7344"/><text fill="#073B6F" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="7.7041" x="552.292" y="607.7295">&#9647;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="559.9961" y="607.7295">&#160;</text><image height="12" width="12" x="564.4463" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAApklEQVR4XmPgcKpmQMfRjcsb/CoWNqCLgzCGwH80gC6Pwjl17RG6+v9T1h47gFPD95+/0dX/33v2DootKBriW1Y2oGvQjesPxKkBhDuW7D8AUxzfunIiujwKRzWyO8ksdXIxjG+XPaNBNqgNuw3IzkAHIL+haNh67MZndEXooGXh3kVwDeiS2MCtx6/BtoA1/P7zF10eA5y69hihAYQNkyY24MMwdQBvKDvWFDAX9QAAAABJRU5ErkJggg==" y="599.0313"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="47.9883" x="585.3467" y="607.7295">person</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="637.7852" y="607.7295">&#160;</text><rect fill="#1168BD" height="16.2969" style="stroke:none;stroke-width:1;" width="94.3936" x="547.8418" y="611.0313"/><text fill="#3C7FC0" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="7.7041" x="552.292" y="624.0264">&#9647;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="559.9961" y="624.0264">&#160;</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="50.6133" x="568.8965" y="624.0264">system</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502" x="623.96" y="624.0264">&#160;</text><line style="stroke:none;stroke-width:1;" x1="547.8418" x2="642.2354" y1="578.4375" y2="578.4375"/><line style="stroke:none;stroke-width:1;" x1="547.8418" x2="642.2354" y1="594.7344" y2="594.7344"/><line style="stroke:none;stroke-width:1;" x1="547.8418" x2="642.2354" y1="611.0313" y2="611.0313"/><line style="stroke:none;stroke-width:1;" x1="547.8418" x2="642.2354" y1="627.3281" y2="627.3281"/><line style="stroke:none;stroke-width:1;" x1="547.8418" x2="547.8418" y1="578.4375" y2="627.3281"/><line style="stroke:none;stroke-width:1;" x1="642.2354" x2="642.2354" y1="578.4375" y2="627.3281"/><!--SRC=[dLF1JkCm4BtxAuPg3qK28I6E2r9fAgW4soxHQe_8JQQ9HMfdn-CiyFMCau3I0aNY57iyyzwycHUF31vhJPeTWNKM5Hkk40fSK5QYPzAG9dCuXlJ9CsvWwYpZ8ol5hWPsi7BCRWEv8SpOEAlKWR5P5NA4dzEpa-dPnMxWleUuK6g9v9qT__58Hp2Adz4H_CZHPtG-ca2G0BWrSBdTK5rfNZlQn6JMXJyVnLDbx8ES3bNNwNZso4XML_CShOXwMf9hJ2wCGlNw1g-FyFOww60n2LoUdYngjFCaAhUY4UfXvkVqDybacI8rhRHuWUusm4zbwEWxcThcuAZGrZphE4SmDafip_k9Rj5xNU0bkOUMgxz35nZGtUdLol3jRzZq6Vy21WJVmkpd64nVt20aE_uOYggbPvbiebd3tAv9IrB8E12-BGx-6owXqMHSyB9Qv_iYcKHZClnijEeEgzujxpgIS5U6MMcxkWyG8i1kwJwZH0V4QAPPDXNR_Xx7bXksGUFcjKGScUVM3SOMtoFPTS8oh2hZ9G6m4Jul_-lNm2gzNlozlvbTpNubOzaS7hu0]--></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css"
+     data-diagram-type="DESCRIPTION" height="654px" preserveAspectRatio="none"
+     style="width:673px;height:654px;background:#FFFFFF;" version="1.1" viewBox="0 0 673 654" width="673px"
+     zoomAndPan="magnify">
+    <title>geOrchestra SDI - System Context</title>
+    <defs/>
+    <g>
+        <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing"
+              textLength="269.7666" x="194.7344" y="22.9951">geOrchestra SDI - System Context
+        </text><!--entity User-->
+        <g class="entity" data-entity="User" data-source-line="374" data-uid="ent0002" id="entity_User">
+            <rect fill="#08427B" height="135.5156" rx="2.5" ry="2.5" style="stroke:#073B6F;stroke-width:0.5;"
+                  width="200.9609" x="230.5" y="44.2969"/>
+            <image height="48" width="48" x="306.9805"
+                   xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAACMElEQVR4Xu2YvUrFQBCFb+kj+Ai+gq3Y2PgA+gCCtZ2V2AhqaSNiqY1gYWMjaCvXykoEKy21sLCNfELgMscksz8mWfDAB3Kuye7sTmYnmcwtbU9KRozSECOVla3T6uTqvrqZPlcPT68/XNw+VtvH19XC+sGe/f9UxIhl8/Cy+vj8qrpEYIsbR1N7fSxihDK/urvMKoeKHbH3ikGMEJi8Z9WbtH92lxyEGCHErLwVqWfvG4IYXkiBXGIn7f29iOGBAe0kUkTVsmN4EcMD255bdgwvYnigFOYW54cdx4MYHlIqT5Niy6oYHuzgORRbUsXwYAfPoV4DeHl7t+MnK/Y8EMMDzVlu9foQ5y6jFAU7hhcxvOSsRLH5D2J4KbqVqMlxoK3tnEevPogRAiuXUpFiD69ZxIghZidSV75GjFiYkGc3KMEpOW8RIxXed0kNJsrOAO0ypTfnxGvEKA0xSkMMD3zfIedJFQ4hCPlUwrX1daQWbURseonRBhNue1D5rc53JkVQwN9c21Wt+D20JxLjN7hpztahSwTi3RExLDlbhhCxm55PkWLMkrvrDBW73rUTYtSQu/aGQ4h0snNzBdD1wPWptrZDDBjL6tfiebBzbA2AUjg2NT3QYkBbrR9KTS/9YoC9eAxqeu0UI/eH21yiu7VzLSqApnIqxn8Af6TiA3A/A9Bn5+lV0xcMMWDoJs6qrakTo4a6OwZxqLa97YkxC1HzMkMzNQRtE3cFUAJilMY3OGTNL0NDLqIAAAAASUVORK5CYII="
+                   y="54.2969"/>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="41.2578" x="310.3516" y="117.1484">User
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="328.7554" y="133.917">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="9.5771"
+                  x="240.5" y="150.2139">A
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="250.0771" y="150.2139">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30.5361"
+                  x="254.5273" y="150.2139">user
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="285.0635" y="150.2139">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="13.4941"
+                  x="289.5137" y="150.2139">of
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="303.0078" y="150.2139">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="22.9756"
+                  x="307.458" y="150.2139">the
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="330.4336" y="150.2139">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="86.5771"
+                  x="334.8838" y="150.2139">geOrchestra
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59.7324"
+                  x="301.1143" y="166.5107">platform
+            </text>
+        </g><!--entity ExternalIdentityProviders-->
+        <g class="entity" data-entity="ExternalIdentityProviders" data-source-line="393" data-uid="ent0003"
+           id="entity_ExternalIdentityProviders">
+            <rect fill="#1168BD" height="106.1406" rx="2.5" ry="2.5" style="stroke:#3C7FC0;stroke-width:0.5;"
+                  width="192.0947" x="7" y="448.2969"/>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="75.3125" x="27.1763" y="473.1484">External
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="5.5703" x="102.4888" y="473.1484">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="70.8594" x="108.0591" y="473.1484">Identity
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="86.2422" x="59.9263" y="491.7734">Providers
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="100.8223" y="508.542">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109.7578"
+                  x="17" y="524.8389">OAuth2/OpenID
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="126.7578" y="524.8389">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57.8867"
+                  x="131.208" y="524.8389">Connect
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="65.9326"
+                  x="70.0811" y="541.1357">providers
+            </text>
+        </g><!--entity LDAPServer-->
+        <g class="entity" data-entity="LDAPServer" data-source-line="393" data-uid="ent0004" id="entity_LDAPServer">
+            <rect fill="#1168BD" height="87.5156" rx="2.5" ry="2.5" style="stroke:#3C7FC0;stroke-width:0.5;"
+                  width="192.792" x="234.5" y="457.2969"/>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="47.5859" x="274.5991" y="482.1484">LDAP
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="5.5703" x="322.1851" y="482.1484">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="59.4375" x="327.7554" y="482.1484">Server
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="328.6709" y="498.917">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="44.6045"
+                  x="275.7061" y="515.2139">Stores
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="320.3105" y="515.2139">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30.5361"
+                  x="324.7607" y="515.2139">user
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="355.2969" y="515.2139">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="26.3389"
+                  x="359.7471" y="515.2139">and
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="87.2949"
+                  x="244.5" y="531.5107">organization
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="331.7949" y="531.5107">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="81.0469"
+                  x="336.2451" y="531.5107">information
+            </text>
+        </g><!--entity geOrchestraSDI-->
+        <g class="entity" data-entity="geOrchestraSDI" data-source-line="393" data-uid="ent0006"
+           id="entity_geOrchestraSDI">
+            <rect fill="#1168BD" height="103.8125" rx="2.5" ry="2.5" style="stroke:#3C7FC0;stroke-width:0.5;"
+                  width="206.6348" x="227.5" y="255.2969"/>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="111.3828" x="256.9619" y="280.1484">geOrchestra
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="5.5703" x="368.3447" y="280.1484">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacing"
+                  textLength="30.7578" x="373.915" y="280.1484">SDI
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="328.5923" y="296.917">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="48.2002"
+                  x="237.5" y="313.2139">Spatial
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="285.7002" y="313.2139">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="33.4277"
+                  x="290.1504" y="313.2139">Data
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="323.5781" y="313.2139">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96.1064"
+                  x="328.0283" y="313.2139">Infrastructure
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59.7324"
+                  x="256.0288" y="329.5107">platform
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="315.7612" y="329.5107">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="29.7021"
+                  x="320.2114" y="329.5107">with
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="349.9136" y="329.5107">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="51.2422"
+                  x="354.3638" y="329.5107">various
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72.6729"
+                  x="263.5347" y="345.8076">geospatial
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+                  x="336.2075" y="345.8076">&#160;
+            </text>
+            <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57.4424"
+                  x="340.6577" y="345.8076">services
+            </text>
+        </g><!--link User to geOrchestraSDI-->
+        <g class="link" data-entity-1="User" data-entity-2="geOrchestraSDI" data-source-line="1578" data-uid="lnk7"
+           id="link_User_geOrchestraSDI">
+            <path d="M331,180.5269 C331,205.0069 331,224.2569 331,247.1169" fill="none" id="User-to-geOrchestraSDI"
+                  style="stroke:#666666;stroke-width:1;"/>
+            <polygon fill="#666666" points="331,255.1169,334,247.1169,328,247.1169,331,255.1169"
+                     style="stroke:#666666;stroke-width:1;"/>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="32.168" x="332" y="222.4355">Uses
+            </text>
+        </g><!--link geOrchestraSDI to ExternalIdentityProviders-->
+        <g class="link" data-entity-1="geOrchestraSDI" data-entity-2="ExternalIdentityProviders" data-source-line="1578"
+           data-uid="lnk8" id="link_geOrchestraSDI_ExternalIdentityProviders">
+            <path d="M233.69,359.3869 C219.46,368.5469 205.43,378.6069 193,389.2969 C173.06,406.4369 159.0707,422.0705 143.8207,441.9405"
+                  fill="none" id="geOrchestraSDI-to-ExternalIdentityProviders" style="stroke:#666666;stroke-width:1;"/>
+            <polygon fill="#666666" points="138.95,448.2869,146.2006,443.7671,141.4409,440.114,138.95,448.2869"
+                     style="stroke:#666666;stroke-width:1;"/>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="94.8691" x="194" y="408.4355">Authenticates
+            </text>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="4.1777" x="288.8691" y="408.4355">&#160;
+            </text>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="29.4785" x="293.0469" y="408.4355">with
+            </text>
+        </g><!--link geOrchestraSDI to LDAPServer-->
+        <g class="link" data-entity-1="geOrchestraSDI" data-entity-2="LDAPServer" data-source-line="1578"
+           data-uid="lnk9" id="link_geOrchestraSDI_LDAPServer">
+            <path d="M331,359.4969 C331,389.9369 331,420.1169 331,449.0369" fill="none"
+                  id="geOrchestraSDI-to-LDAPServer" style="stroke:#666666;stroke-width:1;"/>
+            <polygon fill="#666666" points="331,457.0369,334,449.0369,328,449.0369,331,457.0369"
+                     style="stroke:#666666;stroke-width:1;"/>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="94.8691" x="332" y="401.4355">Authenticates
+            </text>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="4.1777" x="426.8691" y="401.4355">&#160;
+            </text>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="25.2305" x="431.0469" y="401.4355">and
+            </text>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="71.4609" x="337.8535" y="415.4043">authorizes
+            </text>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="4.1777" x="409.3145" y="415.4043">&#160;
+            </text>
+            <text fill="#666666" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacing"
+                  textLength="36.9316" x="413.4922" y="415.4043">using
+            </text>
+        </g>
+        <rect fill="none" height="16.2969" style="stroke:none;stroke-width:1;" width="94.3936" x="547.8418"
+              y="578.4375"/>
+        <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing"
+              textLength="57.9209" x="547.8418" y="591.4326">Legend
+        </text>
+        <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+              x="610.6367" y="591.4326">&#160;
+        </text>
+        <rect fill="#08427B" height="16.2969" style="stroke:none;stroke-width:1;" width="94.3936" x="547.8418"
+              y="594.7344"/>
+        <text fill="#073B6F" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="7.7041"
+              x="552.292" y="607.7295">&#9647;
+        </text>
+        <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+              x="559.9961" y="607.7295">&#160;
+        </text>
+        <image height="12" width="12" x="564.4463"
+               xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAApklEQVR4XmPgcKpmQMfRjcsb/CoWNqCLgzCGwH80gC6Pwjl17RG6+v9T1h47gFPD95+/0dX/33v2DootKBriW1Y2oGvQjesPxKkBhDuW7D8AUxzfunIiujwKRzWyO8ksdXIxjG+XPaNBNqgNuw3IzkAHIL+haNh67MZndEXooGXh3kVwDeiS2MCtx6/BtoA1/P7zF10eA5y69hihAYQNkyY24MMwdQBvKDvWFDAX9QAAAABJRU5ErkJggg=="
+               y="599.0313"/>
+        <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="47.9883"
+              x="585.3467" y="607.7295">person
+        </text>
+        <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+              x="637.7852" y="607.7295">&#160;
+        </text>
+        <rect fill="#1168BD" height="16.2969" style="stroke:none;stroke-width:1;" width="94.3936" x="547.8418"
+              y="611.0313"/>
+        <text fill="#3C7FC0" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="7.7041"
+              x="552.292" y="624.0264">&#9647;
+        </text>
+        <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+              x="559.9961" y="624.0264">&#160;
+        </text>
+        <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="50.6133"
+              x="568.8965" y="624.0264">system
+        </text>
+        <text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4.4502"
+              x="623.96" y="624.0264">&#160;
+        </text>
+        <line style="stroke:none;stroke-width:1;" x1="547.8418" x2="642.2354" y1="578.4375" y2="578.4375"/>
+        <line style="stroke:none;stroke-width:1;" x1="547.8418" x2="642.2354" y1="594.7344" y2="594.7344"/>
+        <line style="stroke:none;stroke-width:1;" x1="547.8418" x2="642.2354" y1="611.0313" y2="611.0313"/>
+        <line style="stroke:none;stroke-width:1;" x1="547.8418" x2="642.2354" y1="627.3281" y2="627.3281"/>
+        <line style="stroke:none;stroke-width:1;" x1="547.8418" x2="547.8418" y1="578.4375" y2="627.3281"/>
+        <line style="stroke:none;stroke-width:1;" x1="642.2354" x2="642.2354" y1="578.4375"
+              y2="627.3281"/><!--SRC=[dLF1JkCm4BtxAuPg3qK28I6E2r9fAgW4soxHQe_8JQQ9HMfdn-CiyFMCau3I0aNY57iyyzwycHUF31vhJPeTWNKM5Hkk40fSK5QYPzAG9dCuXlJ9CsvWwYpZ8ol5hWPsi7BCRWEv8SpOEAlKWR5P5NA4dzEpa-dPnMxWleUuK6g9v9qT__58Hp2Adz4H_CZHPtG-ca2G0BWrSBdTK5rfNZlQn6JMXJyVnLDbx8ES3bNNwNZso4XML_CShOXwMf9hJ2wCGlNw1g-FyFOww60n2LoUdYngjFCaAhUY4UfXvkVqDybacI8rhRHuWUusm4zbwEWxcThcuAZGrZphE4SmDafip_k9Rj5xNU0bkOUMgxz35nZGtUdLol3jRzZq6Vy21WJVmkpd64nVt20aE_uOYggbPvbiebd3tAv9IrB8E12-BGx-6owXqMHSyB9Qv_iYcKHZClnijEeEgzujxpgIS5U6MMcxkWyG8i1kwJwZH0V4QAPPDXNR_Xx7bXksGUFcjKGScUVM3SOMtoFPTS8oh2hZ9G6m4Jul_-lNm2gzNlozlvbTpNubOzaS7hu0]-->
+    </g>
+</svg>

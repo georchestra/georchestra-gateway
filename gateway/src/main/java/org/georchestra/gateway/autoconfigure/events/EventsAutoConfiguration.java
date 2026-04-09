@@ -16,25 +16,30 @@
  * You should have received a copy of the GNU General Public License along with
  * geOrchestra. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.georchestra.gateway.autoconfigure.accounts;
+package org.georchestra.gateway.autoconfigure.events;
 
 import org.georchestra.gateway.accounts.admin.AccountCreated;
-import org.georchestra.gateway.accounts.events.rabbitmq.RabbitmqEventsConfiguration;
-import org.georchestra.gateway.accounts.events.rabbitmq.RabbitmqEventsConfigurationProperties;
+import org.georchestra.gateway.accounts.events.AccountCreatedEventSender;
+import org.georchestra.gateway.accounts.events.AccountCreatedEventsConfigurationProperties;
+import org.georchestra.gateway.autoconfigure.accounts.ConditionalOnCreateLdapAccounts;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import reactor.netty.http.client.HttpClient;
 
 /**
- * Auto-configuration for enabling RabbitMQ event dispatching when configured.
+ * Auto-configuration for enabling account creation event dispatching when
+ * configured.
  * <p>
- * This configuration enables RabbitMQ integration when the following conditions
- * are met:
+ * This configuration enables event dispatching integration when the following
+ * conditions are met:
  * <ul>
  * <li>LDAP account creation is enabled
  * ({@link ConditionalOnCreateLdapAccounts}).</li>
- * <li>The property {@code georchestra.gateway.security.events.rabbitmq} is set
- * to {@code true}.</li>
+ * <li>The property
+ * {@code georchestra.gateway.security.events.accountcreated.url} is
+ * configured.</li>
  * </ul>
  * </p>
  *
@@ -42,22 +47,18 @@ import org.springframework.context.annotation.Import;
  * When a user account is created in geOrchestra's LDAP following a successful
  * authentication via pre-authenticated headers or OIDC, an
  * {@link AccountCreated} event is published. This event is then transmitted via
- * RabbitMQ.
- * </p>
- *
- * <p>
- * This class imports {@link RabbitmqEventsConfiguration}, which defines the
- * RabbitMQ message sender and event handling beans.
+ * HTTP POST to the configured URL.
  * </p>
  *
  * @see ConditionalOnCreateLdapAccounts
- * @see RabbitmqEventsConfiguration
- * @see RabbitmqEventsConfigurationProperties
  */
 @AutoConfiguration
 @ConditionalOnCreateLdapAccounts
-@ConditionalOnProperty(name = RabbitmqEventsConfigurationProperties.ENABLED, havingValue = "true", matchIfMissing = false)
-@Import(RabbitmqEventsConfiguration.class)
-public class RabbitmqEventsAutoConfiguration {
-
+@ConditionalOnProperty(name = AccountCreatedEventsConfigurationProperties.PROPERTY_EXISTS)
+@EnableConfigurationProperties(AccountCreatedEventsConfigurationProperties.class)
+public class EventsAutoConfiguration {
+    @Bean
+    AccountCreatedEventSender accountCreatedEventSender(AccountCreatedEventsConfigurationProperties properties) {
+        return new AccountCreatedEventSender(properties.getUrl(), HttpClient.create());
+    }
 }
