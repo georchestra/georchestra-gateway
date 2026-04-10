@@ -10,11 +10,20 @@ georchestra:
       # You can disable UID transformation for an IDP by its identifier
       # This lead to not prefixing or sanitize the UID from this IDP
       #disableUidTransformation: 'icu'
+
       #events:
       #  accountcreated:
       #    # Set this url to console's endpoint to be able to receive an email when a new user logs in
       #    #  for the first time with an IDP and is created in LDAP.
       #    url: "http://console:8080/console/internal/events/accountcreated"
+      #
+
+      # Used to enable sirene API calls to resolve organization names from SIRET codes.
+      # If enabled, make sure to set the SIRENE_API_KEY env variable with a valid API key from https://portail-api.insee.fr/.
+      #sirene:
+      #  enabled: true
+      #  api-key: ${SIRENE_API_KEY}
+
       oauth2:
         # if enabled, make sure to have at least one OAuth2 client
         # set up at spring.security.oauth2.client below 
@@ -65,6 +74,29 @@ georchestra:
             searchFilter: (&(objectClass=user)(userPrincipalName={0}))
           adminDn: uid=gdi-admin,ou=myorg,ou=Applications
           adminPassword: s3cr3t
+
+      #oidc:
+      #  config:
+      #    provider:
+      #      icu:
+      #        searchEmail: true # Determines if the user will be searched by email (false by default).
+      #        moderatedSignup: true # if true, users logging in with this provider for the first time will be created in LDAP but disabled, waiting for an admin to validate them. If false, they will be created as enabled.
+      #        useSireneApi: true  # enable SIRENE resolution on this provider
+      #        overrideExistingOrgName: false # don't update existing orgs
+      #        orgNameResolvers: # fallback chain
+      #          - sirene # try to resolve org name from SIRENE API using the siret from the token: need to be configured above (enabled + token)
+      #          - identifier # use the identifier from the token (e.g. "siret:12345678901234")
+      #          - static:NO_ORG # fallback to this static name if the previous resolvers fail. MATCH the shortname of an existing org or it will be created as a new one with this name.
+      #  # Claims mapping from the OIDC provider's token to the user details used by the gateway and downstream services.
+      #  claims:
+      #    provider:
+      #      icu:
+      #        id.path: "$.sub"
+      #        email.path: "$.email"
+      #        familyName.path: "$.usual_name"
+      #        givenName.path: "$.given_name"
+      #        organization.path: "$.siret"
+      #        organizationUid.path: "$.siret"
 
 # If georchestra.gateway.security.oauth2.enabled == true above, set up
 # the OAuth2/OpenID Connect registrations here.
