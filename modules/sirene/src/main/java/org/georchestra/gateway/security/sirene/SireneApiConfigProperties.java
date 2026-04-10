@@ -37,7 +37,7 @@ import lombok.Data;
  *       sirene:
  *         enabled: true
  *         api-key: ${SIRENE_API_KEY}
- *         base-url: https://api.insee.fr/entreprises/sirene/V3.11
+ *         base-url: https://api.insee.fr/api-sirene/3.11
  * }
  * </pre>
  */
