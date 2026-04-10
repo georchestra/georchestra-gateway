@@ -49,6 +49,7 @@
     <dependency>
       <groupId>org.georchestra</groupId>
       <artifactId>georchestra-gateway-sirene</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.georchestra</groupId>
