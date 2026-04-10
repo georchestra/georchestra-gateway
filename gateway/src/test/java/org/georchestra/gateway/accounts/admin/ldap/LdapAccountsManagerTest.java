@@ -35,7 +35,7 @@ public class LdapAccountsManagerTest {
         when(roleDao.findByCommonName(anyString())).thenThrow(new NameNotFoundException("FAKE_ROLE"));
 
         LdapAccountsManager toTest = new LdapAccountsManager(mock(ApplicationEventPublisher.class), null, roleDao, null,
-                null, null, null);
+                null, null, null, Optional.empty());
 
         toTest.ensureRoleExists("FAKE_ROLE");
         // No exception thrown
@@ -47,7 +47,7 @@ public class LdapAccountsManagerTest {
         when(orgsDao.findAll()).thenReturn(List.of());
 
         LdapAccountsManager toTest = new LdapAccountsManager(mock(ApplicationEventPublisher.class),
-                mock(AccountDao.class), mock(RoleDao.class), orgsDao, null, null, null);
+                mock(AccountDao.class), mock(RoleDao.class), orgsDao, null, null, null, Optional.empty());
 
         Account account = mock(Account.class);
         when(account.getUid()).thenReturn("uid-1");
@@ -65,12 +65,12 @@ public class LdapAccountsManagerTest {
         when(orgsDao.findByUser(any(Account.class))).thenReturn(org);
 
         LdapAccountsManager toTest = new LdapAccountsManager(mock(ApplicationEventPublisher.class),
-                mock(AccountDao.class), mock(RoleDao.class), orgsDao, null, null, null);
+                mock(AccountDao.class), mock(RoleDao.class), orgsDao, null, null, null, Optional.empty());
 
         Account account = mock(Account.class);
         when(account.getUid()).thenReturn("uid-1");
 
-        toTest.verifySingleOrgMembership(account, "ORG_A");
+        toTest.verifySingleOrgMembership(account, org);
     }
 
     @Test
@@ -85,12 +85,12 @@ public class LdapAccountsManagerTest {
         when(orgsDao.findAll()).thenReturn(List.of(org1, org2));
 
         LdapAccountsManager toTest = new LdapAccountsManager(mock(ApplicationEventPublisher.class),
-                mock(AccountDao.class), mock(RoleDao.class), orgsDao, null, null, null);
+                mock(AccountDao.class), mock(RoleDao.class), orgsDao, null, null, null, Optional.empty());
 
         Account account = mock(Account.class);
         when(account.getUid()).thenReturn("uid-1");
 
-        assertThrows(IllegalStateException.class, () -> toTest.verifySingleOrgMembership(account, "ORG_A"));
+        assertThrows(IllegalStateException.class, () -> toTest.verifySingleOrgMembership(account, org1));
     }
 
     @Test
