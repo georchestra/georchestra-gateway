@@ -19,6 +19,7 @@
 package org.georchestra.gateway.security.oauth2;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,7 +45,7 @@ import lombok.NonNull;
  * :
  * georchestra.gateway.security.oidc.config.provider.[provider].moderatedSignup
  * 
- * Note that moderatedSignup can be configured either in the datadir’s
+ * Note that moderatedSignup can be configured either in the datadir's
  * default.properties file or in the gateway configuration.
  * 
  * </p>
@@ -65,6 +66,11 @@ import lombok.NonNull;
  *              proconnect:
  *                  searchEmail: true
  *                  moderatedSignup: true
+ *                  useSireneApi: true
+ *                  orgNameResolvers:
+ *                    - sirene
+ *                    - identifier
+ *                    - static:Unknown Organization
  *              google:
  *                  searchEmail: false
  *                  moderatedSignup: false
@@ -78,6 +84,36 @@ public class OpenIdConnectCustomConfig {
     private Boolean searchEmail;
 
     private Boolean moderatedSignup;
+
+    /**
+     * Whether to use the SIRENE API (or any registered
+     * {@code OrganizationNameResolver}) to resolve organization names from
+     * identifiers such as SIRET numbers. Defaults to {@code false}.
+     */
+    private Boolean useSireneApi;
+
+    /**
+     * Whether to override the name of an existing organization when a user logs in.
+     * When {@code false} (the default), only newly created organizations get their
+     * name resolved via the API. When {@code true}, the organization name is
+     * updated on every login if the resolver returns a result.
+     */
+    private Boolean overrideExistingOrgName;
+
+    /**
+     * Ordered list of organization name resolvers to try when creating or updating
+     * an organization. Each entry is a string of the form:
+     * <ul>
+     * <li>{@code sirene} — calls the registered
+     * {@code OrganizationNameResolver}</li>
+     * <li>{@code identifier} — uses the raw identifier (e.g. SIRET number) as the
+     * org name</li>
+     * <li>{@code static:<value>} — uses the literal value as the org name</li>
+     * </ul>
+     * The first resolver returning a non-empty result wins. If not configured and
+     * {@code useSireneApi} is {@code true}, defaults to {@code ["sirene"]}.
+     */
+    private List<String> orgNameResolvers;
 
     private Map<String, OpenIdConnectCustomConfig> provider = new HashMap<>();
 
@@ -103,7 +139,7 @@ public class OpenIdConnectCustomConfig {
         return getProviderConfig(providerName)
                 // provider config
                 .map(OpenIdConnectCustomConfig::getSearchEmail)
-                // orf fallback general config
+                // or fallback general config
                 .orElse(searchEmail != null ? searchEmail : false);
     }
 
@@ -117,7 +153,51 @@ public class OpenIdConnectCustomConfig {
         return getProviderConfig(providerName)
                 // provider config
                 .map(OpenIdConnectCustomConfig::getModeratedSignup)
-                // orf fallback general config
+                // or fallback general config
                 .orElse(moderatedSignup != null ? moderatedSignup : false);
+    }
+
+    /**
+     * Determines if the SIRENE API (or any {@code OrganizationNameResolver}) should
+     * be used to resolve organization names for this provider.
+     * 
+     * @param providerName provider id in use
+     * @return {@code true} if the organization name resolver should be used
+     */
+    public boolean useSireneApi(@NonNull String providerName) {
+        return getProviderConfig(providerName).map(OpenIdConnectCustomConfig::getUseSireneApi)
+                .orElse(useSireneApi != null ? useSireneApi : false);
+    }
+
+    /**
+     * Determines whether existing organization names should be overridden on login.
+     * 
+     * @param providerName provider id in use
+     * @return {@code true} if existing org names should be updated
+     */
+    public boolean overrideExistingOrgName(@NonNull String providerName) {
+        return getProviderConfig(providerName).map(OpenIdConnectCustomConfig::getOverrideExistingOrgName)
+                .orElse(overrideExistingOrgName != null ? overrideExistingOrgName : false);
+    }
+
+    /**
+     * Returns the ordered list of organization name resolvers for this provider. If
+     * not explicitly configured and {@code useSireneApi} is {@code true}, defaults
+     * to {@code ["sirene"]}.
+     * 
+     * @param providerName provider id in use
+     * @return a list of resolver identifiers, or an empty list if none configured
+     */
+    public List<String> orgNameResolvers(@NonNull String providerName) {
+        List<String> resolvers = getProviderConfig(providerName).map(OpenIdConnectCustomConfig::getOrgNameResolvers)
+                .orElse(orgNameResolvers);
+        if (resolvers != null && !resolvers.isEmpty()) {
+            return resolvers;
+        }
+        // Default: if useSireneApi is enabled, use ["sirene"] as fallback
+        if (useSireneApi(providerName)) {
+            return List.of("sirene");
+        }
+        return List.of();
     }
 }

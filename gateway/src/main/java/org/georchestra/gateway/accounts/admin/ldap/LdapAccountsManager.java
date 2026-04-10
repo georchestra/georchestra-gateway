@@ -45,6 +45,8 @@ import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException
 import org.georchestra.gateway.security.exceptions.DuplicatedUsernameFoundException;
 import org.georchestra.gateway.security.ldap.extended.DemultiplexingUsersApi;
 import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomConfig;
+import org.georchestra.gateway.orgresolvers.OrganizationNameResolver;
+import org.georchestra.gateway.orgresolvers.ResolvedOrganization;
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.ldap.NameNotFoundException;
@@ -93,6 +95,9 @@ class LdapAccountsManager extends AbstractAccountsManager {
     private final @NonNull DemultiplexingUsersApi demultiplexingUsersApi;
     private final @NonNull OpenIdConnectCustomConfig providersConfig;
 
+    /** Optional organization name resolver (e.g. SIRENE API). */
+    private final @NonNull Optional<OrganizationNameResolver> orgNameResolver;
+
     /**
      * Constructs an instance of {@code LdapAccountsManager}.
      *
@@ -112,11 +117,14 @@ class LdapAccountsManager extends AbstractAccountsManager {
      *                                                   users by OAuth2 credentials
      * @param georchestraGatewaySecurityConfigProperties configuration properties
      *                                                   for security settings
+     * @param providersConfig                            the providers configuration
+     * @param orgNameResolver                            optional organization name
+     *                                                   resolver (e.g. SIRENE API)
      */
     public LdapAccountsManager(ApplicationEventPublisher eventPublisher, AccountDao accountDao, RoleDao roleDao,
             OrgsDao orgsDao, DemultiplexingUsersApi demultiplexingUsersApi,
             GeorchestraGatewaySecurityConfigProperties georchestraGatewaySecurityConfigProperties,
-            OpenIdConnectCustomConfig providersConfig) {
+            OpenIdConnectCustomConfig providersConfig, Optional<OrganizationNameResolver> orgNameResolver) {
         super(eventPublisher, providersConfig);
         this.accountDao = accountDao;
         this.roleDao = roleDao;
@@ -124,6 +132,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
         this.demultiplexingUsersApi = demultiplexingUsersApi;
         this.georchestraGatewaySecurityConfigProperties = georchestraGatewaySecurityConfigProperties;
         this.providersConfig = providersConfig;
+        this.orgNameResolver = orgNameResolver;
     }
 
     /**
@@ -221,7 +230,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
         }
 
         try {
-            ensureOrgExists(newAccount);
+            ensureOrgExists(newAccount, mapped.getOAuth2Provider());
         } catch (IllegalStateException orgError) {
             log.error("Error when trying to create / update the organisation {}, reverting the account creation",
                     newAccount.getOrg(), orgError);
@@ -347,15 +356,17 @@ class LdapAccountsManager extends AbstractAccountsManager {
     @Override
     protected void ensureOrgExists(@NonNull GeorchestraUser mappedUser) {
         Account newAccount = mapToAccountBrief(mappedUser);
-        ensureOrgExists(newAccount);
+        ensureOrgExists(newAccount, mappedUser.getOAuth2Provider());
     }
 
     /**
      * Retrieve LDAP organization from org value
      * 
+     * @param oAuth2Provider the OAuth2 provider name (may be null for non-OAuth2
+     *                       users)
      * @throws IllegalStateException if the org can't be created/updated
      */
-    private void ensureOrgExists(@NonNull Account newAccount) {
+    private void ensureOrgExists(@NonNull Account newAccount, @Nullable String oAuth2Provider) {
         final String orgId = newAccount.getOrg();
         String orgUniqueId = Optional.ofNullable(newAccount.getOAuth2OrgId()).orElse("");
 
@@ -364,53 +375,71 @@ class LdapAccountsManager extends AbstractAccountsManager {
             Optional<Org> existingOrg = StringUtils.isNotEmpty(orgUniqueId) ? findOrgById(orgId, orgUniqueId)
                     : findOrg(orgId);
 
-            existingOrg.ifPresentOrElse(org -> addAccountToOrg(newAccount, org),
-                    () -> createOrgAndAddAccount(newAccount, orgId, orgUniqueId));
+            existingOrg.ifPresentOrElse(org -> addAccountToOrg(newAccount, org, oAuth2Provider),
+                    () -> createOrgAndAddAccount(newAccount, orgId, orgUniqueId, oAuth2Provider));
         }
     }
 
     /**
-     * Creates an organization and assigns the user to it.
-     *
-     * @param newAccount the user account to add to the new organization
-     * @param orgId      the identifier of the organization
+     * Creates an organization and assigns the user to it. If an
+     * {@link OrganizationNameResolver} is available and enabled for the provider,
+     * the resolved name is used instead of the raw orgId.
      */
-    private void createOrgAndAddAccount(Account newAccount, final String orgId, final String orgUniqueId) {
+    private void createOrgAndAddAccount(Account newAccount, final String orgId, final String orgUniqueId,
+            @Nullable String oAuth2Provider) {
         try {
             log.info("Org {} does not exist, trying to create it", orgId);
-            Org org = newOrg(orgId, orgUniqueId);
+            Org org = newOrg(orgId, orgUniqueId, oAuth2Provider);
             org.getMembers().add(newAccount.getUid());
             orgsDao.insert(org);
-            verifySingleOrgMembership(newAccount, org.getId());
+            verifySingleOrgMembership(newAccount, org);
         } catch (Exception orgError) {
             throw new IllegalStateException(orgError);
         }
     }
 
-    private void addAccountToOrg(Account newAccount, Org org) {
+    /**
+     * Adds an account to an existing organization. If
+     * {@code overrideExistingOrgName} is enabled for the provider, the organization
+     * name is updated from the resolver.
+     */
+    private void addAccountToOrg(Account newAccount, Org org, @Nullable String oAuth2Provider) {
         // org already in the LDAP, add the newly created account to it
         org.getMembers().add(newAccount.getUid());
+
+        // Optionally update existing org name if override is enabled
+        if (oAuth2Provider != null && providersConfig.overrideExistingOrgName(oAuth2Provider)) {
+            String orgUniqueId = Optional.ofNullable(newAccount.getOAuth2OrgId()).orElse("");
+            String identifier = StringUtils.isNotEmpty(orgUniqueId) ? orgUniqueId : org.getId();
+            resolveOrgNameFromChain(identifier, oAuth2Provider).ifPresent(resolved -> {
+                log.info("Overriding existing org '{}' name from '{}' to '{}'", org.getId(), org.getName(),
+                        resolved.name());
+                org.setName(resolved.name());
+                org.setShortName(resolved.shortName());
+            });
+        }
+
         orgsDao.update(org);
-        verifySingleOrgMembership(newAccount, org.getId());
+        verifySingleOrgMembership(newAccount, org);
     }
 
     @VisibleForTesting
-    void verifySingleOrgMembership(@NonNull Account account, @Nullable String expectedOrgId) {
+    void verifySingleOrgMembership(@NonNull Account account, Org org) {
         try {
             final String uid = account.getUid();
             if (StringUtils.isBlank(uid)) {
                 throw new IllegalStateException("Cannot verify org membership for account with blank uid");
             }
 
-            long memberships = orgsDao.findAll().stream().filter(Objects::nonNull)
-                    .filter(org -> org.getMembers() != null).filter(org -> org.getMembers().contains(uid)).count();
+            long memberships = orgsDao.findAll().stream().filter(Objects::nonNull).filter(o -> o.getMembers() != null)
+                    .filter(o -> o.getMembers().contains(uid)).count();
 
             if (memberships > 1) {
                 throw new IllegalStateException(
                         String.format("User %s is linked to %d organizations; expected at most one", uid, memberships));
             }
 
-            if (expectedOrgId == null) {
+            if (org == null || org.getId() == null) {
                 if (memberships != 0) {
                     throw new IllegalStateException(
                             String.format("User %s is still linked to an organization after unlink", uid));
@@ -423,10 +452,11 @@ class LdapAccountsManager extends AbstractAccountsManager {
                         .format("User %s membership count is %d after link; expected exactly one", uid, memberships));
             }
 
-            Org linkedOrg = orgsDao.findByUser(account);
-            if (linkedOrg == null || !expectedOrgId.equals(linkedOrg.getId())) {
+            Org linkedOrg = StringUtils.isEmpty(org.getOrgUniqueId()) ? orgsDao.findByUser(account)
+                    : orgsDao.findByOrgUniqueId(org.getOrgUniqueId());
+            if (linkedOrg == null || !org.getId().equals(linkedOrg.getId())) {
                 throw new IllegalStateException(String.format("User %s linked org mismatch, expected '%s', got '%s'",
-                        uid, expectedOrgId, linkedOrg == null ? null : linkedOrg.getId()));
+                        uid, org.getId(), linkedOrg == null ? null : linkedOrg.getId()));
             }
         } catch (Exception e) {
             if (e instanceof IllegalStateException) {
@@ -476,31 +506,100 @@ class LdapAccountsManager extends AbstractAccountsManager {
     }
 
     /**
-     * Factory method to create a new org with the given id. Will set orgUniqueId if
-     * not null.
-     * 
-     * @param orgId       organization ID to create (cn)
-     * @param orgUniqueId uniqueOrgId field value
+     * Factory method to create a new org with the given id. When an
+     * {@link OrganizationNameResolver} is available and the provider has SIRENE API
+     * enabled, the resolved name is used for the org name and shortName.
+     *
+     * @param orgId          organization ID to create (cn)
+     * @param orgUniqueId    uniqueOrgId field value
+     * @param oAuth2Provider the OAuth2 provider name (may be null)
      * @return {@link Org} created organization
      */
-    private Org newOrg(final String orgId, final String orgUniqueId) {
-        Org org = newOrg(orgId);
+    private Org newOrg(final String orgId, final String orgUniqueId, @Nullable String oAuth2Provider) {
+        Org org = new Org();
+        org.setId(orgId);
         org.setOrgUniqueId(Optional.ofNullable(orgUniqueId).orElse(""));
+        org.setOrgType("Other");
+
+        // Resolve the org name via the fallback chain
+        String identifier = StringUtils.isNotEmpty(orgUniqueId) ? orgUniqueId : orgId;
+        Optional<ResolvedOrganization> resolved = (oAuth2Provider != null)
+                ? resolveOrgNameFromChain(identifier, oAuth2Provider)
+                : Optional.empty();
+
+        if (resolved.isPresent()) {
+            org.setName(resolved.get().name());
+            org.setShortName(resolved.get().shortName());
+        } else {
+            org.setName(orgId);
+            org.setShortName(orgId);
+        }
+
         return org;
     }
 
     /**
-     * Factory method to create a new org with the given id.
-     * 
-     * @param orgId organization ID to create (cn)
-     * @return {@link Org} created organization
+     * Resolves an organization name by trying each entry in the configured
+     * {@code orgNameResolvers} list for the given provider. The first non-empty
+     * result wins.
+     * <p>
+     * Supported resolver types:
+     * <ul>
+     * <li>{@code sirene} — delegates to the registered
+     * {@link OrganizationNameResolver}</li>
+     * <li>{@code identifier} — returns the raw identifier (e.g. SIRET number) as
+     * the org name</li>
+     * <li>{@code static:<value>} — returns the literal value</li>
+     * </ul>
+     * </p>
+     *
+     * @param identifier     the organization identifier (e.g. SIRET number)
+     * @param oAuth2Provider the OAuth2 provider name
+     * @return an {@link Optional} containing the resolved organization, or empty
      */
-    private Org newOrg(final String orgId) {
-        Org org = new Org();
-        org.setId(orgId);
-        org.setName(orgId);
-        org.setShortName(orgId);
-        org.setOrgType("Other");
-        return org;
+    private Optional<ResolvedOrganization> resolveOrgNameFromChain(String identifier, @NonNull String oAuth2Provider) {
+        List<String> resolvers = providersConfig.orgNameResolvers(oAuth2Provider);
+        if (resolvers.isEmpty()) {
+            return Optional.empty();
+        }
+
+        for (String resolverEntry : resolvers) {
+            Optional<ResolvedOrganization> result = tryResolver(resolverEntry, identifier);
+            if (result.isPresent()) {
+                return result;
+            }
+        }
+
+        log.debug("No organization name resolver returned a result for identifier '{}' (provider: {})", identifier,
+                oAuth2Provider);
+        return Optional.empty();
+    }
+
+    /**
+     * Tries a single resolver entry from the fallback chain.
+     */
+    private Optional<ResolvedOrganization> tryResolver(String resolverEntry, String identifier) {
+        if ("sirene".equalsIgnoreCase(resolverEntry)) {
+            return orgNameResolver.flatMap(resolver -> resolver.resolve(identifier));
+        }
+
+        if ("identifier".equalsIgnoreCase(resolverEntry)) {
+            if (StringUtils.isNotEmpty(identifier)) {
+                String shortName = identifier.length() > 32 ? identifier.substring(0, 32) : identifier;
+                return Optional.of(new ResolvedOrganization(identifier, shortName));
+            }
+            return Optional.empty();
+        }
+
+        if (resolverEntry.toLowerCase().startsWith("static:")) {
+            String staticValue = resolverEntry.substring("static:".length()).trim();
+            if (!staticValue.isEmpty()) {
+                String shortName = staticValue.length() > 32 ? staticValue.substring(0, 32) : staticValue;
+                return Optional.of(new ResolvedOrganization(staticValue, shortName));
+            }
+        }
+
+        log.warn("Unknown organization name resolver type: '{}'", resolverEntry);
+        return Optional.empty();
     }
 }

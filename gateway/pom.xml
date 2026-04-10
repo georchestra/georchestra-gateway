@@ -44,6 +44,10 @@
     </dependency>
     <dependency>
       <groupId>org.georchestra</groupId>
+      <artifactId>georchestra-gateway-sirene</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.georchestra</groupId>
       <artifactId>georchestra-ldap-account-management</artifactId>
       <exclusions>
         <exclusion>
