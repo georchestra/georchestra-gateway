@@ -40,6 +40,10 @@
   <dependencies>
     <dependency>
       <groupId>org.georchestra</groupId>
+      <artifactId>georchestra-gateway-org-resolvers</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.georchestra</groupId>
       <artifactId>georchestra-gateway-logging</artifactId>
     </dependency>
     <dependency>

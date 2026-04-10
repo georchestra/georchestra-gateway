@@ -28,7 +28,6 @@ import org.georchestra.gateway.orgresolvers.ResolvedOrganization;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;

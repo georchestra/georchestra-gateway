@@ -73,7 +73,7 @@
       </dependency>
       <dependency>
         <groupId>org.georchestra</groupId>
-        <artifactId>georchestra-gateway-org-resolver-api</artifactId>
+        <artifactId>georchestra-gateway-org-resolvers</artifactId>
         <version>${revision}</version>
       </dependency>
       <dependency>

@@ -594,8 +594,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
         if (resolverEntry.toLowerCase().startsWith("static:")) {
             String staticValue = resolverEntry.substring("static:".length()).trim();
             if (!staticValue.isEmpty()) {
-                String shortName = staticValue.length() > 32 ? staticValue.substring(0, 32) : staticValue;
-                return Optional.of(new ResolvedOrganization(staticValue, shortName));
+                return Optional.of(new ResolvedOrganization(staticValue, staticValue));
             }
         }
 
