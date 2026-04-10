@@ -12,10 +12,10 @@
   <description>Provides organization name resolution via the French SIRENE API (INSEE) or other pluggable organization resolvers</description>
 
   <dependencies>
-    <!-- Organization Resolver SPI -->
+    <!-- Organization Resolvers API -->
     <dependency>
       <groupId>org.georchestra</groupId>
-      <artifactId>georchestra-gateway-org-resolver-api</artifactId>
+      <artifactId>georchestra-gateway-org-resolvers</artifactId>
     </dependency>
 
     <!-- Spring Boot Dependencies -->
