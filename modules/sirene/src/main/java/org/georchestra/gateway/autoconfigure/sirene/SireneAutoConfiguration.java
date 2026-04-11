@@ -21,6 +21,7 @@ package org.georchestra.gateway.autoconfigure.sirene;
 import org.georchestra.gateway.orgresolvers.OrganizationNameResolver;
 import org.georchestra.gateway.security.sirene.SireneApiConfigProperties;
 import org.georchestra.gateway.security.sirene.SireneOrganizationNameResolver;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -66,7 +67,7 @@ public class SireneAutoConfiguration {
     @Bean("sireneRestClient")
     RestClient sireneRestClient(SireneApiConfigProperties properties) {
         log.info("Configuring SIRENE API RestClient with base URL: {}", properties.getBaseUrl());
-//        Using JdkClientHttpRequestFactory as RestClient doesn't support blocking requests
+        // Using JdkClientHttpRequestFactory as reactive Webclient doesn't support blocking requests
         return RestClient.builder().requestFactory(new JdkClientHttpRequestFactory()).baseUrl(properties.getBaseUrl())
                 .defaultHeader("X-INSEE-Api-Key-Integration", properties.getApiKey())
                 .defaultHeader("Accept", "application/json").build();
@@ -79,7 +80,7 @@ public class SireneAutoConfiguration {
      * @return an {@link OrganizationNameResolver} instance
      */
     @Bean
-    OrganizationNameResolver sireneOrganizationNameResolver(RestClient restClient) {
+    OrganizationNameResolver sireneOrganizationNameResolver(@Qualifier("sireneRestClient") RestClient restClient) {
         return new SireneOrganizationNameResolver(restClient);
     }
 }

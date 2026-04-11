@@ -69,7 +69,7 @@ import lombok.NonNull;
  *                  orgNameResolvers:
  *                    - sirene
  *                    - identifier
- *                    - static:Unknown Organization
+ *                    - NO_ORG
  *              google:
  *                  searchEmail: false
  *                  moderatedSignup: false
@@ -100,7 +100,7 @@ public class OpenIdConnectCustomConfig {
      * {@code OrganizationNameResolver}</li>
      * <li>{@code identifier} — uses the raw identifier (e.g. SIRET number) as the
      * org name</li>
-     * <li>{@code static:<value>} — uses the literal value as the org name</li>
+     * <li>{@code <value>} — uses the literal value as the org short name</li>
      * </ul>
      * The first resolver returning a non-empty result wins.
      */

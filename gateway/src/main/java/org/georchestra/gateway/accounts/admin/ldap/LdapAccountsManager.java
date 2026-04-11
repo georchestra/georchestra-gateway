@@ -424,7 +424,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
     }
 
     @VisibleForTesting
-    void verifySingleOrgMembership(@NonNull Account account, Org org) {
+    void verifySingleOrgMembership(@NonNull Account account, @Nullable  Org org) {
         try {
             final String uid = account.getUid();
             if (StringUtils.isBlank(uid)) {
@@ -549,7 +549,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
      * {@link OrganizationNameResolver}</li>
      * <li>{@code identifier} — returns the raw identifier (e.g. SIRET number) as
      * the org name</li>
-     * <li>{@code static:<value>} — returns the literal value</li>
+     * <li>{@code <value>} — returns the literal value</li>
      * </ul>
      * </p>
      *
@@ -588,12 +588,9 @@ class LdapAccountsManager extends AbstractAccountsManager {
             }
             return Optional.empty();
         }
-
-        if (resolverEntry.toLowerCase().startsWith("static:")) {
-            String staticValue = resolverEntry.substring("static:".length()).trim();
-            if (!staticValue.isEmpty()) {
-                return Optional.of(new ResolvedOrganization(staticValue, staticValue));
-            }
+        else if (!resolverEntry.isEmpty()) {
+            String shortName = resolverEntry.length() > 32 ? resolverEntry.substring(0, 32) : resolverEntry;
+            return Optional.of(new ResolvedOrganization(resolverEntry, shortName));
         }
 
         log.warn("Unknown organization name resolver type: '{}'", resolverEntry);
