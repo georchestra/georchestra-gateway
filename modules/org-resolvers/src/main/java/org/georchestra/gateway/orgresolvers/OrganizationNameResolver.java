@@ -32,6 +32,8 @@ import java.util.Optional;
  */
 public interface OrganizationNameResolver {
 
+    String getOrgNameResolverEntry();
+
     /**
      * Attempts to resolve the organization name from the given identifier.
      *

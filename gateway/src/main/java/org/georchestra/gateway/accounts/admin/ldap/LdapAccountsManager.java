@@ -95,7 +95,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
     private final @NonNull DemultiplexingUsersApi demultiplexingUsersApi;
     private final @NonNull OpenIdConnectCustomConfig providersConfig;
 
-    /** Optional organization name resolver (e.g. SIRENE API). */
+    /** Optional organization name resolver. */
     private final @NonNull Optional<OrganizationNameResolver> orgNameResolver;
 
     /**
@@ -119,7 +119,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
      *                                                   for security settings
      * @param providersConfig                            the providers configuration
      * @param orgNameResolver                            optional organization name
-     *                                                   resolver (e.g. SIRENE API)
+     *                                                   resolver
      */
     public LdapAccountsManager(ApplicationEventPublisher eventPublisher, AccountDao accountDao, RoleDao roleDao,
             OrgsDao orgsDao, DemultiplexingUsersApi demultiplexingUsersApi,
@@ -575,11 +575,9 @@ class LdapAccountsManager extends AbstractAccountsManager {
         return Optional.empty();
     }
 
-    /**
-     * Tries a single resolver entry from the fallback chain.
-     */
     private Optional<ResolvedOrganization> tryResolver(String resolverEntry, String identifier) {
-        if ("sirene".equalsIgnoreCase(resolverEntry)) {
+        if (orgNameResolver.isPresent()
+                && orgNameResolver.get().getOrgNameResolverEntry().equalsIgnoreCase(resolverEntry)) {
             return orgNameResolver.flatMap(resolver -> resolver.resolve(identifier));
         }
 
