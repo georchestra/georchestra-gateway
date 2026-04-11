@@ -66,7 +66,6 @@ import lombok.NonNull;
  *              proconnect:
  *                  searchEmail: true
  *                  moderatedSignup: true
- *                  useSireneApi: true
  *                  orgNameResolvers:
  *                    - sirene
  *                    - identifier
@@ -86,13 +85,6 @@ public class OpenIdConnectCustomConfig {
     private Boolean moderatedSignup;
 
     /**
-     * Whether to use the SIRENE API (or any registered
-     * {@code OrganizationNameResolver}) to resolve organization names from
-     * identifiers such as SIRET numbers. Defaults to {@code false}.
-     */
-    private Boolean useSireneApi;
-
-    /**
      * Whether to override the name of an existing organization when a user logs in.
      * When {@code false} (the default), only newly created organizations get their
      * name resolved via the API. When {@code true}, the organization name is
@@ -110,8 +102,7 @@ public class OpenIdConnectCustomConfig {
      * org name</li>
      * <li>{@code static:<value>} — uses the literal value as the org name</li>
      * </ul>
-     * The first resolver returning a non-empty result wins. If not configured and
-     * {@code useSireneApi} is {@code true}, defaults to {@code ["sirene"]}.
+     * The first resolver returning a non-empty result wins.
      */
     private List<String> orgNameResolvers;
 
@@ -158,18 +149,6 @@ public class OpenIdConnectCustomConfig {
     }
 
     /**
-     * Determines if the SIRENE API (or any {@code OrganizationNameResolver}) should
-     * be used to resolve organization names for this provider.
-     * 
-     * @param providerName provider id in use
-     * @return {@code true} if the organization name resolver should be used
-     */
-    public boolean useSireneApi(@NonNull String providerName) {
-        return getProviderConfig(providerName).map(OpenIdConnectCustomConfig::getUseSireneApi)
-                .orElse(useSireneApi != null ? useSireneApi : false);
-    }
-
-    /**
      * Determines whether existing organization names should be overridden on login.
      * 
      * @param providerName provider id in use
@@ -181,9 +160,7 @@ public class OpenIdConnectCustomConfig {
     }
 
     /**
-     * Returns the ordered list of organization name resolvers for this provider. If
-     * not explicitly configured and {@code useSireneApi} is {@code true}, defaults
-     * to {@code ["sirene"]}.
+     * Returns the ordered list of organization name resolvers for this provider.
      * 
      * @param providerName provider id in use
      * @return a list of resolver identifiers, or an empty list if none configured
@@ -193,10 +170,6 @@ public class OpenIdConnectCustomConfig {
                 .orElse(orgNameResolvers);
         if (resolvers != null && !resolvers.isEmpty()) {
             return resolvers;
-        }
-        // Default: if useSireneApi is enabled, use ["sirene"] as fallback
-        if (useSireneApi(providerName)) {
-            return List.of("sirene");
         }
         return List.of();
     }
