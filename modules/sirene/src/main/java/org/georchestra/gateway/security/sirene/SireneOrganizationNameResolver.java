@@ -78,6 +78,11 @@ public class SireneOrganizationNameResolver implements OrganizationNameResolver 
     }
 
     @Override
+    public String getOrgNameResolverEntry() {
+        return "sirene";
+    }
+
+    @Override
     public Optional<ResolvedOrganization> resolve(String organizationIdentifier) {
         if (organizationIdentifier == null || organizationIdentifier.isBlank()) {
             return Optional.empty();
