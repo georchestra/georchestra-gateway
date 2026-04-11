@@ -81,12 +81,11 @@ georchestra:
       #      icu:
       #        searchEmail: true # Determines if the user will be searched by email (false by default).
       #        moderatedSignup: true # if true, users logging in with this provider for the first time will be created in LDAP but disabled, waiting for an admin to validate them. If false, they will be created as enabled.
-      #        useSireneApi: true  # enable SIRENE resolution on this provider
       #        overrideExistingOrgName: false # don't update existing orgs
       #        orgNameResolvers: # fallback chain
       #          - sirene # try to resolve org name from SIRENE API using the siret from the token: need to be configured above (enabled + token)
       #          - identifier # use the identifier from the token (e.g. "siret:12345678901234")
-      #          - static:NO_ORG # fallback to this static name if the previous resolvers fail. MATCH the shortname of an existing org or it will be created as a new one with this name.
+      #          - NO_ORG # fallback to this static short name if the previous resolvers fail. MATCH the shortname of an existing org, or it will be created as a new one with this name.
       #  # Claims mapping from the OIDC provider's token to the user details used by the gateway and downstream services.
       #  claims:
       #    provider:
