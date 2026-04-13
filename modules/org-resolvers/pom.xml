@@ -3,19 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.georchestra</groupId>
-    <artifactId>georchestra-gateway-parent</artifactId>
+    <artifactId>georchestra-gateway-modules</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
-  <artifactId>georchestra-gateway-modules</artifactId>
-  <packaging>pom</packaging>
-  <name>geOrchestra Gateway - Modules</name>
-  <description>Parent POM for geOrchestra Gateway modules</description>
-
-  <modules>
-    <module>logging</module>
-    <module>org-resolvers</module>
-    <module>sirene</module>
-  </modules>
+  <artifactId>georchestra-gateway-org-resolvers</artifactId>
+  <name>geOrchestra Gateway - Organization Resolvers API</name>
+  <description>SPI for pluggable organization name resolvers (e.g. SIRENE, national registries)</description>
 
 </project>

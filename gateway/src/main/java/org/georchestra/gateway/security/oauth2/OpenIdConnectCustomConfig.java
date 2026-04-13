@@ -19,6 +19,7 @@
 package org.georchestra.gateway.security.oauth2;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,7 +45,7 @@ import lombok.NonNull;
  * :
  * georchestra.gateway.security.oidc.config.provider.[provider].moderatedSignup
  * 
- * Note that moderatedSignup can be configured either in the datadir’s
+ * Note that moderatedSignup can be configured either in the datadir's
  * default.properties file or in the gateway configuration.
  * 
  * </p>
@@ -65,6 +66,10 @@ import lombok.NonNull;
  *              proconnect:
  *                  searchEmail: true
  *                  moderatedSignup: true
+ *                  orgNameResolvers:
+ *                    - sirene
+ *                    - identifier
+ *                    - NO_ORG
  *              google:
  *                  searchEmail: false
  *                  moderatedSignup: false
@@ -78,6 +83,28 @@ public class OpenIdConnectCustomConfig {
     private Boolean searchEmail;
 
     private Boolean moderatedSignup;
+
+    /**
+     * Whether to override the name of an existing organization when a user logs in.
+     * When {@code false} (the default), only newly created organizations get their
+     * name resolved via the API. When {@code true}, the organization name is
+     * updated on every login if the resolver returns a result.
+     */
+    private Boolean overrideExistingOrgName;
+
+    /**
+     * Ordered list of organization name resolvers to try when creating or updating
+     * an organization. Each entry is a string of the form:
+     * <ul>
+     * <li>{@code sirene} — calls the registered
+     * {@code OrganizationNameResolver}</li>
+     * <li>{@code identifier} — uses the raw identifier (e.g. SIRET number) as the
+     * org name</li>
+     * <li>{@code <value>} — uses the literal value as the org short name</li>
+     * </ul>
+     * The first resolver returning a non-empty result wins.
+     */
+    private List<String> orgNameResolvers;
 
     private Map<String, OpenIdConnectCustomConfig> provider = new HashMap<>();
 
@@ -103,7 +130,7 @@ public class OpenIdConnectCustomConfig {
         return getProviderConfig(providerName)
                 // provider config
                 .map(OpenIdConnectCustomConfig::getSearchEmail)
-                // orf fallback general config
+                // or fallback general config
                 .orElse(searchEmail != null ? searchEmail : false);
     }
 
@@ -117,7 +144,33 @@ public class OpenIdConnectCustomConfig {
         return getProviderConfig(providerName)
                 // provider config
                 .map(OpenIdConnectCustomConfig::getModeratedSignup)
-                // orf fallback general config
+                // or fallback general config
                 .orElse(moderatedSignup != null ? moderatedSignup : false);
+    }
+
+    /**
+     * Determines whether existing organization names should be overridden on login.
+     * 
+     * @param providerName provider id in use
+     * @return {@code true} if existing org names should be updated
+     */
+    public boolean overrideExistingOrgName(@NonNull String providerName) {
+        return getProviderConfig(providerName).map(OpenIdConnectCustomConfig::getOverrideExistingOrgName)
+                .orElse(overrideExistingOrgName != null ? overrideExistingOrgName : false);
+    }
+
+    /**
+     * Returns the ordered list of organization name resolvers for this provider.
+     * 
+     * @param providerName provider id in use
+     * @return a list of resolver identifiers, or an empty list if none configured
+     */
+    public List<String> orgNameResolvers(@NonNull String providerName) {
+        List<String> resolvers = getProviderConfig(providerName).map(OpenIdConnectCustomConfig::getOrgNameResolvers)
+                .orElse(orgNameResolvers);
+        if (resolvers != null && !resolvers.isEmpty()) {
+            return resolvers;
+        }
+        return List.of();
     }
 }
