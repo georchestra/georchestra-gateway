@@ -1,6 +1,7 @@
 package org.georchestra.gateway.accounts.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -22,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.DockerClientFactory;
 
 /**
  * Integration tests for {@link CreateAccountUserCustomizer}.
@@ -39,6 +41,7 @@ public class CreateAccountUserCustomizerIT {
     public static GeorchestraLdapContainer ldap = new GeorchestraLdapContainer();
 
     public static @BeforeAll void startUpContainers() {
+        assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is required for this integration test");
         ldap.start();
     }
 
