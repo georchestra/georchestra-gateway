@@ -1,5 +1,7 @@
 package org.georchestra.gateway.security.ldap.extended;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
 import org.junit.jupiter.api.AfterAll;
@@ -12,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.DockerClientFactory;
 
 @SpringBootTest(classes = GeorchestraGatewayApplication.class)
 @ActiveProfiles({ "createaccount" })
@@ -22,6 +25,7 @@ public class ExtendedLdapAuthenticationIT {
     private @Autowired WebTestClient testClient;
 
     public static @BeforeAll void startUpContainers() {
+        assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is required for this integration test");
         ldap.start();
     }
 

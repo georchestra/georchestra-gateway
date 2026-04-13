@@ -5,6 +5,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getAllServeEvents;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
+import org.testcontainers.DockerClientFactory;
 
 @SpringBootTest(classes = GeorchestraGatewayApplication.class)
 @WireMockTest
@@ -42,6 +44,7 @@ public class DefaultVsCustomGeorchestraHeadersConfigIT {
 
     @BeforeAll
     public static void setUp(WireMockRuntimeInfo wmri) {
+        assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is required for this integration test");
         DefaultVsCustomGeorchestraHeadersConfigIT.wmri = wmri;
         ldap.start();
         System.setProperty("wmHost", "localhost");

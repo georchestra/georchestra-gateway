@@ -1,5 +1,6 @@
 package org.georchestra.gateway.security;
 
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -51,6 +53,7 @@ public class ResolveGeorchestraUserGlobalFilterIT {
     };
 
     public static @BeforeAll void startUpContainers() {
+        assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is required for this integration test");
         httpEcho.setExposedPorts(List.of(80));
         httpEcho.start();
         ldap.start();
