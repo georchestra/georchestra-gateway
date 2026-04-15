@@ -97,7 +97,8 @@ public class GeorchestraGatewayApplication {
     @Bean
     MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasenames(("classpath:messages/login," + messagesBasename).split(","));
+        messageSource
+                .setBasenames(("classpath:messages/login,classpath:messages/success," + messagesBasename).split(","));
         messageSource.setCacheSeconds(600);
         messageSource.setUseCodeAsDefaultMessage(true);
         messageSource.setDefaultEncoding(StandardCharsets.UTF_8.name());

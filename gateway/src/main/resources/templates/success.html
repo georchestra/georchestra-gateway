@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Please sign in</title>
+    <script th:src="${headerScript}"></script>
+    <link href="/login/bootstrap5.min.css?v5.3.3" rel="stylesheet">
+    <link href="/login/signin.css" rel="stylesheet"/>
+    <link th:if="${georchestraStylesheet != null and !#strings.isEmpty(georchestraStylesheet)}"
+          th:href="${georchestraStylesheet}" rel="stylesheet"/>
+</head>
+<body class="d-flex flex-column bg-light" id="georchestra-login-page">
+<div class="container h-100 py-4 px-3">
+    <div class="d-flex justify-content-center align-items-center rounded-5 h-100">
+        <div class="row h-10 rounded-lg w-100 border rounded bg-white">
+            <div>
+                <h1 th:text="#{success.title}">Login successful</h1>
+                <p th:utext="#{success.message}">Login successful. You will be redirected to your dashboard in <span id="countdown">5</span> seconds...</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    // Configuration
+    const redirectUrl = /*[[${finalTargetUrl}]]*/ '/';
+    let secondsLeft = 5;
+    const display = document.getElementById('countdown');
+
+    // Update the UI every second
+    const interval = setInterval(() => {
+        secondsLeft--;
+        display.textContent = secondsLeft;
+
+        if (secondsLeft <= 0) {
+            clearInterval(interval);
+            window.location.href = redirectUrl;
+        }
+    }, 1000);
+</script>
+</body>
+
+</html>

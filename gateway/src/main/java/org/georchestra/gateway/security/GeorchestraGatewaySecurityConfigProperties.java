@@ -71,6 +71,11 @@ public class GeorchestraGatewaySecurityConfigProperties implements Validator {
     private boolean createNonExistingUsersInLDAP = true;
 
     /**
+     * Flag indicating whether the user should be redirected to a page causing a
+     * 5second delay after a successful login. Defaults to false.
+     */
+    private boolean delayAfterLogin = false;
+    /**
      * Identifier of the Identity Provider for which UID transformation is disabled.
      * When this value matches an IDP's id, the username from that provider is used
      * as-is (no prefixing and no sanitization). If empty or not matching, UID

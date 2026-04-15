@@ -18,6 +18,7 @@
  */
 package org.georchestra.gateway.app;
 
+import java.net.URI;
 import java.util.*;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,13 +29,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.core.env.Environment;
+import org.springframework.security.web.server.savedrequest.ServerRequestCache;
+import org.springframework.security.web.server.savedrequest.WebSessionServerRequestCache;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
+import reactor.core.publisher.Mono;
 
 /**
  * Controller handling login and logout views for the geOrchestra gateway.
@@ -98,6 +103,8 @@ public class LoginLogoutController {
 
     /** JavaScript file used to load the geOrchestra header. */
     private @Value("${headerScript:https://cdn.jsdelivr.net/gh/georchestra/header@dist/header.js}") String headerScript;
+
+    private final ServerRequestCache requestCache = new WebSessionServerRequestCache();
 
     /**
      * Initializes authentication settings based on configuration properties.
@@ -189,6 +196,24 @@ public class LoginLogoutController {
         model.addAttribute("pendingUser", "pending_user".equals(allRequestParams.get("error")));
 
         return "login";
+    }
+
+    /**
+     * Prepares the successful login transition page.
+     * <p>
+     * This method retrieves the original request URL from the cache (if the user
+     * was redirected to login) and adds it to the model to handle the client-side
+     * redirection delay.
+     *
+     * @param exchange the current server exchange containing the session
+     * @param model    the UI model to hold the redirect URL
+     * @return a {@link Mono} emitting the "success" view name
+     */
+    @GetMapping("/success")
+    public Mono<String> successPage(ServerWebExchange exchange, Model model) {
+        setHeaderAttributes(model);
+        return requestCache.getRedirectUri(exchange).map(URI::toString).defaultIfEmpty("/")
+                .doOnNext(url -> model.addAttribute("finalTargetUrl", url)).thenReturn("success");
     }
 
     /**
