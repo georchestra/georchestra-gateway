@@ -168,10 +168,10 @@ public class GatewaySecurityConfiguration {
                 .authenticationEntryPoint(redirectServerAuthenticationEntryPoint));
 
         if (securityConfigProperties.isDelayAfterLogin()) {
-            RedirectServerAuthenticationSuccessHandler tempoSuccessfulLoginRedirect = new RedirectServerAuthenticationSuccessHandler(
+            RedirectServerAuthenticationSuccessHandler delaySuccessfulLoginRedirect = new RedirectServerAuthenticationSuccessHandler(
                     "/success");
-            tempoSuccessfulLoginRedirect.setRequestCache(NoOpServerRequestCache.getInstance());
-            http.formLogin(login -> login.authenticationSuccessHandler(tempoSuccessfulLoginRedirect));
+            delaySuccessfulLoginRedirect.setRequestCache(NoOpServerRequestCache.getInstance());
+            http.formLogin(login -> login.authenticationSuccessHandler(delaySuccessfulLoginRedirect));
         }
 
         sortedCustomizers(customizers).forEach(customizer -> {
