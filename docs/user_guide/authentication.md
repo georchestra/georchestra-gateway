@@ -6,6 +6,7 @@ geOrchestra Gateway supports multiple authentication methods:
 2. OAuth2/OpenID Connect authentication
 3. Pre-authentication via HTTP headers
 4. Redirection
+5. Delay after successful login
 
 ## LDAP Authentication
 
@@ -679,3 +680,19 @@ georchestra:
 ```
 
 If both LDAP and OAuth2 are enabled, users will see both options on the login page.
+
+## Delay after login
+
+In case several seconds are required after a successful login - e.g. because of account
+creation and/or the need of a synchronization with external services -, you might want your
+user to be redirected onto a landing page which will refresh and actually redirect onto the 
+expected page after a 5 seconds delay.
+
+The delaying landing page can be activated into your login flow, using the following yaml configuration:
+
+```yaml
+georchestra:
+  gateway:
+    security:
+      delayAfterLogin: true
+```
