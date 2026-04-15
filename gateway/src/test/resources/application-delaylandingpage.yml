@@ -1,0 +1,47 @@
+georchestra:
+  gateway:
+    default-headers:
+      # Default security headers to append to proxied requests
+      proxy: true
+      username: true
+      roles: true
+      org: true
+      orgname: true
+    global-access-rules:
+      - intercept-url:
+          - "/**"
+          - "/proxy/?url=*"
+        anonymous: true
+    security:
+      delayAfterLogin: true
+      oauth2:
+        enabled: true
+      ldap:
+        default:
+          enabled: true
+          extended: true
+          url: ldap://${ldapHost}:${ldapPort}/
+          baseDn: dc=georchestra,dc=org
+          adminDn: cn=admin,dc=georchestra,dc=org
+          adminPassword: secret
+spring:
+  cloud:
+    gateway:
+      enabled: true
+      default-filters:
+        - SecureHeaders
+        - TokenRelay
+        - RemoveSecurityHeaders
+        # AddSecHeaders appends sec-* headers to proxied requests based on the
+        # georchestra.gateway.default-headers and georchestra.gateway.servies.<service>.headers config properties
+        - AddSecHeaders
+      httpclient.wiretap: true
+      httpserver.wiretap: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: id
+            clientSecret: secret
+            scope: openid, email, profile
