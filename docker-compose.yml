@@ -1,6 +1,6 @@
 volumes:
   postgresql_data:
-  redis_data:  # Uncomment when using Redis for session storage
+#  redis_data:  # Uncomment when using Redis for session storage
   datadir:
     driver_opts:
       type: none
@@ -36,14 +36,14 @@ services:
       - 389:389
 
   # Uncomment to enable Redis for distributed session storage
-  redis:
-    image: redis:8-alpine
-    restart: always
-    command: redis-server
-    ports:
-      - 6379:6379
-    volumes:
-      - redis_data:/data
+#  redis:
+#    image: redis:8-alpine
+#    restart: always
+#    command: redis-server
+#    ports:
+#      - 6379:6379
+#    volumes:
+#      - redis_data:/data
 
   gateway:
     image: georchestra/gateway:latest
