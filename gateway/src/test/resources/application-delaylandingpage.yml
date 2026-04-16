@@ -13,7 +13,7 @@ georchestra:
           - "/proxy/?url=*"
         anonymous: true
     security:
-      delayAfterLogin: true
+      delayAfterLoginSeconds: 5
       oauth2:
         enabled: true
       ldap:

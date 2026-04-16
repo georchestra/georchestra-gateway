@@ -688,11 +688,12 @@ creation and/or the need of a synchronization with external services -, you migh
 user to be redirected onto a landing page which will refresh and actually redirect onto the 
 expected page after a 5 seconds delay.
 
-The delaying landing page can be activated into your login flow, using the following yaml configuration:
+The delaying landing page can be activated into your login flow, defining the following
+variable in your configuration with a value strictly positive:
 
 ```yaml
 georchestra:
   gateway:
     security:
-      delayAfterLogin: true
+      delayAfterLoginSeconds: 5
 ```

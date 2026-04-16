@@ -70,7 +70,7 @@ georchestra:
   gateway:
     security:
       create-non-existing-users-in-l-d-a-p: false
-      delayAfterLogin: false
+      delayAfterLoginSeconds: 0
       defaultOrganization: ${defaultOrganization:}
       header-authentication:
         enabled: false

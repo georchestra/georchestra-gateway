@@ -18,7 +18,7 @@
         <div class="row h-10 rounded-lg w-100 border rounded bg-white">
             <div>
                 <h1 th:text="#{success.title}">Login successful</h1>
-                <p th:utext="#{success.message}">Login successful. You will be redirected to your dashboard in <span id="countdown">5</span> seconds...</p>
+                <p th:utext="#{success.message}">Login successful. You will be redirected to your dashboard in <span id="countdown" th:text="${delay}">5</span> seconds...</p>
             </div>
         </div>
     </div>
@@ -26,7 +26,7 @@
 <script th:inline="javascript">
     // Configuration
     const redirectUrl = /*[[${finalTargetUrl}]]*/ '/';
-    let secondsLeft = 5;
+    let secondsLeft = /*[[${delay}]]*/ ;
     const display = document.getElementById('countdown');
 
     // Update the UI every second

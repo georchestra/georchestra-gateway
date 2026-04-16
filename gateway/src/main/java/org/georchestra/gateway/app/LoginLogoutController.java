@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.web.server.savedrequest.ServerRequestCache;
 import org.springframework.security.web.server.savedrequest.WebSessionServerRequestCache;
 import org.springframework.stereotype.Controller;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
@@ -211,7 +213,11 @@ public class LoginLogoutController {
      */
     @GetMapping("/success")
     public Mono<String> successPage(ServerWebExchange exchange, Model model) {
+        if (!georchestraGatewaySecurityConfigProperties.isDelayAfterLogin()) {
+            return Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found"));
+        }
         setHeaderAttributes(model);
+        model.addAttribute("delay", georchestraGatewaySecurityConfigProperties.getDelayAfterLoginSeconds());
         return requestCache.getRedirectUri(exchange).map(URI::toString).defaultIfEmpty("/")
                 .doOnNext(url -> model.addAttribute("finalTargetUrl", url)).thenReturn("success");
     }
