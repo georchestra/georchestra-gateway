@@ -56,7 +56,7 @@ import org.springframework.session.data.redis.config.annotation.web.server.Enabl
  */
 @AutoConfiguration
 @ConditionalOnClass(EnableRedisWebSession.class)
-@ConditionalOnProperty(name = "spring.session.redis.host")
+@ConditionalOnProperty(name = "spring.session.redis.enabled", havingValue = "true")
 @Import(RedisSessionConfiguration.class)
 public class RedisSessionAutoConfiguration {
 

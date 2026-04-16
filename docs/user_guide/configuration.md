@@ -488,16 +488,12 @@ For production deployments with multiple Gateway instances, Redis-backed session
 To enable Redis session storage, configure the following in `gateway.yaml`:
 
 ```yaml
-georchestra:
-  gateway:
-    session:
-      redis:
-        enabled: true
-        host: localhost
-        port: 6379
-        password: your-redis-password  # Optional
-        database: 0
-        timeout: 3000  # Connection timeout in milliseconds
+spring:
+  session:
+    redis:
+      enabled: true
+      host: localhost
+      port: 6379
 ```
 
 #### Benefits of Redis Sessions
