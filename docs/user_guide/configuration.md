@@ -485,7 +485,7 @@ For production deployments with multiple Gateway instances, Redis-backed session
 
 #### Enabling Redis Sessions
 
-To enable Redis session storage, configure the following in `security.yaml`:
+To enable Redis session storage, configure the following in `gateway.yaml`:
 
 ```yaml
 georchestra:
@@ -498,17 +498,6 @@ georchestra:
         password: your-redis-password  # Optional
         database: 0
         timeout: 3000  # Connection timeout in milliseconds
-```
-
-These values can be overridden using properties from `default.properties`:
-
-```properties
-sessionRedisEnabled=true
-sessionRedisHost=redis-server.example.com
-sessionRedisPort=6379
-sessionRedisPassword=your-secure-password
-sessionRedisDatabase=0
-sessionRedisTimeout=3000
 ```
 
 #### Benefits of Redis Sessions

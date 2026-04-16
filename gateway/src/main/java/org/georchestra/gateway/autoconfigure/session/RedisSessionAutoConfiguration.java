@@ -19,7 +19,6 @@
 package org.georchestra.gateway.autoconfigure.session;
 
 import org.georchestra.gateway.session.redis.RedisSessionConfiguration;
-import org.georchestra.gateway.session.redis.RedisSessionConfigurationProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -53,13 +52,11 @@ import org.springframework.session.data.redis.config.annotation.web.server.Enabl
  * </p>
  *
  * @see RedisSessionConfiguration
- * @see RedisSessionConfigurationProperties
  * @see EnableRedisWebSession
  */
 @AutoConfiguration
 @ConditionalOnClass(EnableRedisWebSession.class)
-@ConditionalOnProperty(name = RedisSessionConfigurationProperties.ENABLED, havingValue = "true", matchIfMissing = false)
-@EnableRedisWebSession
+@ConditionalOnProperty(name = "spring.session.redis.host")
 @Import(RedisSessionConfiguration.class)
 public class RedisSessionAutoConfiguration {
 
