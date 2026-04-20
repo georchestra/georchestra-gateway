@@ -46,9 +46,11 @@ import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoderFactory;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -152,9 +154,19 @@ public class OAuth2Configuration {
     }
 
     @Bean
-    ServerAuthenticationSuccessHandler oauth2RedirectAuthenticationSuccessHandler() {
+    ServerAuthenticationSuccessHandler oauth2RedirectAuthenticationSuccessHandler(
+            GeorchestraGatewaySecurityConfigProperties securityConfigProperties) {
+        RedirectServerAuthenticationSuccessHandler delegate;
+        if (securityConfigProperties.isDelayAfterLogin()) {
+            delegate = new RedirectServerAuthenticationSuccessHandler("/success");
+            // setting a NoOpServerRequestCache, as the redirect URL will be calculated
+            // into the "/success" controller.
+            delegate.setRequestCache(NoOpServerRequestCache.getInstance());
+        } else {
+            delegate = new RedirectServerAuthenticationSuccessHandler();
+        }
         return new OAuth2RedirectAuthenticationSuccessHandler(
-                OAuth2RedirectQueryParamWebFilter.REDIRECT_SESSION_ATTRIBUTE);
+                OAuth2RedirectQueryParamWebFilter.REDIRECT_SESSION_ATTRIBUTE, delegate);
     }
 
     @Bean

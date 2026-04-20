@@ -35,14 +35,22 @@ import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.server.DefaultServerRedirectStrategy;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.ServerRedirectStrategy;
+import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
+import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.RedirectServerLogoutSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.security.web.server.savedrequest.NoOpServerRequestCache;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 /**
  * Configuration for the security settings in geOrchestra Gateway.
@@ -143,7 +151,8 @@ public class GatewaySecurityConfiguration {
     SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,
             List<ServerHttpSecurityCustomizer> customizers, ReactiveAuthenticationManager authenticationManager,
             RedirectServerAuthenticationEntryPoint redirectServerAuthenticationEntryPoint,
-            ExtendedRedirectServerAuthenticationFailureHandler authenticationFailureHandler) throws Exception {
+            ExtendedRedirectServerAuthenticationFailureHandler authenticationFailureHandler,
+            GeorchestraGatewaySecurityConfigProperties securityConfigProperties) throws Exception {
 
         log.info("Initializing security filter chain...");
 
@@ -155,9 +164,15 @@ public class GatewaySecurityConfiguration {
         http.authenticationManager(authenticationManager);
 
         http.formLogin(login -> login.authenticationFailureHandler(authenticationFailureHandler)
-                .requiresAuthenticationMatcher(
-                        ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, new String[] { LOGIN_PAGE }))
+                .requiresAuthenticationMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, LOGIN_PAGE))
                 .authenticationEntryPoint(redirectServerAuthenticationEntryPoint));
+
+        if (securityConfigProperties.isDelayAfterLogin()) {
+            RedirectServerAuthenticationSuccessHandler delaySuccessfulLoginRedirect = new RedirectServerAuthenticationSuccessHandler(
+                    "/success");
+            delaySuccessfulLoginRedirect.setRequestCache(NoOpServerRequestCache.getInstance());
+            http.formLogin(login -> login.authenticationSuccessHandler(delaySuccessfulLoginRedirect));
+        }
 
         sortedCustomizers(customizers).forEach(customizer -> {
             log.debug("Applying security customizer {}", customizer.getName());

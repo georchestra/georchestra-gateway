@@ -10,12 +10,12 @@ georchestra:
     global-access-rules:
       - intercept-url:
           - "/**"
+          - "/proxy/?url=*"
         anonymous: true
     security:
-      createNonExistingUsersInLDAP: true
-      oauth2.enabled: false
-      header-authentication:
-         enabled: true
+      delayAfterLoginSeconds: 5
+      oauth2:
+        enabled: true
       ldap:
         default:
           enabled: true
@@ -24,19 +24,7 @@ georchestra:
           baseDn: dc=georchestra,dc=org
           adminDn: cn=admin,dc=georchestra,dc=org
           adminPassword: secret
-          users:
-            rdn: ou=users
-            searchFilter: (uid={0})
-          roles:
-            rdn: ou=roles
-            searchFilter: (member={0})
-          orgs:
-            rdn: ou=orgs
 spring:
-  main:
-    web-application-type: reactive
-    banner-mode: off
-  application.name: gateway-service
   cloud:
     gateway:
       enabled: true
@@ -49,3 +37,11 @@ spring:
         - AddSecHeaders
       httpclient.wiretap: true
       httpserver.wiretap: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: id
+            clientSecret: secret
+            scope: openid, email, profile

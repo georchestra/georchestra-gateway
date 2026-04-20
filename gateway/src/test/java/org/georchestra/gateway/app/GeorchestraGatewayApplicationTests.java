@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import org.georchestra.gateway.autoconfigure.app.CustomErrorAttributes;
 import org.georchestra.gateway.autoconfigure.app.ErrorCustomizerAutoConfiguration;
+import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperties;
 import org.georchestra.gateway.security.ldap.extended.GeorchestraUserNamePasswordAuthenticationToken;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -43,8 +44,10 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.server.ServerWebExchange;
@@ -63,6 +66,8 @@ class GeorchestraGatewayApplicationTests {
 
     private @Autowired WhoamiController whoamiController;
     private @Autowired ApplicationContext context;
+
+    private @Autowired GeorchestraGatewaySecurityConfigProperties securityConfigProperties;
 
     @Test
     void contextLoadsFromDatadir() {
@@ -122,5 +127,10 @@ class GeorchestraGatewayApplicationTests {
         testClient.get().uri("/path/to/unavailable/service")//
                 .header("Host", "localhost")//
                 .exchange().expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @Test
+    void noDelayLandingPageAfterLoginTest() {
+        assertThat(securityConfigProperties.isDelayAfterLogin()).isFalse();
     }
 }

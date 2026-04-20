@@ -20,6 +20,8 @@ package org.georchestra.gateway.security.oauth2;
 
 import java.net.URI;
 
+import com.google.common.annotations.VisibleForTesting;
+import lombok.Getter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.DefaultServerRedirectStrategy;
 import org.springframework.security.web.server.ServerRedirectStrategy;
@@ -40,6 +42,7 @@ public class OAuth2RedirectAuthenticationSuccessHandler implements ServerAuthent
 
     private final String redirectSessionAttribute;
 
+    @Getter // for testing
     private final ServerAuthenticationSuccessHandler delegate;
 
     private final ServerRedirectStrategy redirectStrategy = new DefaultServerRedirectStrategy();
