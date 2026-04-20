@@ -209,7 +209,8 @@ public class LoginLogoutController {
      *
      * @param exchange the current server exchange containing the session
      * @param model    the UI model to hold the redirect URL
-     * @return a {@link Mono} emitting the "success" view name
+     * @return a {@link Mono} emitting the "success" view name, or error 'not found'
+     *         if the feature is disabled.
      */
     @GetMapping("/success")
     public Mono<String> successPage(ServerWebExchange exchange, Model model) {
