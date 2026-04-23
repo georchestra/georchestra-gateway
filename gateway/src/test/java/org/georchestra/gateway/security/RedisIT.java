@@ -1,15 +1,7 @@
 package org.georchestra.gateway.security;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Set;
-
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,19 +15,30 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(classes = GeorchestraGatewayApplication.class, properties = { "spring.session.redis.enabled=true",
         "spring.session.store-type=redis", "spring.data.redis.repositories.enabled=false" })
 @AutoConfigureWebTestClient(timeout = "PT200S")
 @ActiveProfiles("georheaders")
 public class RedisIT {
 
+    @Container
     public static GeorchestraLdapContainer ldap = new GeorchestraLdapContainer();
 
+    @Container
     public static GenericContainer<?> redis = new GenericContainer<>(DockerImageName.parse("redis:8-alpine"))
             .withExposedPorts(6379);
 
+    @Container
     public static GenericContainer<?> httpEcho = new GenericContainer<>(DockerImageName.parse("ealen/echo-server"))
             .withExposedPorts(80);
 
@@ -54,20 +57,6 @@ public class RedisIT {
         registry.add("ldapHost", ldap::getHost);
         registry.add("ldapPort", () -> ldap.getMappedPort(389));
         registry.add("ldapScheme", () -> "ldap");
-    }
-
-    @BeforeAll
-    public static void startUpContainers() {
-        ldap.start();
-        redis.start();
-        httpEcho.start();
-    }
-
-    @AfterAll
-    public static void shutDownContainers() {
-        ldap.stop();
-        redis.stop();
-        httpEcho.stop();
     }
 
     @BeforeEach

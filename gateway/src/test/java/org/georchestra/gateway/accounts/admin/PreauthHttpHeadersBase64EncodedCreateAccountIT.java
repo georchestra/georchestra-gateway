@@ -1,14 +1,9 @@
 package org.georchestra.gateway.accounts.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-
 import org.georchestra.ds.users.Account;
 import org.georchestra.ds.users.AccountDao;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -17,27 +12,23 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.DockerClientFactory;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = GeorchestraGatewayApplication.class)
 @AutoConfigureWebTestClient(timeout = "PT20S")
 @ActiveProfiles({ "createaccount", "preauthbase64encoded" })
+@Testcontainers(disabledWithoutDocker = true)
 class PreauthHttpHeadersBase64EncodedCreateAccountIT {
 
     private @Autowired WebTestClient testClient;
 
     private @Autowired AccountDao accountDao;
 
+    @Container
     public static GeorchestraLdapContainer ldap = new GeorchestraLdapContainer();
-
-    public static @BeforeAll void startUpContainers() {
-        assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is required for this integration test");
-        ldap.start();
-    }
-
-    public static @AfterAll void shutDownContainers() {
-        ldap.stop();
-    }
 
     @DynamicPropertySource
     static void registerLdap(DynamicPropertyRegistry registry) {
