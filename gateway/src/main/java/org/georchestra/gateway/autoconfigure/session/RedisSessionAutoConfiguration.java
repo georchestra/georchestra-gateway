@@ -20,7 +20,6 @@ package org.georchestra.gateway.autoconfigure.session;
 
 import org.georchestra.gateway.session.redis.RedisSessionConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Import;
 import org.springframework.session.data.redis.config.annotation.web.server.EnableRedisWebSession;
@@ -30,9 +29,8 @@ import org.springframework.session.data.redis.config.annotation.web.server.Enabl
  * configured.
  * <p>
  * This configuration enables Redis session management when the following
- * conditions are met:
+ * condition is met:
  * <ul>
- * <li>Spring Session Data Redis classes are available on the classpath
  * ({@link ConditionalOnClass}).</li>
  * <li>The property {@code georchestra.gateway.session.redis.enabled} is set to
  * {@code true}.</li>
@@ -55,7 +53,6 @@ import org.springframework.session.data.redis.config.annotation.web.server.Enabl
  * @see EnableRedisWebSession
  */
 @AutoConfiguration
-@ConditionalOnClass(EnableRedisWebSession.class)
 @ConditionalOnProperty(name = "spring.session.redis.enabled", havingValue = "true")
 @Import(RedisSessionConfiguration.class)
 public class RedisSessionAutoConfiguration {
