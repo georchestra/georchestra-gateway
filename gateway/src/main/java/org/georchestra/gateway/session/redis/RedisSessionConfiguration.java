@@ -18,6 +18,7 @@
  */
 package org.georchestra.gateway.session.redis;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.georchestra.gateway.security.ldap.extended.GeorchestraUserNamePasswordAuthenticationToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -98,10 +99,18 @@ public class RedisSessionConfiguration {
      */
     @Bean
     public RedisSerializer<Object> springSessionDefaultRedisSerializer() {
-        ObjectMapper objectMapper = new ObjectMapper();
+        return new GenericJackson2JsonRedisSerializer(createObjectMapper());
+    }
 
+    static ObjectMapper createObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
         // Enable default typing for polymorphic deserialization
-        objectMapper.activateDefaultTyping(BasicPolymorphicTypeValidator.builder().allowIfSubType(Object.class).build(),
+        objectMapper.activateDefaultTyping(
+                BasicPolymorphicTypeValidator.builder().allowIfSubType("java.util.").allowIfSubType("java.lang.")
+                        // Allow Spring Security internals
+                        .allowIfSubType("org.springframework.security.")
+                        // Allow geOrchestra classes
+                        .allowIfSubType("org.georchestra.").allowIfSubTypeIsArray().build(),
                 ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
 
         // Configure visibility to use fields for serialization
@@ -109,13 +118,13 @@ public class RedisSessionConfiguration {
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
         // Register Spring Security's Jackson modules for proper Security type handling
-        objectMapper.registerModules(SecurityJackson2Modules.getModules(getClass().getClassLoader()));
+        objectMapper
+                .registerModules(SecurityJackson2Modules.getModules(RedisSessionConfiguration.class.getClassLoader()));
 
         // Register mixin for custom GeorchestraUserNamePasswordAuthenticationToken
         objectMapper.addMixIn(GeorchestraUserNamePasswordAuthenticationToken.class,
                 GeorchestraUserNamePasswordAuthenticationTokenMixin.class);
 
-        return new GenericJackson2JsonRedisSerializer(objectMapper);
+        return objectMapper;
     }
-
 }
