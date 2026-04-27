@@ -18,11 +18,11 @@
  */
 package org.georchestra.gateway.session.redis;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.georchestra.gateway.security.ldap.extended.GeorchestraUserNamePasswordAuthenticationToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 /**
  * Configures Redis-backed reactive session management for the geOrchestra
@@ -64,9 +65,20 @@ public class RedisSessionConfiguration {
     @Value("${spring.session.redis.port:6379}")
     private int redisPort;
 
+    @Value("${spring.session.redis.password:}")
+    private String redisPassword;
+
     @Bean
     public LettuceConnectionFactory redisConnectionFactory() {
-        var factory = new LettuceConnectionFactory(redisHost, redisPort);
+        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
+        redisConfig.setHostName(redisHost);
+        redisConfig.setPort(redisPort);
+
+        if (StringUtils.hasText(redisPassword)) {
+            redisConfig.setPassword(redisPassword);
+        }
+
+        var factory = new LettuceConnectionFactory(redisConfig);
         factory.setValidateConnection(false); // Disable validation for better performance
         factory.setShareNativeConnection(true); // Share connections
         factory.setEagerInitialization(true);
@@ -107,6 +119,7 @@ public class RedisSessionConfiguration {
         // Enable default typing for polymorphic deserialization
         objectMapper.activateDefaultTyping(
                 BasicPolymorphicTypeValidator.builder().allowIfSubType("java.util.").allowIfSubType("java.lang.")
+                        .allowIfSubType("java.time.")
                         // Allow Spring Security internals
                         .allowIfSubType("org.springframework.security.")
                         // Allow geOrchestra classes
