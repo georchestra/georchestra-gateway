@@ -1,21 +1,13 @@
 package org.georchestra.gateway.security;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.getAllServeEvents;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.List;
-
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.georchestra.gateway.model.HeaderMappings;
 import org.georchestra.gateway.model.Service;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +15,25 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
-import com.github.tomakehurst.wiremock.stubbing.ServeEvent;
-import org.testcontainers.DockerClientFactory;
+import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getAllServeEvents;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(classes = GeorchestraGatewayApplication.class)
 @WireMockTest
 @AutoConfigureWebTestClient(timeout = "PT200S")
 @ActiveProfiles("customgeorheaders")
 public class DefaultVsCustomGeorchestraHeadersConfigIT {
+    @Container
     public static GeorchestraLdapContainer ldap = new GeorchestraLdapContainer();
 
     public static WireMockRuntimeInfo wmri;
@@ -44,16 +44,9 @@ public class DefaultVsCustomGeorchestraHeadersConfigIT {
 
     @BeforeAll
     public static void setUp(WireMockRuntimeInfo wmri) {
-        assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is required for this integration test");
         DefaultVsCustomGeorchestraHeadersConfigIT.wmri = wmri;
-        ldap.start();
         System.setProperty("wmHost", "localhost");
         System.setProperty("wmPort", Integer.toString(wmri.getHttpPort()));
-    }
-
-    @AfterAll
-    public static void shutDownContainers() {
-        ldap.stop();
     }
 
     /**
