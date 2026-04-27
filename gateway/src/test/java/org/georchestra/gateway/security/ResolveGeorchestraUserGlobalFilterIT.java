@@ -1,19 +1,11 @@
 package org.georchestra.gateway.security;
 
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.util.List;
-import java.util.Optional;
-
 import org.georchestra.gateway.accounts.admin.CreateAccountUserCustomizer;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.gateway.filter.headers.providers.JsonPayloadHeadersContributor;
 import org.georchestra.gateway.model.GatewayConfigProperties;
 import org.georchestra.gateway.security.preauth.PreauthAuthenticationManager;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -21,17 +13,23 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(classes = GeorchestraGatewayApplication.class)
 @AutoConfigureWebTestClient(timeout = "PT200S")
 @ActiveProfiles("georheaders")
+@Testcontainers(disabledWithoutDocker = true)
 public class ResolveGeorchestraUserGlobalFilterIT {
-
-    public static GeorchestraLdapContainer ldap = new GeorchestraLdapContainer();
 
     private @Autowired WebTestClient testClient;
 
@@ -39,29 +37,17 @@ public class ResolveGeorchestraUserGlobalFilterIT {
 
     private @Autowired ApplicationContext context;
 
-    @SuppressWarnings("rawtypes")
-    public static GenericContainer<?> httpEcho = new GenericContainer(DockerImageName.parse("ealen/echo-server")) {
-        @Override
-        protected void doStart() {
-            super.doStart();
-            Integer mappedPort = this.getMappedPort(80);
-            System.setProperty("httpEchoHost", this.getHost());
-            System.setProperty("httpEchoPort", mappedPort.toString());
-            System.out.println("Automatically set system property httpEchoHost=" + this.getHost());
-            System.out.println("Automatically set system property httpEchoPort=" + mappedPort);
-        }
-    };
+    @Container
+    public static GeorchestraLdapContainer ldap = new GeorchestraLdapContainer();
 
-    public static @BeforeAll void startUpContainers() {
-        assumeTrue(DockerClientFactory.instance().isDockerAvailable(), "Docker is required for this integration test");
-        httpEcho.setExposedPorts(List.of(80));
-        httpEcho.start();
-        ldap.start();
-    }
+    @Container
+    public static GenericContainer<?> httpEcho = new GenericContainer(DockerImageName.parse("ealen/echo-server"))
+            .withExposedPorts(80);
 
-    public static @AfterAll void shutDownContainers() {
-        ldap.stop();
-        httpEcho.stop();
+    @DynamicPropertySource
+    static void setProperties(DynamicPropertyRegistry registry) {
+        registry.add("httpEchoHost", httpEcho::getHost);
+        registry.add("httpEchoPort", () -> httpEcho.getMappedPort(80));
     }
 
     @Test
