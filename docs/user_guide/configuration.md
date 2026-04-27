@@ -494,6 +494,7 @@ spring:
       enabled: true
       host: localhost
       port: 6379
+      password: my-super-redis-pwd
 ```
 
 #### Benefits of Redis Sessions
