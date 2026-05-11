@@ -439,7 +439,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
     }
 
     @VisibleForTesting
-    void verifySingleOrgMembership(@NonNull Account account, @Nullable  Org org) {
+    void verifySingleOrgMembership(@NonNull Account account, @Nullable Org org) {
         try {
             final String uid = account.getUid();
             if (StringUtils.isBlank(uid)) {
@@ -602,8 +602,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
                 return Optional.of(new ResolvedOrganization(identifier, shortName));
             }
             return Optional.empty();
-        }
-        else if (!resolverEntry.isEmpty()) {
+        } else if (!resolverEntry.isEmpty()) {
             String shortName = resolverEntry.length() > 32 ? resolverEntry.substring(0, 32) : resolverEntry;
             return Optional.of(new ResolvedOrganization(resolverEntry, shortName));
         }
