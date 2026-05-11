@@ -67,7 +67,8 @@ public class SireneAutoConfiguration {
     @Bean("sireneRestClient")
     RestClient sireneRestClient(SireneApiConfigProperties properties) {
         log.info("Configuring SIRENE API RestClient with base URL: {}", properties.getBaseUrl());
-        // Using JdkClientHttpRequestFactory as reactive Webclient doesn't support blocking requests
+        // Using JdkClientHttpRequestFactory as reactive Webclient doesn't support
+        // blocking requests
         return RestClient.builder().requestFactory(new JdkClientHttpRequestFactory()).baseUrl(properties.getBaseUrl())
                 .defaultHeader("X-INSEE-Api-Key-Integration", properties.getApiKey())
                 .defaultHeader("Accept", "application/json").build();

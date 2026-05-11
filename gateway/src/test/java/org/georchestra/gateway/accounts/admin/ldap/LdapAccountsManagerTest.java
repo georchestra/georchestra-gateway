@@ -124,7 +124,7 @@ public class LdapAccountsManagerTest {
         when(usersApi.findByEmail("user@example.org", false)).thenReturn(Optional.of(existingLdapUser));
 
         LdapAccountsManager toTest = new LdapAccountsManager(mock(ApplicationEventPublisher.class), accountDao, roleDao,
-                orgsDao, usersApi, securityConfig, providersConfig);
+                orgsDao, usersApi, securityConfig, providersConfig, Optional.empty());
 
         GeorchestraUser mappedUser = new GeorchestraUser();
         mappedUser.setUsername("proconnect_uid");
@@ -173,7 +173,7 @@ public class LdapAccountsManagerTest {
         when(usersApi.findByEmail("user@example.org", false)).thenReturn(Optional.of(existingLdapUser));
 
         LdapAccountsManager toTest = new LdapAccountsManager(mock(ApplicationEventPublisher.class), accountDao, roleDao,
-                orgsDao, usersApi, securityConfig, providersConfig);
+                orgsDao, usersApi, securityConfig, providersConfig, Optional.empty());
 
         GeorchestraUser mappedUser = new GeorchestraUser();
         mappedUser.setUsername("fake_uid");

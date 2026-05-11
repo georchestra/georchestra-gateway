@@ -66,8 +66,10 @@ public class SireneOrganizationNameResolver implements OrganizationNameResolver 
      * empty Optional means a previous lookup returned no result; the key's absence
      * means it has never been looked up.
      */
-     // Uncomment to enable cache for Sirene API, may be useful if users from same organization connects in a short time frame.
-     // private final ConcurrentHashMap<String, Optional<ResolvedOrganization>> cache = new ConcurrentHashMap<>();
+    // Uncomment to enable cache for Sirene API, may be useful if users from same
+    // organization connects in a short time frame.
+    // private final ConcurrentHashMap<String, Optional<ResolvedOrganization>> cache
+    // = new ConcurrentHashMap<>();
 
     /**
      * Constructs a new resolver.
@@ -90,7 +92,8 @@ public class SireneOrganizationNameResolver implements OrganizationNameResolver 
             return Optional.empty();
         }
 
-        // Uncomment to enable cache for Sirene API, may be useful if users from same organization connects in a short time frame.
+        // Uncomment to enable cache for Sirene API, may be useful if users from same
+        // organization connects in a short time frame.
         // return cache.computeIfAbsent(organizationIdentifier, this::doResolve);
         return doResolve(organizationIdentifier);
     }
@@ -102,8 +105,8 @@ public class SireneOrganizationNameResolver implements OrganizationNameResolver 
 
             Map<String, Object> response = restClient.get().uri("/siret/{siret}", siret).retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (request, res) -> {
-                        throw HttpClientErrorException.create(res.getStatusCode(),
-                                res.getStatusText(), res.getHeaders(), null, null);
+                        throw HttpClientErrorException.create(res.getStatusCode(), res.getStatusText(),
+                                res.getHeaders(), null, null);
                     }).body(Map.class);
 
             if (response == null) {
