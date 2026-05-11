@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.georchestra.gateway.orgresolvers.OrganizationNameResolver;
 import org.georchestra.gateway.orgresolvers.ResolvedOrganization;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
@@ -97,7 +98,7 @@ public class SireneOrganizationNameResolver implements OrganizationNameResolver 
     @SuppressWarnings("unchecked")
     private Optional<ResolvedOrganization> doResolve(String siret) {
         try {
-            log.info("Resolving organization name from SIRENE API for SIRET: {}", siret);
+            log.debug("Resolving organization name from SIRENE API for SIRET: {}", siret);
 
             Map<String, Object> response = restClient.get().uri("/siret/{siret}", siret).retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (request, res) -> {
@@ -123,13 +124,13 @@ public class SireneOrganizationNameResolver implements OrganizationNameResolver 
             }
 
             String orgName = extractOrgName(uniteLegale);
-            if (orgName == null || orgName.isBlank()) {
+            if (!StringUtils.hasText(orgName)) {
                 log.warn("Could not extract organization name from SIRENE API response for SIRET: {}", siret);
                 return Optional.empty();
             }
 
             String shortName = deriveShortName(orgName);
-            log.info("Resolved SIRET {} to organization: '{}' (short: '{}')", siret, orgName, shortName);
+            log.debug("Resolved SIRET {} to organization: '{}' (short: '{}')", siret, orgName, shortName);
             return Optional.of(new ResolvedOrganization(orgName, shortName));
 
         } catch (HttpClientErrorException.NotFound e) {

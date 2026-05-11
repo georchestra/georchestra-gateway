@@ -96,7 +96,7 @@ class LdapAccountsManager extends AbstractAccountsManager {
     private final @NonNull OpenIdConnectCustomConfig providersConfig;
 
     /** Optional organization name resolver. */
-    private final @NonNull Optional<OrganizationNameResolver> orgNameResolver;
+    private final Optional<OrganizationNameResolver> orgNameResolver;
 
     /**
      * Constructs an instance of {@code LdapAccountsManager}.
