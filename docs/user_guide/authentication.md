@@ -219,6 +219,38 @@ georchestra:
 
 For more information on available ProConnect claims, see the [ProConnect documentation](https://github.com/numerique-gouv/proconnect-documentation/blob/main/doc_fs/scope-claims.md#correspondance-entre-scope-et-claims-sur-proconnect).
 
+## Organization fallback strategy
+
+OIDC and Oauth2 providers supports a fallback strategy to resolve the organization of a user when the organization claim is missing or empty. This is useful for providers that don't provide a specific claim for organization, or when the claim is not consistently filled.
+
+```yaml
+georchestra:
+  security:
+    oauth2:
+      oidc:
+        config:
+          provider:
+            proconnect:
+              orgNameResolvers: # fallback chain
+                - sirene # try to resolve org name from SIRENE API using the siret from the token: need to be configured (enabled + token)
+                - identifier # use the identifier from the token (e.g. "siret:12345678901234" if set to organizationUid.path: "$.siret", see above)
+                - NO_ORG # fallback to this static short name if the previous resolvers fail. MATCH the shortname of an existing org, or it will be created as a new one with this name.
+```
+
+In order to enable the `sirene` resolver, you need to configure the SIRENE API client. 
+
+You can get a token for the SIRENE API by creating an account on [https://portail-api.insee.fr/](https://portail-api.insee.fr/), subscribing to the SIRENE API, and generating a token. Then, add the following configuration:
+
+```yaml
+
+georchestra:
+  gateway:
+    security:
+      sirene:
+        enabled: true
+        token: <sirenetoken>
+```
+
 ## Custom Claims Mapping
 
 For OpenID Connect providers, you can customize how claims are mapped to geOrchestra user properties:

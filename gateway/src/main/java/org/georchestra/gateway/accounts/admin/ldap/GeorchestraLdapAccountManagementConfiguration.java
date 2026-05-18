@@ -34,6 +34,7 @@ import org.georchestra.gateway.security.GeorchestraGatewaySecurityConfigProperti
 import org.georchestra.gateway.security.ldap.extended.DemultiplexingUsersApi;
 import org.georchestra.gateway.security.ldap.extended.ExtendedLdapConfig;
 import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomConfig;
+import org.georchestra.gateway.orgresolvers.OrganizationNameResolver;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +43,8 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.ldap.pool.factory.PoolingContextSource;
 import org.springframework.ldap.pool.validation.DefaultDirContextValidator;
+
+import java.util.Optional;
 
 /**
  * Spring Boot configuration class for geOrchestra's LDAP-based account
@@ -79,10 +82,11 @@ public class GeorchestraLdapAccountManagementConfiguration {
             OrgsDao orgsDao, //
             DemultiplexingUsersApi demultiplexingUsersApi, //
             GeorchestraGatewaySecurityConfigProperties configProperties, //
-            OpenIdConnectCustomConfig providerConfig) {
+            OpenIdConnectCustomConfig providerConfig, //
+            Optional<OrganizationNameResolver> orgNameResolver) {
 
         return new LdapAccountsManager(eventPublisher::publishEvent, accountDao, roleDao, orgsDao,
-                demultiplexingUsersApi, configProperties, providerConfig);
+                demultiplexingUsersApi, configProperties, providerConfig, orgNameResolver);
     }
 
     /**
