@@ -91,6 +91,12 @@ public class LdapAuthenticationConfiguration {
      * Enables HTTP Basic authentication and form login for LDAP authentication.
      */
     public static final class LDAPAuthenticationCustomizer implements ServerHttpSecurityCustomizer {
+        private final GeorchestraGatewaySecurityConfigProperties securityConfig;
+
+        public LDAPAuthenticationCustomizer(GeorchestraGatewaySecurityConfigProperties securityConfig) {
+            this.securityConfig = securityConfig;
+        }
+
         /**
          * Configures HTTP Basic authentication and form login.
          *
@@ -98,7 +104,14 @@ public class LdapAuthenticationConfiguration {
          */
         public @Override void customize(ServerHttpSecurity http) {
             log.info("Enabling HTTP Basic authentication support for LDAP");
-            http.httpBasic(withDefaults()).formLogin(withDefaults());
+            http.httpBasic(withDefaults());
+
+            if (!securityConfig.isDisableLdapFormLogin()) {
+                log.info("Enabling form login support for LDAP");
+                http.formLogin(withDefaults());
+            } else {
+                log.info("LDAP form login support is disabled");
+            }
         }
     }
 
@@ -109,8 +122,9 @@ public class LdapAuthenticationConfiguration {
      * @return a {@link ServerHttpSecurityCustomizer} for LDAP authentication
      */
     @Bean
-    ServerHttpSecurityCustomizer ldapHttpBasicLoginFormEnablerExtension() {
-        return new LDAPAuthenticationCustomizer();
+    ServerHttpSecurityCustomizer ldapHttpBasicLoginFormEnablerExtension(
+            GeorchestraGatewaySecurityConfigProperties securityConfig) {
+        return new LDAPAuthenticationCustomizer(securityConfig);
     }
 
     /**

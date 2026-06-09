@@ -35,6 +35,11 @@ georchestra:
           port: 8000
           username: jack
           password: insecure
+
+      # Disable LDAP form login while keeping LDAP HTTP Basic authentication enabled.
+      # Useful when LDAP must remain available for technical clients, while browser
+      # users should authenticate only through OAuth2/OIDC.
+      disableLdapFormLogin: false
       ldap:
         # Multiple LDAP data sources are supported. The first key defines a simple
         # name for them. The `default` one here, disabled by default, is pre-configured

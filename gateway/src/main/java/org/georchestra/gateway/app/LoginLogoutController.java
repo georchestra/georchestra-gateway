@@ -73,8 +73,8 @@ public class LoginLogoutController {
     /** Configuration properties for gateway security, including LDAP settings. */
     private @Autowired(required = false) GeorchestraGatewaySecurityConfigProperties georchestraGatewaySecurityConfigProperties;
 
-    /** Whether LDAP authentication is enabled. */
-    private boolean ldapEnabled;
+    /** Whether LDAP form login is enabled. */
+    private boolean ldapFormLoginEnabled;
 
     /** OAuth2 client configuration, if available. */
     private @Autowired(required = false) OAuth2ClientProperties oauth2ClientConfig;
@@ -118,8 +118,10 @@ public class LoginLogoutController {
     @PostConstruct
     void initialize() {
         if (georchestraGatewaySecurityConfigProperties != null) {
-            ldapEnabled = georchestraGatewaySecurityConfigProperties.getLdap().values().stream()
+            boolean ldapEnabled = georchestraGatewaySecurityConfigProperties.getLdap().values().stream()
                     .anyMatch(Server::isEnabled);
+
+            ldapFormLoginEnabled = ldapEnabled && !georchestraGatewaySecurityConfigProperties.isDisableLdapFormLogin();
         }
     }
 
@@ -181,14 +183,15 @@ public class LoginLogoutController {
             });
         }
 
-        // Auto-redirect if only one OAuth2 provider is available and LDAP is disabled
-        if (oauth2LoginLinks.size() == 1 && !ldapEnabled) {
+        // Auto-redirect if only one OAuth2 provider is available and LDAP form login is
+        // disabled
+        if (oauth2LoginLinks.size() == 1 && !ldapFormLoginEnabled) {
             return "redirect:" + oauth2LoginLinks.keySet().stream().findFirst().orElseThrow();
         }
 
         // Set model attributes for login page rendering
         setHeaderAttributes(model);
-        model.addAttribute("ldapEnabled", ldapEnabled);
+        model.addAttribute("ldapFormLoginEnabled", ldapFormLoginEnabled);
         model.addAttribute("oauth2LoginLinks", oauth2LoginLinks);
 
         // Handle authentication error messages
