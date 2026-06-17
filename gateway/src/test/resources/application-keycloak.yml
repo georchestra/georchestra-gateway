@@ -1,0 +1,67 @@
+georchestra:
+  gateway:
+    default-headers:
+      # Default security headers to append to proxied requests
+      proxy: true
+      username: true
+      roles: true
+      org: true
+      orgname: true
+    global-access-rules:
+      - intercept-url:
+          - "/**"
+        anonymous: true
+    security:
+      createNonExistingUsersInLDAP: true
+      oauth2.enabled: true
+      ldap:
+        default:
+          enabled: true
+          extended: true
+          url: ldap://${ldapHost}:${ldapPort}/
+          baseDn: dc=georchestra,dc=org
+          adminDn: cn=admin,dc=georchestra,dc=org
+          adminPassword: secret
+          users:
+            rdn: ou=users
+            searchFilter: (uid={0})
+          roles:
+            rdn: ou=roles
+            searchFilter: (member={0})
+          orgs:
+            rdn: ou=orgs
+
+spring:
+  main:
+    web-application-type: reactive
+    banner-mode: off
+  application.name: gateway-service
+  cloud:
+    gateway:
+      server:
+        webflux:
+          enabled: true
+          httpclient:
+            wiretap: true
+          httpserver:
+            wiretap: false
+          default-filters:
+            - SecureHeaders
+            - TokenRelay
+            - RemoveSecurityHeaders
+            - AddSecHeaders
+          routes:
+          - id: root
+            uri: http://noop
+            predicates:
+              - Path=/
+            filters:
+              - RedirectTo=308, /whoami
+logging:
+  level:
+    reactor.netty: info
+    org.springframework.security: info
+    org.springframework.security.oauth2: trace
+    org.springframework.cloud.gateway: info # set trace for route matching logs
+    org.georchestra.gateway.config.security.accessrules: info
+    org.georchestra.gateway.security: debug
