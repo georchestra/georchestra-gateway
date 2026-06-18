@@ -92,57 +92,30 @@ public class OIDCKeycloakIT {
     public static void createAssetsInKeycloak() {
         createGroup("ROLE_USER");
         createGroup("GRP_AWESOME_ORG");
-        createTestUser(List.of("ROLE_USER", "GRP_AWESOME_ORG"));
     }
 
     @Test
     public void keycloakLoginCreateUserInLdapWhenUserUnknown() throws DataServiceException {
-        FluxExchangeResult<Void> springSecurityInitialRedirect = webTestClient.get().uri("/oauth2/authorization/keycloak")
-                .exchange()
-                .expectStatus().is3xxRedirection()
-                .returnResult(Void.class);
-        URI springSecurityRedirect = springSecurityInitialRedirect.getResponseHeaders().getLocation();
-        String cookie = springSecurityInitialRedirect.getResponseCookies().getFirst("SESSION").getValue();
+        String userId = "testoidcuser1";
+        createTestUser(userId, List.of("ROLE_USER", "GRP_AWESOME_ORG"));
+        String sessionId = logAndReturnSessionId(userId);
 
-        EntityExchangeResult<String> loginPageResult = oidcClient.get().uri(springSecurityRedirect)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(String.class)
-                .returnResult();
-        String authSessionId = loginPageResult.getResponseCookies().getFirst("AUTH_SESSION_ID").getValue();
-        String formActionUrl = extractFormAction(loginPageResult.getResponseBody());
-
-        URI appCallbackUri = oidcClient.post().uri(formActionUrl)
-                .cookie("AUTH_SESSION_ID", authSessionId)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(BodyInserters.fromFormData("username", "testoidcuser")
-                        .with("password", "testoidcuser")
-                        .with("credentialId", "")
-                )
-                .exchange()
-                .expectStatus().is3xxRedirection()
-                .returnResult(Void.class)
-                .getResponseHeaders().getLocation();
-        // Ensure we are being redirected back to the Spring Boot application callback
-        assertThat(appCallbackUri.getPath()).contains("/login/oauth2/code/");
-
-        FluxExchangeResult<Void> finalCallbackResult = webTestClient.get().uri(appCallbackUri)
-                .cookie("SESSION", cookie)
-                .exchange()
-                .expectStatus().is3xxRedirection()
-                .returnResult(Void.class);
-        String sessionId = finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
-
-        // Access the secured resource using the established Spring Session
         webTestClient.get().uri("/whoami")
                 .cookie("SESSION", sessionId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBody().jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_testoidcuser");
-
-        assertNotNull(accountDao.findByUID("keycloak_testoidcuser"),
+                .expectBody().jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_" + userId);
+        assertNotNull(accountDao.findByUID("keycloak_" + userId),
                 "Account should have been created in LDAP by CreateAccountUserCustomizer");
+    }
+
+    @Test
+    public void keycloakLoginLetUserUnmodifiedInLdapWhenUserExists() {
+        String userId = "testoidcuser2";
+        createTestUser(userId, List.of("ROLE_USER", "GRP_AWESOME_ORG"));
+
+        logAndReturnSessionId(userId);
     }
 
     private String extractFormAction(String html) {
@@ -163,11 +136,11 @@ public class OIDCKeycloakIT {
         resp.close();
     }
 
-    private static void createTestUser(List<String> groups) {
+    private static void createTestUser(String userId, List<String> groups) {
         RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
         UserRepresentation testuser = new UserRepresentation();
-        testuser.setUsername("testoidcuser");
-        testuser.setEmail("psc+testoidcuser@georchestra.org");
+        testuser.setUsername(userId);
+        testuser.setEmail(String.format("psc+%s@georchestra.org", userId));
         testuser.setFirstName("test");
         testuser.setLastName("user");
         testuser.setGroups(groups);
@@ -175,10 +148,47 @@ public class OIDCKeycloakIT {
         CredentialRepresentation pwd = new CredentialRepresentation();
         pwd.setTemporary(false);
         pwd.setType(CredentialRepresentation.PASSWORD);
-        pwd.setValue("testoidcuser");
+        pwd.setValue(userId);
         testuser.setCredentials(List.of(pwd));
-
         Response response = realm.users().create(testuser);
         response.close();
+    }
+
+    private String logAndReturnSessionId(String userId) {
+        FluxExchangeResult<Void> springSecurityInitialRedirect = webTestClient.get().uri("/oauth2/authorization/keycloak")
+                .exchange()
+                .expectStatus().is3xxRedirection()
+                .returnResult(Void.class);
+        URI springSecurityRedirect = springSecurityInitialRedirect.getResponseHeaders().getLocation();
+        String cookie = springSecurityInitialRedirect.getResponseCookies().getFirst("SESSION").getValue();
+
+        EntityExchangeResult<String> loginPageResult = oidcClient.get().uri(springSecurityRedirect)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .returnResult();
+        String authSessionId = loginPageResult.getResponseCookies().getFirst("AUTH_SESSION_ID").getValue();
+        String formActionUrl = extractFormAction(loginPageResult.getResponseBody());
+
+        URI appCallbackUri = oidcClient.post().uri(formActionUrl)
+                .cookie("AUTH_SESSION_ID", authSessionId)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData("username", userId)
+                        .with("password", userId)
+                        .with("credentialId", "")
+                )
+                .exchange()
+                .expectStatus().is3xxRedirection()
+                .returnResult(Void.class)
+                .getResponseHeaders().getLocation();
+        // Ensure we are being redirected back to the Spring Boot application callback
+        assertThat(appCallbackUri.getPath()).contains("/login/oauth2/code/");
+
+        FluxExchangeResult<Void> finalCallbackResult = webTestClient.get().uri(appCallbackUri)
+                .cookie("SESSION", cookie)
+                .exchange()
+                .expectStatus().is3xxRedirection()
+                .returnResult(Void.class);
+        return finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
     }
 }
