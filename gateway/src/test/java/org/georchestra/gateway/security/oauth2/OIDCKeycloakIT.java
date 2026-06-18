@@ -2,6 +2,8 @@ package org.georchestra.gateway.security.oauth2;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import jakarta.ws.rs.core.Response;
+import org.georchestra.ds.DataServiceException;
+import org.georchestra.ds.users.AccountDao;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,6 +36,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(classes = GeorchestraGatewayApplication.class, webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -50,6 +53,9 @@ public class OIDCKeycloakIT {
 
     @Autowired
     private WebTestClient webTestClient;
+
+    @Autowired
+    private AccountDao accountDao;
 
     // The previous webTestClient object will be scoped to our spring boot application
     // and won't allow reaching other endpoints (e.g. our keycloak). Hence using a
@@ -96,7 +102,7 @@ public class OIDCKeycloakIT {
     }
 
     @Test
-    public void testOidc() {
+    public void testOidc() throws DataServiceException {
         FluxExchangeResult<Void> springSecurityInitialRedirect = webTestClient.get().uri("/oauth2/authorization/keycloak")
                 .exchange()
                 .expectStatus().is3xxRedirection()
@@ -140,6 +146,9 @@ public class OIDCKeycloakIT {
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBody().jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_testoidcuser");
+
+        assertNotNull(accountDao.findByUID("keycloak_testoidcuser"),
+                "Account should have been created in LDAP by CreateAccountUserCustomizer");
     }
 
     private String extractFormAction(String html) {
