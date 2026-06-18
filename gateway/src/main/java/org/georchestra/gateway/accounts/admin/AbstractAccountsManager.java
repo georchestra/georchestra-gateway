@@ -22,7 +22,9 @@ import java.util.Optional;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.georchestra.ds.DataServiceException;
 import org.georchestra.ds.orgs.Org;
+import org.georchestra.ds.users.DuplicatedEmailException;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.gateway.security.oauth2.OpenIdConnectCustomConfig;
 import org.georchestra.security.model.GeorchestraUser;
@@ -79,6 +81,11 @@ public abstract class AbstractAccountsManager implements AccountManager {
     @Override
     public GeorchestraUser getOrCreate(@NonNull GeorchestraUser mappedUser) throws DuplicatedEmailFoundException {
         return find(mappedUser).orElseGet(() -> createIfMissing(mappedUser));
+    }
+
+	@Override
+    public GeorchestraUser createOrUpdate(@NonNull GeorchestraUser mappedUser) {
+        return find(mappedUser).map(x -> this.update(mappedUser)).orElseGet(() -> createIfMissing(mappedUser));
     }
 
     /**
@@ -250,6 +257,20 @@ public abstract class AbstractAccountsManager implements AccountManager {
         }
     }
 
+    protected GeorchestraUser update(GeorchestraUser mapped) {
+        lock.writeLock().lock();
+        try {
+            GeorchestraUser existing = findInternal(mapped).orElse(null);
+            updateInternal(existing, mapped);
+            createUserOrgUniqueIdIfMissing(mapped);
+            return existing;
+		} catch (DataServiceException | DuplicatedEmailException e) {
+			throw new RuntimeException(e);
+		} finally {
+            lock.writeLock().unlock();
+        }
+    }
+
     /**
      * Finds a user by their OAuth2 provider and unique identifier.
      * <p>
@@ -354,4 +375,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
      * @param mapped the user to create
      */
     protected abstract void createInternal(GeorchestraUser mapped);
+
+    protected abstract void updateInternal(GeorchestraUser existing, GeorchestraUser mapped) throws DataServiceException, DuplicatedEmailException;
+
 }

@@ -241,6 +241,13 @@ class LdapAccountsManager extends AbstractAccountsManager {
         ensureRolesExist(mapped, newAccount);
     }
 
+    @Override
+    protected void updateInternal(GeorchestraUser existing, GeorchestraUser mapped) throws DataServiceException, DuplicatedEmailException {
+        Account existingAccount = mapToAccountBrief(existing);
+        Account modifiedAccount = mapToAccountBrief(mapped);
+        accountDao.update(existingAccount, modifiedAccount);
+    }
+
     /**
      * Ensures all roles assigned to a user are prefixed with {@code "ROLE_"}.
      *

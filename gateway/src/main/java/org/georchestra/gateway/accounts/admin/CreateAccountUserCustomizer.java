@@ -18,6 +18,7 @@
  */
 package org.georchestra.gateway.accounts.admin;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
@@ -29,6 +30,7 @@ import org.georchestra.gateway.security.GeorchestraUserCustomizerExtension;
 import org.georchestra.gateway.security.exceptions.DuplicatedEmailFoundException;
 import org.georchestra.gateway.security.exceptions.PendingUserException;
 import org.georchestra.security.model.GeorchestraUser;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.ldap.NameNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -50,6 +52,9 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
     private final @NonNull AccountDao accountDao;
 
     private final WeakHashMap<Authentication, GeorchestraUser> loggedInUsers = new WeakHashMap<>();
+
+    @Value("${georchestra.gateway.security.oauth2.authorities:}#{T(java.util.Collections).emptyList()}")
+    private List<String> oauth2Authorities;
 
     /**
      * @return {@link Ordered#LOWEST_PRECEDENCE} so it runs after all other
@@ -88,7 +93,11 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
                     user = ldapUser.get();
                 }
             } else {
-                user = accounts.getOrCreate(mappedUser);
+                if (isOauth2 && this.oauth2Authorities.contains(((OAuth2AuthenticationToken) auth).getAuthorizedClientRegistrationId())) {
+                    user = accounts.createOrUpdate(mappedUser);
+                } else {
+                    user = accounts.getOrCreate(mappedUser);
+                }
                 ensureOrgUniqueId = true;
             }
             if (isPendingAccount(user)) {
