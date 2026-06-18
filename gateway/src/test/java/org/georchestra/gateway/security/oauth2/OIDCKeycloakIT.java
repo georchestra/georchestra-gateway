@@ -141,11 +141,11 @@ public class OIDCKeycloakIT {
                 .expectStatus().is3xxRedirection()
                 .returnResult(Void.class);
 
-        String sessionid = finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
+        String sessionId = finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
 
-        // 7. Finally, access the secured resource using the established Spring Session
+        // Access the secured resource using the established Spring Session
         webTestClient.get().uri("/whoami")
-                .cookie("SESSION", sessionid)
+                .cookie("SESSION", sessionId)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
