@@ -113,11 +113,8 @@ public class OIDCKeycloakIT {
                 .expectBody(String.class)
                 .returnResult();
 
-        String html = loginPageResult.getResponseBody();
-
         String authSessionId = loginPageResult.getResponseCookies().getFirst("AUTH_SESSION_ID").getValue();
-
-        String formActionUrl = extractFormAction(html);
+        String formActionUrl = extractFormAction(loginPageResult.getResponseBody());
 
         URI appCallbackUri = oidcClient.post().uri(formActionUrl)
                 .cookie("AUTH_SESSION_ID", authSessionId) // Re-inject the session cookie
