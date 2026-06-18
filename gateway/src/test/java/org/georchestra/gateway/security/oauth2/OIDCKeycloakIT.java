@@ -113,14 +113,14 @@ public class OIDCKeycloakIT {
         String formActionUrl = extractFormAction(loginPageResult.getResponseBody());
 
         URI appCallbackUri = oidcClient.post().uri(formActionUrl)
-                .cookie("AUTH_SESSION_ID", authSessionId) // Re-inject the session cookie
+                .cookie("AUTH_SESSION_ID", authSessionId)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData("username", "testoidcuser")
                         .with("password", "testoidcuser")
                         .with("credentialId", "")
                 )
                 .exchange()
-                .expectStatus().is3xxRedirection() // Keycloak redirects back to the app on success
+                .expectStatus().is3xxRedirection()
                 .returnResult(Void.class)
                 .getResponseHeaders().getLocation();
         // Ensure we are being redirected back to the Spring Boot application callback
@@ -150,7 +150,6 @@ public class OIDCKeycloakIT {
         Pattern pattern = Pattern.compile("<form[^>]*action=\"([^\"]*)\"");
         Matcher matcher = pattern.matcher(html);
         if (matcher.find()) {
-            // Keycloak HTML-escapes ampersands in the URL; we must unescape them
             return matcher.group(1).replace("&amp;", "&");
         }
         throw new IllegalStateException("Could not find login form action in Keycloak HTML");
