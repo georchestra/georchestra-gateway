@@ -92,13 +92,9 @@ public class OIDCKeycloakIT {
 
     @BeforeAll
     public static void createAssetsInKeycloak() {
-        Keycloak client = keycloak.getKeycloakAdminClient();
-        RealmResource georOidc = client.realm("georchestra-oidc");
-
-        createGroup(georOidc, "ROLE_USER");
-        createGroup(georOidc, "GRP_AWESOME_ORG");
-
-        createTestUser(georOidc, Arrays.asList("ROLE_USER", "GRP_AWESOME_ORG"));
+        createGroup("ROLE_USER");
+        createGroup("GRP_AWESOME_ORG");
+        createTestUser(Arrays.asList("ROLE_USER", "GRP_AWESOME_ORG"));
     }
 
     @Test
@@ -162,14 +158,16 @@ public class OIDCKeycloakIT {
         throw new IllegalStateException("Could not find login form action in Keycloak HTML");
     }
 
-    private static void createGroup(RealmResource realm, String name) {
+    private static void createGroup(String name) {
+        RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
         GroupRepresentation grp = new GroupRepresentation();
         grp.setName(name);
         Response resp  = realm.groups().add(grp);
         resp.close();
     }
 
-    private static void createTestUser(RealmResource realm, List<String> groups) {
+    private static void createTestUser(List<String> groups) {
+        RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
         UserRepresentation testuser = new UserRepresentation();
         testuser.setUsername("testoidcuser");
         testuser.setEmail("psc+testoidcuser@georchestra.org");
