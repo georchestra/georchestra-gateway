@@ -97,22 +97,18 @@ public class OIDCKeycloakIT {
 
     @Test
     public void testOidc() {
-
         FluxExchangeResult<Void> springSecurityInitialRedirect = webTestClient.get().uri("/oauth2/authorization/keycloak")
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .returnResult(Void.class);
-
         URI springSecurityRedirect = springSecurityInitialRedirect.getResponseHeaders().getLocation();
         String cookie = springSecurityInitialRedirect.getResponseCookies().getFirst("SESSION").getValue();
-
 
         EntityExchangeResult<String> loginPageResult = oidcClient.get().uri(springSecurityRedirect)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(String.class)
                 .returnResult();
-
         String authSessionId = loginPageResult.getResponseCookies().getFirst("AUTH_SESSION_ID").getValue();
         String formActionUrl = extractFormAction(loginPageResult.getResponseBody());
 
@@ -127,7 +123,6 @@ public class OIDCKeycloakIT {
                 .expectStatus().is3xxRedirection() // Keycloak redirects back to the app on success
                 .returnResult(Void.class)
                 .getResponseHeaders().getLocation();
-
         // Ensure we are being redirected back to the Spring Boot application callback
         assertThat(appCallbackUri.getPath()).contains("/login/oauth2/code/");
 
@@ -136,7 +131,6 @@ public class OIDCKeycloakIT {
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .returnResult(Void.class);
-
         String sessionId = finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
 
         // Access the secured resource using the established Spring Session
@@ -146,7 +140,6 @@ public class OIDCKeycloakIT {
                 .expectStatus().isOk()
                 .expectHeader().contentType(MediaType.APPLICATION_JSON)
                 .expectBody().jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_testoidcuser");
-
     }
 
     private String extractFormAction(String html) {
