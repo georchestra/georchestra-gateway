@@ -93,7 +93,8 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
                     user = ldapUser.get();
                 }
             } else {
-                if (isOauth2 && this.oauth2Authorities.contains(((OAuth2AuthenticationToken) auth).getAuthorizedClientRegistrationId())) {
+                if (isOauth2 && this.oauth2Authorities
+                        .contains(((OAuth2AuthenticationToken) auth).getAuthorizedClientRegistrationId())) {
                     user = accounts.createOrUpdate(mappedUser);
                 } else {
                     user = accounts.getOrCreate(mappedUser);

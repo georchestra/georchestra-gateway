@@ -10,7 +10,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class OIDCKeycloakIT extends  AbstractOIDCKeycloakSupport {
+public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
 
     @Test
     public void keycloakLoginCreateUserInLdapWhenUserUnknown() throws DataServiceException {
@@ -23,7 +23,8 @@ public class OIDCKeycloakIT extends  AbstractOIDCKeycloakSupport {
     }
 
     @Test
-    public void keycloakLoginLetUserUnmodifiedInLdapWhenUserExists() throws DataServiceException, DuplicatedEmailException {
+    public void keycloakLoginLetUserUnmodifiedInLdapWhenUserExists()
+            throws DataServiceException, DuplicatedEmailException {
         String userId = "testoidcuser2";
         createTestUser(userId, List.of("ROLE_USER", "GRP_AWESOME_ORG"));
         logAndFollowRedirect(userId);

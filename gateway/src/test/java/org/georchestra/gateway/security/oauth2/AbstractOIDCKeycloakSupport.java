@@ -53,12 +53,14 @@ public abstract class AbstractOIDCKeycloakSupport {
     @Autowired
     protected AccountDao accountDao;
 
-    // The previous webTestClient object will be scoped to our spring boot application
+    // The previous webTestClient object will be scoped to our spring boot
+    // application
     // and won't allow reaching other endpoints (e.g. our keycloak). Hence using a
     // dedicated webclient for such calls.
     private final WebTestClient oidcClient = WebTestClient.bindToServer().build();
 
-    // Using a traditional random port won't allow to use it in the dynamic property source
+    // Using a traditional random port won't allow to use it in the dynamic property
+    // source
     // so we have to select the random port by ourselves.
     private static final int APP_PORT;
 
@@ -70,15 +72,20 @@ public abstract class AbstractOIDCKeycloakSupport {
             throw new RuntimeException("Failed to allocate an open port", e);
         }
     }
+
     @DynamicPropertySource
     static void keycloakProperties(DynamicPropertyRegistry registry) {
 
         registry.add("server.port", () -> APP_PORT);
         registry.add("spring.security.oauth2.client.registration.keycloak.client-id", () -> "georchestra-oidc");
-        registry.add("spring.security.oauth2.client.registration.keycloak.client-secret", () -> "ouMohlei4Tuthi6paimahr2ieRohvogh");
-        registry.add("spring.security.oauth2.client.provider.keycloak.issuer-uri", () -> keycloak.getAuthServerUrl() + "/realms/georchestra-oidc");
-        registry.add("spring.security.oauth2.client.registration.keycloak.redirect-uri", () -> "http://localhost:" + APP_PORT + "/login/oauth2/code/keycloak");
-        // the email scope is mandatory, without it we cannot create an account into the LDAP.
+        registry.add("spring.security.oauth2.client.registration.keycloak.client-secret",
+                () -> "ouMohlei4Tuthi6paimahr2ieRohvogh");
+        registry.add("spring.security.oauth2.client.provider.keycloak.issuer-uri",
+                () -> keycloak.getAuthServerUrl() + "/realms/georchestra-oidc");
+        registry.add("spring.security.oauth2.client.registration.keycloak.redirect-uri",
+                () -> "http://localhost:" + APP_PORT + "/login/oauth2/code/keycloak");
+        // the email scope is mandatory, without it we cannot create an account into the
+        // LDAP.
         registry.add("spring.security.oauth2.client.registration.keycloak.scope", () -> "openid,profile,email,groups");
 
         registry.add("ldapHost", ldap::getHost);
@@ -106,7 +113,7 @@ public abstract class AbstractOIDCKeycloakSupport {
         RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
         GroupRepresentation grp = new GroupRepresentation();
         grp.setName(name);
-        Response resp  = realm.groups().add(grp);
+        Response resp = realm.groups().add(grp);
         resp.close();
     }
 
@@ -129,47 +136,31 @@ public abstract class AbstractOIDCKeycloakSupport {
     }
 
     protected void logAndFollowRedirect(String userId) {
-        FluxExchangeResult<Void> springSecurityInitialRedirect = webTestClient.get().uri("/oauth2/authorization/keycloak")
-                .exchange()
-                .expectStatus().is3xxRedirection()
+        FluxExchangeResult<Void> springSecurityInitialRedirect = webTestClient.get()
+                .uri("/oauth2/authorization/keycloak").exchange().expectStatus().is3xxRedirection()
                 .returnResult(Void.class);
         URI springSecurityRedirect = springSecurityInitialRedirect.getResponseHeaders().getLocation();
         String cookie = springSecurityInitialRedirect.getResponseCookies().getFirst("SESSION").getValue();
 
-        EntityExchangeResult<String> loginPageResult = oidcClient.get().uri(springSecurityRedirect)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(String.class)
-                .returnResult();
+        EntityExchangeResult<String> loginPageResult = oidcClient.get().uri(springSecurityRedirect).exchange()
+                .expectStatus().isOk().expectBody(String.class).returnResult();
         String authSessionId = loginPageResult.getResponseCookies().getFirst("AUTH_SESSION_ID").getValue();
         String formActionUrl = extractFormAction(loginPageResult.getResponseBody());
 
-        URI appCallbackUri = oidcClient.post().uri(formActionUrl)
-                .cookie("AUTH_SESSION_ID", authSessionId)
+        URI appCallbackUri = oidcClient.post().uri(formActionUrl).cookie("AUTH_SESSION_ID", authSessionId)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(BodyInserters.fromFormData("username", userId)
-                        .with("password", userId)
-                        .with("credentialId", "")
-                )
-                .exchange()
-                .expectStatus().is3xxRedirection()
-                .returnResult(Void.class)
-                .getResponseHeaders().getLocation();
+                .body(BodyInserters.fromFormData("username", userId).with("password", userId).with("credentialId", ""))
+                .exchange().expectStatus().is3xxRedirection().returnResult(Void.class).getResponseHeaders()
+                .getLocation();
         // Ensure we are being redirected back to the Spring Boot application callback
         assertThat(appCallbackUri.getPath()).contains("/login/oauth2/code/");
 
-        FluxExchangeResult<Void> finalCallbackResult = webTestClient.get().uri(appCallbackUri)
-                .cookie("SESSION", cookie)
-                .exchange()
-                .expectStatus().is3xxRedirection()
-                .returnResult(Void.class);
+        FluxExchangeResult<Void> finalCallbackResult = webTestClient.get().uri(appCallbackUri).cookie("SESSION", cookie)
+                .exchange().expectStatus().is3xxRedirection().returnResult(Void.class);
         String sessionId = finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
 
-        webTestClient.get().uri("/whoami")
-                .cookie("SESSION", sessionId)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBody().jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_" + userId);
+        webTestClient.get().uri("/whoami").cookie("SESSION", sessionId).exchange().expectStatus().isOk().expectHeader()
+                .contentType(MediaType.APPLICATION_JSON).expectBody().jsonPath("$.GeorchestraUser.username")
+                .isEqualTo("keycloak_" + userId);
     }
 }

@@ -242,7 +242,8 @@ class LdapAccountsManager extends AbstractAccountsManager {
     }
 
     @Override
-    protected void updateInternal(GeorchestraUser existing, GeorchestraUser mapped) throws DataServiceException, DuplicatedEmailException {
+    protected void updateInternal(GeorchestraUser existing, GeorchestraUser mapped)
+            throws DataServiceException, DuplicatedEmailException {
         Account existingAccount = mapToAccountBrief(existing);
         Account modifiedAccount = mapToAccountBrief(mapped);
         accountDao.update(existingAccount, modifiedAccount);

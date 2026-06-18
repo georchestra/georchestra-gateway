@@ -83,7 +83,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
         return find(mappedUser).orElseGet(() -> createIfMissing(mappedUser));
     }
 
-	@Override
+    @Override
     public GeorchestraUser createOrUpdate(@NonNull GeorchestraUser mappedUser) {
         return find(mappedUser).map(x -> this.update(mappedUser)).orElseGet(() -> createIfMissing(mappedUser));
     }
@@ -264,9 +264,9 @@ public abstract class AbstractAccountsManager implements AccountManager {
             updateInternal(existing, mapped);
             createUserOrgUniqueIdIfMissing(mapped);
             return existing;
-		} catch (DataServiceException | DuplicatedEmailException e) {
-			throw new RuntimeException(e);
-		} finally {
+        } catch (DataServiceException | DuplicatedEmailException e) {
+            throw new RuntimeException(e);
+        } finally {
             lock.writeLock().unlock();
         }
     }
@@ -376,6 +376,7 @@ public abstract class AbstractAccountsManager implements AccountManager {
      */
     protected abstract void createInternal(GeorchestraUser mapped);
 
-    protected abstract void updateInternal(GeorchestraUser existing, GeorchestraUser mapped) throws DataServiceException, DuplicatedEmailException;
+    protected abstract void updateInternal(GeorchestraUser existing, GeorchestraUser mapped)
+            throws DataServiceException, DuplicatedEmailException;
 
 }
