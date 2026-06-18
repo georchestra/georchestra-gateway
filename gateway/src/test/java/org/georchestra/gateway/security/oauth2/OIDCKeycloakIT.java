@@ -5,8 +5,6 @@ import org.georchestra.ds.users.Account;
 import org.georchestra.ds.users.DuplicatedEmailException;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -15,7 +13,7 @@ public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
     @Test
     public void keycloakLoginCreateUserInLdapWhenUserUnknown() throws DataServiceException {
         String userId = "testoidcuser1";
-        createTestUser(userId, List.of("ROLE_USER", "GRP_AWESOME_ORG"));
+        createTestUser(userId, THREE_ROLES);
         logAndFollowRedirect(userId);
 
         assertNotNull(accountDao.findByUID("keycloak_" + userId),
@@ -26,7 +24,7 @@ public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
     public void keycloakLoginLetUserUnmodifiedInLdapWhenUserExists()
             throws DataServiceException, DuplicatedEmailException {
         String userId = "testoidcuser2";
-        createTestUser(userId, List.of("ROLE_USER", "GRP_AWESOME_ORG"));
+        createTestUser(userId, THREE_ROLES);
         logAndFollowRedirect(userId);
         Account account = accountDao.findByUID("keycloak_" + userId);
         Account updatedAccount = accountDao.findByUID("keycloak_" + userId);

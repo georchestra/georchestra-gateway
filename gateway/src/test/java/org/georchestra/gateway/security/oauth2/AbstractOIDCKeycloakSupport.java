@@ -5,10 +5,10 @@ import jakarta.ws.rs.core.Response;
 import org.georchestra.ds.users.AccountDao;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
-import org.junit.jupiter.api.BeforeAll;
 import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.GroupRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -54,6 +54,10 @@ public abstract class AbstractOIDCKeycloakSupport {
     @Autowired
     protected AccountDao accountDao;
 
+    public static final String TEST_ROLE_ALONE = "TEST_ROLE";
+    public static final String THREE_ROLES = "TEST_ROLE;Apps_Georchestra;Other_role";
+    public static final String GEOR_CLIENT_ID = "715ee18c-7dc3-4fa4-8c2e-8bacdbd9da25";
+
     // The previous webTestClient object will be scoped to our spring boot
     // application
     // and won't allow reaching other endpoints (e.g. our keycloak). Hence using a
@@ -94,12 +98,6 @@ public abstract class AbstractOIDCKeycloakSupport {
         registry.add("ldapScheme", () -> "ldap");
     }
 
-    @BeforeAll
-    public static void createAssetsInKeycloak() {
-        createGroup("ROLE_USER");
-        createGroup("GRP_AWESOME_ORG");
-    }
-
     private String extractFormAction(String html) {
         // Regex to find: <form ... action="URL" ...>
         Pattern pattern = Pattern.compile("<form[^>]*action=\"([^\"]*)\"");
@@ -110,22 +108,13 @@ public abstract class AbstractOIDCKeycloakSupport {
         throw new IllegalStateException("Could not find login form action in Keycloak HTML");
     }
 
-    private static void createGroup(String name) {
-        RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
-        GroupRepresentation grp = new GroupRepresentation();
-        grp.setName(name);
-        Response resp = realm.groups().add(grp);
-        resp.close();
-    }
-
-    protected static void createTestUser(String userId, List<String> groups) {
+    protected static void createTestUser(String userId, String roles) {
         RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
         UserRepresentation testuser = new UserRepresentation();
         testuser.setUsername(userId);
         testuser.setEmail(String.format("psc+%s@georchestra.org", userId));
         testuser.setFirstName("test");
         testuser.setLastName("user");
-        testuser.setGroups(groups);
         testuser.setEnabled(true);
         CredentialRepresentation pwd = new CredentialRepresentation();
         pwd.setTemporary(false);
@@ -134,6 +123,10 @@ public abstract class AbstractOIDCKeycloakSupport {
         testuser.setCredentials(List.of(pwd));
         Response response = realm.users().create(testuser);
         response.close();
+
+        RoleRepresentation rolesToAdd = realm.clients().get(GEOR_CLIENT_ID).roles().get(roles).toRepresentation();
+        UserResource userToComplete = realm.users().get(realm.users().searchByUsername(userId, true).get(0).getId());
+        userToComplete.roles().clientLevel(GEOR_CLIENT_ID).add(List.of(rolesToAdd));
     }
 
     protected void logAndFollowRedirect(String userId) {
@@ -160,8 +153,10 @@ public abstract class AbstractOIDCKeycloakSupport {
                 .exchange().expectStatus().is3xxRedirection().returnResult(Void.class);
         String sessionId = finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
 
-        webTestClient.get().uri("/whoami").cookie("SESSION", sessionId).exchange().expectStatus().isOk().expectHeader()
-                .contentType(MediaType.APPLICATION_JSON).expectBody().jsonPath("$.GeorchestraUser.username")
-                .isEqualTo("keycloak_" + userId);
+        String body = new String(webTestClient.get().uri("/whoami").cookie("SESSION", sessionId).exchange()
+                .expectStatus().isOk().expectHeader().contentType(MediaType.APPLICATION_JSON).expectBody()
+                .jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_" + userId).returnResult()
+                .getResponseBody());
+        assertThat(body.contains("\"groups\":\"TEST_ROLE")).isTrue();
     }
 }
