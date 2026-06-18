@@ -3,7 +3,9 @@ package org.georchestra.gateway.security.oauth2;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import jakarta.ws.rs.core.Response;
 import org.georchestra.ds.DataServiceException;
+import org.georchestra.ds.users.Account;
 import org.georchestra.ds.users.AccountDao;
+import org.georchestra.ds.users.DuplicatedEmailException;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
 import org.junit.jupiter.api.BeforeAll;
@@ -98,24 +100,25 @@ public class OIDCKeycloakIT {
     public void keycloakLoginCreateUserInLdapWhenUserUnknown() throws DataServiceException {
         String userId = "testoidcuser1";
         createTestUser(userId, List.of("ROLE_USER", "GRP_AWESOME_ORG"));
-        String sessionId = logAndReturnSessionId(userId);
+        logAndFollowRedirect(userId);
 
-        webTestClient.get().uri("/whoami")
-                .cookie("SESSION", sessionId)
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().contentType(MediaType.APPLICATION_JSON)
-                .expectBody().jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_" + userId);
         assertNotNull(accountDao.findByUID("keycloak_" + userId),
                 "Account should have been created in LDAP by CreateAccountUserCustomizer");
     }
 
     @Test
-    public void keycloakLoginLetUserUnmodifiedInLdapWhenUserExists() {
+    public void keycloakLoginLetUserUnmodifiedInLdapWhenUserExists() throws DataServiceException, DuplicatedEmailException {
         String userId = "testoidcuser2";
         createTestUser(userId, List.of("ROLE_USER", "GRP_AWESOME_ORG"));
+        logAndFollowRedirect(userId);
+        Account account = accountDao.findByUID("keycloak_" + userId);
+        Account updatedAccount = accountDao.findByUID("keycloak_" + userId);
+        updatedAccount.setGivenName("mo");
+        accountDao.update(account, updatedAccount);
 
-        logAndReturnSessionId(userId);
+        logAndFollowRedirect(userId);
+
+        assertThat(accountDao.findByUID("keycloak_" + userId).getGivenName().equals("mo")).isTrue();
     }
 
     private String extractFormAction(String html) {
@@ -154,7 +157,7 @@ public class OIDCKeycloakIT {
         response.close();
     }
 
-    private String logAndReturnSessionId(String userId) {
+    private void logAndFollowRedirect(String userId) {
         FluxExchangeResult<Void> springSecurityInitialRedirect = webTestClient.get().uri("/oauth2/authorization/keycloak")
                 .exchange()
                 .expectStatus().is3xxRedirection()
@@ -189,6 +192,13 @@ public class OIDCKeycloakIT {
                 .exchange()
                 .expectStatus().is3xxRedirection()
                 .returnResult(Void.class);
-        return finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
+        String sessionId = finalCallbackResult.getResponseCookies().getFirst("SESSION").getValue();
+
+        webTestClient.get().uri("/whoami")
+                .cookie("SESSION", sessionId)
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody().jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_" + userId);
     }
 }
