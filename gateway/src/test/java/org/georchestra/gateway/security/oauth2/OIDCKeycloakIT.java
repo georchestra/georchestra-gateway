@@ -96,7 +96,7 @@ public class OIDCKeycloakIT {
     }
 
     @Test
-    public void testOidc() throws DataServiceException {
+    public void keycloakLoginCreateUserInLdapWhenUserUnknown() throws DataServiceException {
         FluxExchangeResult<Void> springSecurityInitialRedirect = webTestClient.get().uri("/oauth2/authorization/keycloak")
                 .exchange()
                 .expectStatus().is3xxRedirection()
