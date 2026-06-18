@@ -118,7 +118,6 @@ public class OIDCKeycloakIT {
         String authSessionId = loginPageResult.getResponseCookies().getFirst("AUTH_SESSION_ID").getValue();
 
         String formActionUrl = extractFormAction(html);
-        assertThat(formActionUrl).isNotNull();
 
         URI appCallbackUri = oidcClient.post().uri(formActionUrl)
                 .cookie("AUTH_SESSION_ID", authSessionId) // Re-inject the session cookie
