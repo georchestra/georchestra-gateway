@@ -84,31 +84,6 @@ public class OIDCKeycloakIT {
         registry.add("ldapScheme", () -> "ldap");
     }
 
-    private static void createGroup(RealmResource realm, String name) {
-        GroupRepresentation grp = new GroupRepresentation();
-        grp.setName(name);
-        Response resp  = realm.groups().add(grp);
-        resp.close();
-    }
-
-    private static void createTestUser(RealmResource realm, List<String> groups) {
-        UserRepresentation testuser = new UserRepresentation();
-        testuser.setUsername("testoidcuser");
-        testuser.setEmail("psc+testoidcuser@georchestra.org");
-        testuser.setFirstName("test");
-        testuser.setLastName("user");
-        testuser.setGroups(groups);
-        testuser.setEnabled(true);
-        CredentialRepresentation pwd = new CredentialRepresentation();
-        pwd.setTemporary(false);
-        pwd.setType(CredentialRepresentation.PASSWORD);
-        pwd.setValue("testoidcuser");
-        testuser.setCredentials(List.of(pwd));
-
-        Response response = realm.users().create(testuser);
-        response.close();
-    }
-
     @BeforeAll
     public static void createAssetsInKeycloak() {
         Keycloak client = keycloak.getKeycloakAdminClient();
@@ -189,4 +164,28 @@ public class OIDCKeycloakIT {
         throw new IllegalStateException("Could not find login form action in Keycloak HTML");
     }
 
+    private static void createGroup(RealmResource realm, String name) {
+        GroupRepresentation grp = new GroupRepresentation();
+        grp.setName(name);
+        Response resp  = realm.groups().add(grp);
+        resp.close();
+    }
+
+    private static void createTestUser(RealmResource realm, List<String> groups) {
+        UserRepresentation testuser = new UserRepresentation();
+        testuser.setUsername("testoidcuser");
+        testuser.setEmail("psc+testoidcuser@georchestra.org");
+        testuser.setFirstName("test");
+        testuser.setLastName("user");
+        testuser.setGroups(groups);
+        testuser.setEnabled(true);
+        CredentialRepresentation pwd = new CredentialRepresentation();
+        pwd.setTemporary(false);
+        pwd.setType(CredentialRepresentation.PASSWORD);
+        pwd.setValue("testoidcuser");
+        testuser.setCredentials(List.of(pwd));
+
+        Response response = realm.users().create(testuser);
+        response.close();
+    }
 }
