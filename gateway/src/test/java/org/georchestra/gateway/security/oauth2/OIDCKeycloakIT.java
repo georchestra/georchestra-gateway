@@ -8,7 +8,6 @@ import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
@@ -30,7 +29,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,7 +92,7 @@ public class OIDCKeycloakIT {
     public static void createAssetsInKeycloak() {
         createGroup("ROLE_USER");
         createGroup("GRP_AWESOME_ORG");
-        createTestUser(Arrays.asList("ROLE_USER", "GRP_AWESOME_ORG"));
+        createTestUser(List.of("ROLE_USER", "GRP_AWESOME_ORG"));
     }
 
     @Test
