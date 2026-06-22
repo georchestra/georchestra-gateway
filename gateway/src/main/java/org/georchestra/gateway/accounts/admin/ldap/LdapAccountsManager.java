@@ -420,6 +420,11 @@ class LdapAccountsManager extends AbstractAccountsManager {
      */
     private void addAccountToOrg(Account newAccount, Org org, @Nullable String oAuth2Provider) {
         // org already in the LDAP, add the newly created account to it
+        // The org may have been found by orgUniqueId (e.g. SIRET) while its CN differs
+        // —
+        // sync the account's org field to the actual CN so ensureRolesExist can look it
+        // up.
+        newAccount.setOrg(org.getId());
         org.getMembers().add(newAccount.getUid());
 
         // Optionally update existing org name if override is enabled
