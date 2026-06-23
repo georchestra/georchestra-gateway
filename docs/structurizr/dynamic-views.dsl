@@ -41,7 +41,7 @@ workspace "geOrchestra Gateway Dynamic Views" {
         routingHandler -> targetService "Routes request" "HTTP"
         
         gateway -> console "Publishes events to"
-        securityFilter -> eventSender "Sends user events"
+        securityFilter -> console "Sends user events"
     }
     
     views {
