@@ -124,7 +124,7 @@ public abstract class AbstractOIDCKeycloakSupport {
         Response response = realm.users().create(testuser);
         response.close();
 
-        RoleRepresentation rolesToAdd = realm.clients().get(GEOR_CLIENT_ID).roles().get(roles).toRepresentation();
+        RoleRepresentation rolesToAdd = realm.clients().get(GEOR_CLIENT_ID).roles().list().stream().filter(x -> roles.equals(x.getName())).findFirst().get();
         UserResource userToComplete = realm.users().get(realm.users().searchByUsername(userId, true).get(0).getId());
         userToComplete.roles().clientLevel(GEOR_CLIENT_ID).add(List.of(rolesToAdd));
     }

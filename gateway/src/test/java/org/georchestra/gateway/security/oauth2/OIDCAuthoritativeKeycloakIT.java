@@ -22,12 +22,18 @@ public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
     @DynamicPropertySource
     static void isAuthoritativeProperties(DynamicPropertyRegistry registry) {
         registry.add("georchestra.gateway.security.oauth2.authorities", () -> List.of("keycloak"));
+        registry.add("georchestra.gateway.security.oidc.claims.roles.json.path", () -> "$.groups");
+        registry.add("georchestra.gateway.security.oidc.claims.roles.uppercase", () -> false);
+        registry.add("georchestra.gateway.security.oidc.claims.roles.normalize", () -> false);
+        registry.add("georchestra.gateway.security.oidc.claims.roles.append", () -> false);
+        registry.add("georchestra.gateway.roles-mappings.[TEST_ROLE;*]", () -> List.of("TEST_ROLE"));
     }
 
     @Test
     public void keycloakLoginCreateUserInLdapWhenUserUnknown() throws DataServiceException {
         String userId = "testoidcuser1";
         createTestUser(userId, THREE_ROLES);
+
         logAndFollowRedirect(userId);
 
         assertNotNull(accountDao.findByUID("keycloak_" + userId),
