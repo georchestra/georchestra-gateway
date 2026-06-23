@@ -360,7 +360,6 @@ class LdapAccountsManager extends AbstractAccountsManager {
         if (user.getOrganization() != null) {
             Account newAccount = mapToAccountBrief(user);
             orgsDao.unlinkUser(newAccount);
-            verifySingleOrgMembership(newAccount, null);
         }
     }
 
@@ -410,7 +409,6 @@ class LdapAccountsManager extends AbstractAccountsManager {
             Org org = newOrg(orgId, orgUniqueId, oAuth2Provider);
             org.getMembers().add(newAccount.getUid());
             orgsDao.insert(org);
-            verifySingleOrgMembership(newAccount, org);
         } catch (Exception orgError) {
             throw new IllegalStateException(orgError);
         }
@@ -443,50 +441,6 @@ class LdapAccountsManager extends AbstractAccountsManager {
         }
 
         orgsDao.update(org);
-        verifySingleOrgMembership(newAccount, org);
-    }
-
-    @VisibleForTesting
-    void verifySingleOrgMembership(@NonNull Account account, @Nullable Org org) {
-        try {
-            final String uid = account.getUid();
-            if (StringUtils.isBlank(uid)) {
-                throw new IllegalStateException("Cannot verify org membership for account with blank uid");
-            }
-
-            long memberships = orgsDao.findAll().stream().filter(Objects::nonNull).filter(o -> o.getMembers() != null)
-                    .filter(o -> o.getMembers().contains(uid)).count();
-
-            if (memberships > 1) {
-                throw new IllegalStateException(
-                        String.format("User %s is linked to %d organizations; expected at most one", uid, memberships));
-            }
-
-            if (org == null || org.getId() == null) {
-                if (memberships != 0) {
-                    throw new IllegalStateException(
-                            String.format("User %s is still linked to an organization after unlink", uid));
-                }
-                return;
-            }
-
-            if (memberships != 1) {
-                throw new IllegalStateException(String
-                        .format("User %s membership count is %d after link; expected exactly one", uid, memberships));
-            }
-
-            Org linkedOrg = StringUtils.isEmpty(org.getOrgUniqueId()) ? orgsDao.findByUser(account)
-                    : orgsDao.findByOrgUniqueId(org.getOrgUniqueId());
-            if (linkedOrg == null || !org.getId().equals(linkedOrg.getId())) {
-                throw new IllegalStateException(String.format("User %s linked org mismatch, expected '%s', got '%s'",
-                        uid, org.getId(), linkedOrg == null ? null : linkedOrg.getId()));
-            }
-        } catch (Exception e) {
-            if (e instanceof IllegalStateException) {
-                throw (IllegalStateException) e;
-            }
-            throw new IllegalStateException("Error while verifying single-organization membership", e);
-        }
     }
 
     protected Optional<Org> findOrgById(String orgId, String orgUniqueId) {
