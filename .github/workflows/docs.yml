@@ -59,12 +59,12 @@ jobs:
         run: wget -q -O plantuml.jar https://github.com/plantuml/plantuml/releases/download/v1.2025.2/plantuml-1.2025.2.jar
         
       - name: Generate PlantUML files from Structurizr
-        uses: docker://structurizr/cli:latest
+        uses: docker://structurizr/structurizr:latest
         with:
           args: export -workspace docs/structurizr/workspace.dsl -format plantuml/c4plantuml -output docs/structurizr/exports
-      
+
       - name: Generate PlantUML files from Structurizr (dynamic views)
-        uses: docker://structurizr/cli:latest
+        uses: docker://structurizr/structurizr:latest
         with:
           args: export -workspace docs/structurizr/dynamic-views.dsl -format plantuml/c4plantuml -output docs/structurizr/exports
       
