@@ -53,6 +53,7 @@ jobs:
       - name: Create directories
         run: |
           mkdir -p docs/structurizr/exports
+          chmod a+w docs/structurizr/exports
           mkdir -p docs/assets/images/structurizr
         
       - name: Download PlantUML
