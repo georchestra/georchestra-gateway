@@ -75,43 +75,47 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
     @Override
     public @NonNull GeorchestraUser apply(@NonNull Authentication auth, @NonNull GeorchestraUser mappedUser)
             throws DuplicatedEmailFoundException {
-        final boolean isOauth2 = auth instanceof OAuth2AuthenticationToken;
         final boolean isPreAuth = auth instanceof PreAuthenticatedAuthenticationToken;
-        if (isOauth2) {
-            Objects.requireNonNull(mappedUser.getOAuth2Provider(), "GeorchestraUser.oAuth2Provider is null");
-            Objects.requireNonNull(mappedUser.getOAuth2Uid(), "GeorchestraUser.oAuth2Uid is null");
-        }
-        if (isPreAuth) {
-            Objects.requireNonNull(mappedUser.getUsername(), "GeorchestraUser.username is null");
-        }
+        final boolean isOauth2 = auth instanceof OAuth2AuthenticationToken && !this.oauth2Authorities
+                .contains(((OAuth2AuthenticationToken) auth).getAuthorizedClientRegistrationId());
+        final boolean isOauth2Authoritative = auth instanceof OAuth2AuthenticationToken && this.oauth2Authorities
+                .contains(((OAuth2AuthenticationToken) auth).getAuthorizedClientRegistrationId());
         if (isOauth2 || isPreAuth) {
-            GeorchestraUser user = loggedInUsers.get(auth);
-            boolean ensureOrgUniqueId = false;
-            if (user != null) {
-                Optional<GeorchestraUser> ldapUser = accounts.find(mappedUser);
-                if (ldapUser.isPresent()) {
-                    user = ldapUser.get();
-                }
-            } else {
-                if (isOauth2 && this.oauth2Authorities
-                        .contains(((OAuth2AuthenticationToken) auth).getAuthorizedClientRegistrationId())) {
-                    user = accounts.createOrUpdate(mappedUser);
-                } else {
-                    user = accounts.getOrCreate(mappedUser);
-                }
-                ensureOrgUniqueId = true;
-            }
+            GeorchestraUser user = applyInternal(auth, mappedUser, accounts::getOrCreate);
             if (isPendingAccount(user)) {
                 throw new PendingUserException("User is pending approval.");
             }
-            if (ensureOrgUniqueId) {
-                accounts.createUserOrgUniqueIdIfMissing(mappedUser);
-            }
-            user.setIsExternalAuth(true);
-            loggedInUsers.put(auth, user);
+            accounts.createUserOrgUniqueIdIfMissing(mappedUser);
+            return user;
+        }
+        if (isOauth2Authoritative) {
+            GeorchestraUser user = applyInternal(auth, mappedUser, accounts::createOrUpdate);
+            accounts.createUserOrgUniqueIdIfMissing(mappedUser);
             return user;
         }
         return mappedUser;
+    }
+
+    @FunctionalInterface
+    interface DelegateToAccountManager {
+        GeorchestraUser delegate(GeorchestraUser user);
+    }
+
+    private GeorchestraUser applyInternal(@NonNull Authentication auth, @NonNull GeorchestraUser mappedUser,
+            DelegateToAccountManager delegateToAccountManager) {
+        Objects.requireNonNull(mappedUser.getUsername(), "GeorchestraUser.username is null");
+        GeorchestraUser user = loggedInUsers.get(auth);
+        if (user != null) {
+            Optional<GeorchestraUser> ldapUser = accounts.find(mappedUser);
+            if (ldapUser.isPresent()) {
+                user = ldapUser.get();
+            }
+        } else {
+            user = delegateToAccountManager.delegate(mappedUser);
+        }
+        user.setIsExternalAuth(true);
+        loggedInUsers.put(auth, user);
+        return user;
     }
 
     /**
