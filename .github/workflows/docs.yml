@@ -68,26 +68,15 @@ jobs:
         uses: docker://structurizr/structurizr:latest
         with:
           args: export -workspace docs/structurizr/dynamic-views.dsl -format plantuml/c4plantuml -output docs/structurizr/exports
-      
-      - name: List exported PlantUML files
-        run: |
-          echo "Files in docs/structurizr/exports/:"
-          ls -la docs/structurizr/exports/ || echo "(directory empty or missing)"
 
       - name: Generate SVG files from PlantUML
         run: |
-          shopt -s nullglob
-          puml_files=(docs/structurizr/exports/*.puml)
-          if [ ${#puml_files[@]} -eq 0 ]; then
-            echo "ERROR: No .puml files found in docs/structurizr/exports/" >&2
-            exit 1
-          fi
-          for puml_file in "${puml_files[@]}"; do
+          for puml_file in docs/structurizr/exports/*.puml; do
             echo "Processing $puml_file"
             java -jar plantuml.jar -tsvg "$puml_file"
+            # Move SVG to the correct location
             mv "${puml_file%.puml}.svg" "docs/assets/images/structurizr/$(basename "${puml_file%.puml}.svg")"
           done
-      
       - name: List generated files
         run: find docs/assets/images/structurizr -type f | sort
         
