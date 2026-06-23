@@ -134,47 +134,6 @@ public abstract class AbstractAccountsManager implements AccountManager {
         return findByUsername(mappedUser.getUsername());
     }
 
-    public Org findOrgByUser(GeorchestraUser existingUser) {
-        String existUserOrgCN = existingUser.getOrganization();
-        return findOrg(existUserOrgCN).orElse(null);
-    }
-
-    /**
-     * Control that orgUniqueId from provider match with georchestra orgUniqueId
-     * 
-     * @param mapped
-     * @param existingUser
-     * @return false if provider user's orgUniqueId is not same as LDAP user's
-     *         orgUniqueId
-     */
-    public Boolean isSameOrgUniqueId(GeorchestraUser mapped, GeorchestraUser existingUser) {
-        if (existingUser == null) {
-            return true;
-        }
-
-        // If provider doesn't supply orgUniqueId, don't enforce a change.
-        String mappedOrgUniqueId = normalizeOrgUniqueId(mapped.getOAuth2OrgId());
-        if (mappedOrgUniqueId.isEmpty()) {
-            return true;
-        }
-
-        if (null == existingUser.getOrganization()) {
-            return false;
-        }
-
-        // Compare mapped orgUniqueId with existing user's org uniqueOrgId
-        Org existUserOrg = findOrgByUser(existingUser);
-        if (existUserOrg == null) {
-            return false;
-        }
-
-        // Optional.ofNullable to consider that Null and empty are the same
-        String existOrgUniqueId = normalizeOrgUniqueId(existUserOrg.getOrgUniqueId());
-        // return false if provider user's orgUniqueId is not
-        // same as LDAP user's orgUniqueId
-        return mappedOrgUniqueId.equals(existOrgUniqueId);
-    }
-
     /**
      * Normalizes an organization unique id for safe comparisons.
      * <p>
@@ -297,19 +256,6 @@ public abstract class AbstractAccountsManager implements AccountManager {
      *         {@link Optional} if not found
      */
     protected abstract Optional<GeorchestraUser> findByUsername(String username);
-
-    /**
-     * Finds not pending user by their email.
-     * <p>
-     * Implementations must provide a concrete method for retrieving users from
-     * storage.
-     * </p>
-     *
-     * @param email the email to search for
-     * @return an {@link Optional} containing the found user, or an empty
-     *         {@link Optional} if not found
-     */
-    protected abstract Optional<GeorchestraUser> findByEmail(String email);
 
     /**
      * Finds pending or valid user by their email.

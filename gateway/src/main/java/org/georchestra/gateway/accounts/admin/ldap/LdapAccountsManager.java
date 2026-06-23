@@ -169,11 +169,6 @@ class LdapAccountsManager extends AbstractAccountsManager {
     }
 
     @Override
-    protected Optional<GeorchestraUser> findByEmail(@NonNull String email) {
-        return demultiplexingUsersApi.findByEmail(email).map(this::ensureRolesPrefixed);
-    }
-
-    @Override
     protected Optional<GeorchestraUser> findByEmail(@NonNull String email, boolean filterPending) {
         return demultiplexingUsersApi.findByEmail(email, filterPending).map(this::ensureRolesPrefixed);
     }

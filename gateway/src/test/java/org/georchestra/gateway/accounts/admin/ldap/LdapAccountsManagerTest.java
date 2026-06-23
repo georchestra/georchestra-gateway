@@ -267,12 +267,13 @@ public class LdapAccountsManagerTest {
         DemultiplexingUsersApi usersApi = mock(DemultiplexingUsersApi.class);
         GeorchestraUser user = new GeorchestraUser();
         user.setRoles(new ArrayList<>(List.of("USER")));
-        when(usersApi.findByEmail("user@example.org")).thenReturn(Optional.of(new ExtendedGeorchestraUser(user)));
+        when(usersApi.findByEmail("user@example.org", false))
+                .thenReturn(Optional.of(new ExtendedGeorchestraUser(user)));
 
         LdapAccountsManager toTest = new LdapAccountsManager(mock(ApplicationEventPublisher.class), null, null, null,
                 usersApi, null, new OpenIdConnectCustomConfig(), Optional.empty());
 
-        Optional<GeorchestraUser> result = toTest.findByEmail("user@example.org");
+        Optional<GeorchestraUser> result = toTest.findByEmail("user@example.org", false);
 
         assertTrue(result.isPresent());
         assertTrue(result.get().getRoles().contains("ROLE_USER"));
