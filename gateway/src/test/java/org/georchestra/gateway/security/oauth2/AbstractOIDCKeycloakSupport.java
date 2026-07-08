@@ -2,6 +2,7 @@ package org.georchestra.gateway.security.oauth2;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import jakarta.ws.rs.core.Response;
+import org.georchestra.ds.roles.RoleDao;
 import org.georchestra.ds.users.AccountDao;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
@@ -53,6 +54,17 @@ public abstract class AbstractOIDCKeycloakSupport {
 
     @Autowired
     protected AccountDao accountDao;
+
+    @Autowired
+    protected RoleDao roleDao;
+
+    @DynamicPropertySource
+    static void customRolesClaimProcessor(DynamicPropertyRegistry registry) {
+        registry.add("georchestra.gateway.security.oidc.claims.roles.json.path", () -> "$.groups");
+        registry.add("georchestra.gateway.security.oidc.claims.roles.uppercase", () -> true);
+        registry.add("georchestra.gateway.security.oidc.claims.roles.normalize", () -> true);
+        registry.add("georchestra.gateway.security.oidc.claims.roles.splitcsv", () -> true);
+    }
 
     public static final String TEST_ROLE_ALONE = "TEST_ROLE";
     public static final String THREE_ROLES = "TEST_ROLE;Apps_Georchestra;Other_role";
@@ -124,7 +136,8 @@ public abstract class AbstractOIDCKeycloakSupport {
         Response response = realm.users().create(testuser);
         response.close();
 
-        RoleRepresentation rolesToAdd = realm.clients().get(GEOR_CLIENT_ID).roles().list().stream().filter(x -> roles.equals(x.getName())).findFirst().get();
+        RoleRepresentation rolesToAdd = realm.clients().get(GEOR_CLIENT_ID).roles().list().stream()
+                .filter(x -> roles.equals(x.getName())).findFirst().get();
         UserResource userToComplete = realm.users().get(realm.users().searchByUsername(userId, true).get(0).getId());
         userToComplete.roles().clientLevel(GEOR_CLIENT_ID).add(List.of(rolesToAdd));
     }
