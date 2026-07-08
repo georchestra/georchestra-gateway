@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.georchestra.security.model.GeorchestraUser;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -177,6 +179,8 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
          */
         private boolean append = true;
 
+        private boolean splitcsv = false;
+
         /**
          * Retrieves the JSONPath extractor for roles.
          *
@@ -197,8 +201,8 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
         public void apply(Map<String, Object> claims, GeorchestraUser target) {
             json().ifPresent(oidcClaimsConfig -> {
                 List<String> rawValues = oidcClaimsConfig.extract(claims);
-                List<String> oidcRoles = rawValues.stream().map(this::applyTransforms).toList(); // Ensure the resulting
-                                                                                                 // list is mutable
+                List<String> oidcRoles = rawValues.stream().map(this::applyTransforms).flatMap(List::stream).toList();
+                // Ensure the resulting is mutable
 
                 if (oidcRoles.isEmpty()) {
                     return;
@@ -216,12 +220,11 @@ public @Data class OpenIdConnectCustomClaimsConfigProperties {
          * @param value The original role value.
          * @return The transformed role value.
          */
-        private String applyTransforms(String value) {
-            String result = uppercase ? value.toUpperCase() : value;
-            if (normalize) {
-                result = normalize(result);
-            }
-            return result;
+        private List<String> applyTransforms(String value) {
+            Function<String, String> uppercaseF = isUppercase() ? String::toUpperCase : Function.identity();
+            Function<String, String> normalizeF = isNormalize() ? this::normalize : Function.identity();
+            Stream<String> valueAsStream = isSplitcsv() ? Stream.of(value.split(";")) : Stream.of(value);
+            return valueAsStream.map(uppercaseF).map(normalizeF).toList();
         }
 
         /**
