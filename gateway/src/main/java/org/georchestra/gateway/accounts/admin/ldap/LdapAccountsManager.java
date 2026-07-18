@@ -259,12 +259,6 @@ class LdapAccountsManager extends AbstractAccountsManager {
         }
     }
 
-    /**
-     * Ensures all roles assigned to a user are prefixed with {@code "ROLE_"}.
-     *
-     * @param user the user whose roles need to be normalized
-     * @return the updated user with properly formatted roles
-     */
     private void ensureRolesExist(GeorchestraUser mapped, Account newAccount) {
         try {// account created, add roles
             if (!mapped.getRoles().contains("ROLE_USER")) {
