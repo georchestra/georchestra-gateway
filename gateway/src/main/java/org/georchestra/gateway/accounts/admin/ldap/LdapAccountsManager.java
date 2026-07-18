@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang3.StringUtils;
@@ -242,6 +244,19 @@ class LdapAccountsManager extends AbstractAccountsManager {
         Account existingAccount = mapToAccountBrief(existing);
         Account modifiedAccount = mapToAccountBrief(mapped);
         accountDao.update(existingAccount, modifiedAccount);
+
+        List<String> existingRoles = roleDao.findAllForUser(existingAccount).stream().map(Role::getName).toList();
+        Set<String> expectedRoles = Stream.concat(
+                mapped.getRoles().stream(), Stream.of("USER")).collect(Collectors.toSet());
+        List<String> rolesToRemove = existingRoles.stream().filter(r -> !expectedRoles.contains(r)).toList();
+        List<String> rolesToAdd = expectedRoles.stream().filter(r -> !existingRoles.contains(r)).toList();
+        for (String role : rolesToAdd) {
+            ensureRoleExists(role);
+            roleDao.addUser(role, modifiedAccount);
+        }
+        for (String role : rolesToRemove) {
+            roleDao.deleteUser(role, modifiedAccount);
+        }
     }
 
     /**
