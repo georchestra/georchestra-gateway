@@ -3,12 +3,10 @@ package org.georchestra.gateway.security.oauth2;
 import org.georchestra.ds.DataServiceException;
 import org.georchestra.ds.DuplicatedCommonNameException;
 import org.georchestra.ds.roles.Role;
-import org.georchestra.ds.roles.RoleDao;
 import org.georchestra.ds.roles.RoleFactory;
 import org.georchestra.ds.users.Account;
 import org.georchestra.ds.users.DuplicatedEmailException;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -21,9 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
-
-    @Autowired
-    private RoleDao roleDao;
 
     @DynamicPropertySource
     static void isAuthoritativeProperties(DynamicPropertyRegistry registry) {
