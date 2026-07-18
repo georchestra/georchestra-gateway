@@ -329,7 +329,7 @@
       "georchestra-oidc": [
         {
           "id": "969dc82b-f982-49d9-a586-6f95490bcf0d",
-          "name": "TEST_ROLE",
+          "name": "TEST_ROLE;Apps_Georchestra;ROLE_USER;ROLE_PREFIX",
           "description": "",
           "composite": false,
           "clientRole": true,

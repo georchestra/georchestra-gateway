@@ -43,7 +43,8 @@ public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
     }
 
     @Test
-    public void keycloakLoginRewriteUserInLdapWhenUserExists() throws DataServiceException, DuplicatedEmailException, DuplicatedCommonNameException {
+    public void keycloakLoginRewriteUserInLdapWhenUserExists()
+            throws DataServiceException, DuplicatedEmailException, DuplicatedCommonNameException {
         String userId = "testoidcuser2";
         createTestUser(userId, THREE_ROLES);
         logAndFollowRedirect(userId);
@@ -62,6 +63,21 @@ public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
         assertThat(account.getGivenName().equals("test")).isTrue();
         Set<String> roles = roleDao.findAllForUser(account).stream().map(Role::getName).collect(Collectors.toSet());
         assertEquals(Set.of("TEST_ROLE", "APPS_GEORCHESTRA", "OTHER_ROLE", "USER", "OIDC_USER"), roles);
+    }
+
+    @Test
+    public void keycloakLoginRewriteUserWithROLEPrefixedRole()
+            throws DataServiceException, DuplicatedEmailException, DuplicatedCommonNameException {
+        String userId = "testoidcuser3";
+        createTestUser(userId, THREE_ROLES);
+        logAndFollowRedirect(userId);
+
+        createTestUser(userId, FOUR_ROLES);
+        logAndFollowRedirect(userId);
+
+        Account account = accountDao.findByUID("keycloak_" + userId);
+        Set<String> roles = roleDao.findAllForUser(account).stream().map(Role::getName).collect(Collectors.toSet());
+        assertEquals(Set.of("TEST_ROLE", "APPS_GEORCHESTRA", "PREFIX", "USER", "OIDC_USER"), roles);
     }
 
     private static String random() {

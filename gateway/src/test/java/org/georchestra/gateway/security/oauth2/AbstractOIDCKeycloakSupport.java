@@ -66,8 +66,8 @@ public abstract class AbstractOIDCKeycloakSupport {
         registry.add("georchestra.gateway.security.oidc.claims.roles.splitcsv", () -> true);
     }
 
-    public static final String TEST_ROLE_ALONE = "TEST_ROLE";
     public static final String THREE_ROLES = "TEST_ROLE;Apps_Georchestra;Other_role";
+    public static final String FOUR_ROLES = "TEST_ROLE;Apps_Georchestra;ROLE_USER;ROLE_PREFIX";
     public static final String GEOR_CLIENT_ID = "715ee18c-7dc3-4fa4-8c2e-8bacdbd9da25";
 
     // The previous webTestClient object will be scoped to our spring boot
@@ -139,6 +139,8 @@ public abstract class AbstractOIDCKeycloakSupport {
         RoleRepresentation rolesToAdd = realm.clients().get(GEOR_CLIENT_ID).roles().list().stream()
                 .filter(x -> roles.equals(x.getName())).findFirst().get();
         UserResource userToComplete = realm.users().get(realm.users().searchByUsername(userId, true).get(0).getId());
+        List<RoleRepresentation> toClear = userToComplete.roles().clientLevel(GEOR_CLIENT_ID).listEffective();
+        userToComplete.roles().clientLevel(GEOR_CLIENT_ID).remove(toClear);
         userToComplete.roles().clientLevel(GEOR_CLIENT_ID).add(List.of(rolesToAdd));
     }
 

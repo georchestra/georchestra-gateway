@@ -246,8 +246,8 @@ class LdapAccountsManager extends AbstractAccountsManager {
         accountDao.update(existingAccount, modifiedAccount);
 
         List<String> existingRoles = roleDao.findAllForUser(existingAccount).stream().map(Role::getName).toList();
-        Set<String> expectedRoles = Stream.concat(
-                mapped.getRoles().stream(), Stream.of("USER")).collect(Collectors.toSet());
+        Set<String> expectedRoles = Stream.concat(mapped.getRoles().stream(), Stream.of("USER"))
+                .map(s -> s.replaceFirst("^ROLE_", "")).collect(Collectors.toSet());
         List<String> rolesToRemove = existingRoles.stream().filter(r -> !expectedRoles.contains(r)).toList();
         List<String> rolesToAdd = expectedRoles.stream().filter(r -> !existingRoles.contains(r)).toList();
         for (String role : rolesToAdd) {
