@@ -221,7 +221,9 @@ public abstract class AbstractAccountsManager implements AccountManager {
         try {
             GeorchestraUser existing = findInternal(mapped).orElse(null);
             updateInternal(existing, mapped);
-            createUserOrgUniqueIdIfMissing(mapped);
+            // createUserOrgUniqueIdIfMissing(mapped); not tested. Cannot set
+            // customProviderClaims with oidc,
+            // thus cannot set setOAuth2OrgId.
             return existing;
         } catch (DataServiceException | DuplicatedEmailException e) {
             throw new RuntimeException(e);
