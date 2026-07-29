@@ -23,7 +23,7 @@ public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
 
     @DynamicPropertySource
     static void isAuthoritativeProperties(DynamicPropertyRegistry registry) {
-        registry.add("georchestra.gateway.security.oauth2.authorities", () -> List.of("keycloak"));
+        registry.add("georchestra.gateway.security.oidc.config.provider.keycloak.authoritative", () -> true);
     }
 
     @Test
