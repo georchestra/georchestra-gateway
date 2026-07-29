@@ -325,6 +325,20 @@ georchestra:
             append: true
 ```
 
+### Extra roles claim mapping facilities
+It could arise that the roles claim is not a simple array of strings, but a string of multiple roles separated by a semicolon. Such string can be transformed into an array of roles by using the "splitcsv" configuration property:
+```yaml
+georchestra:
+  gateway:
+    security:
+      oidc:
+        claims:
+          roles:
+            json.path:
+              - "$.groups"
+            splitcsv: true
+```
+
 #### Provider-Specific Claims Example
 
 You can override general claim settings for specific providers:
@@ -412,12 +426,13 @@ georchestra:
               searchEmail: true
             google:
               searchEmail: false
+              authoritative: true
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `searchEmail` | `false` | When `true`, finds the user in geOrchestra by email address instead of by ID |
-
+| Option          | Default | Description                                                                                                                                                                                                                                                                                                                                                  |
+|-----------------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `searchEmail`   | `false` | When `true`, finds the user in geOrchestra by email address instead of by ID                                                                                                                                                                                                                                                                                 |
+| `authoritative` | `false` | When `true`, each time a user logs in, the user's attributes (including roles and orgs) are aligned with the ones returned by the external identity provider. When 'false', given a user has already logged once, the user is fetched from the geOrchestra LDAP and returned with no modification, ignoring potential divergences with the identity provider |
 ### External Authentication Flags
 
 When using external authentication (OAuth2/OpenID Connect or pre-authentication), the Gateway adds a special header to requests sent to backend services:
