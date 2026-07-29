@@ -9,7 +9,6 @@ import org.georchestra.ds.users.Account;
 import org.georchestra.ds.users.DuplicatedEmailException;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.ldap.NameNotFoundException;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -19,8 +18,6 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
 
