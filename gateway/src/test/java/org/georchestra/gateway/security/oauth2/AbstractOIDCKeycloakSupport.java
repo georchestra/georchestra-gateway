@@ -66,10 +66,10 @@ public abstract class AbstractOIDCKeycloakSupport {
 
     @DynamicPropertySource
     static void customRolesClaimProcessor(DynamicPropertyRegistry registry) {
-        registry.add("georchestra.gateway.security.oidc.claims.roles.json.path", () -> "$.groups");
-        registry.add("georchestra.gateway.security.oidc.claims.roles.uppercase", () -> true);
-        registry.add("georchestra.gateway.security.oidc.claims.roles.normalize", () -> true);
-        registry.add("georchestra.gateway.security.oidc.claims.roles.splitcsv", () -> true);
+        registry.add("georchestra.gateway.security.oidc.claims.provider.keycloak.roles.json.path", () -> "$.groups");
+        registry.add("georchestra.gateway.security.oidc.claims.provider.keycloak.roles.uppercase", () -> true);
+        registry.add("georchestra.gateway.security.oidc.claims.provider.keycloak.roles.normalize", () -> true);
+        registry.add("georchestra.gateway.security.oidc.claims.provider.keycloak.roles.splitcsv", () -> true);
         registry.add("georchestra.gateway.security.oidc.claims.provider.keycloak.organization.path",
                 () -> "$.given_name");
         registry.add("georchestra.gateway.security.oidc.claims.provider.keycloak.organizationUid.path",
