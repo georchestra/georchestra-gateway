@@ -60,7 +60,7 @@ public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
         String initialOrg = keycloakUser.getFirstName();
         logAndFollowRedirect(userId);
 
-        keycloakUser = createTestUser(userId, random(), THREE_ROLES);
+        keycloakUser = updateTestUser(userId, random(), THREE_ROLES);
         String updatedOrg = keycloakUser.getFirstName();
         logAndFollowRedirect(userId);
 

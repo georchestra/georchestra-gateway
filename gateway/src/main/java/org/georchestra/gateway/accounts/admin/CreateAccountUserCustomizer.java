@@ -82,13 +82,10 @@ public class CreateAccountUserCustomizer implements GeorchestraUserCustomizerExt
             if (isPendingAccount(user)) {
                 throw new PendingUserException("User is pending approval.");
             }
-            accounts.createUserOrgUniqueIdIfMissing(mappedUser);
             return user;
         }
         if (isOauth2Authoritative) {
-            GeorchestraUser user = applyInternal(auth, mappedUser, accounts::createOrUpdate);
-            accounts.createUserOrgUniqueIdIfMissing(mappedUser);
-            return user;
+            return applyInternal(auth, mappedUser, accounts::createOrUpdate);
         }
         return mappedUser;
     }
