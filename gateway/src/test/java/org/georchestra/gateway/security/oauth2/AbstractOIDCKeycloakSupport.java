@@ -2,6 +2,7 @@ package org.georchestra.gateway.security.oauth2;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import jakarta.ws.rs.core.Response;
+import org.georchestra.ds.orgs.OrgsDao;
 import org.georchestra.ds.roles.RoleDao;
 import org.georchestra.ds.users.AccountDao;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,12 +60,19 @@ public abstract class AbstractOIDCKeycloakSupport {
     @Autowired
     protected RoleDao roleDao;
 
+    @Autowired
+    protected OrgsDao orgsDao;
+
     @DynamicPropertySource
     static void customRolesClaimProcessor(DynamicPropertyRegistry registry) {
         registry.add("georchestra.gateway.security.oidc.claims.roles.json.path", () -> "$.groups");
         registry.add("georchestra.gateway.security.oidc.claims.roles.uppercase", () -> true);
         registry.add("georchestra.gateway.security.oidc.claims.roles.normalize", () -> true);
         registry.add("georchestra.gateway.security.oidc.claims.roles.splitcsv", () -> true);
+        registry.add("georchestra.gateway.security.oidc.claims.provider.keycloak.organization.path",
+                () -> "$.given_name");
+        registry.add("georchestra.gateway.security.oidc.claims.provider.keycloak.organizationUid.path",
+                () -> "$.given_name");
     }
 
     public static final String THREE_ROLES = "TEST_ROLE;Apps_Georchestra;Other_role";
@@ -120,12 +129,12 @@ public abstract class AbstractOIDCKeycloakSupport {
         throw new IllegalStateException("Could not find login form action in Keycloak HTML");
     }
 
-    protected static void createTestUser(String userId, String roles) {
+    protected static UserRepresentation createTestUser(String userId, String orgSuffix, String roles) {
         RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
         UserRepresentation testuser = new UserRepresentation();
         testuser.setUsername(userId);
         testuser.setEmail(String.format("psc+%s@georchestra.org", userId));
-        testuser.setFirstName("test");
+        testuser.setFirstName("when_test_use_given_name_as_org_" + orgSuffix);
         testuser.setLastName("user");
         testuser.setEnabled(true);
         CredentialRepresentation pwd = new CredentialRepresentation();
@@ -142,6 +151,7 @@ public abstract class AbstractOIDCKeycloakSupport {
         List<RoleRepresentation> toClear = userToComplete.roles().clientLevel(GEOR_CLIENT_ID).listEffective();
         userToComplete.roles().clientLevel(GEOR_CLIENT_ID).remove(toClear);
         userToComplete.roles().clientLevel(GEOR_CLIENT_ID).add(List.of(rolesToAdd));
+        return testuser;
     }
 
     protected void logAndFollowRedirect(String userId) {
@@ -173,5 +183,9 @@ public abstract class AbstractOIDCKeycloakSupport {
                 .jsonPath("$.GeorchestraUser.username").isEqualTo("keycloak_" + userId).returnResult()
                 .getResponseBody());
         assertThat(body.contains("\"groups\":\"TEST_ROLE")).isTrue();
+    }
+
+    protected String random() {
+        return UUID.randomUUID().toString().substring(0, 6);
     }
 }

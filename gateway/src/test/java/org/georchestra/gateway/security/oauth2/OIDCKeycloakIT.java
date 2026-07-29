@@ -2,6 +2,7 @@ package org.georchestra.gateway.security.oauth2;
 
 import org.georchestra.ds.DataServiceException;
 import org.georchestra.ds.DuplicatedCommonNameException;
+import org.georchestra.ds.orgs.Org;
 import org.georchestra.ds.roles.Role;
 import org.georchestra.ds.users.Account;
 import org.georchestra.ds.users.DuplicatedEmailException;
@@ -19,7 +20,7 @@ public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
     @Test
     public void keycloakLoginCreateUserInLdapWhenUserUnknown() throws DataServiceException {
         String userId = "testoidcuser1";
-        createTestUser(userId, THREE_ROLES);
+        createTestUser(userId, random(), THREE_ROLES);
 
         logAndFollowRedirect(userId);
 
@@ -27,13 +28,16 @@ public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
         assertNotNull(account, "Account should have been created in LDAP by CreateAccountUserCustomizer");
         Set<String> roles = roleDao.findAllForUser(account).stream().map(Role::getName).collect(Collectors.toSet());
         assertEquals(Set.of("TEST_ROLE", "APPS_GEORCHESTRA", "OTHER_ROLE", "USER", "OIDC_USER"), roles);
+        Org org = orgsDao.findByCommonName(account.getOrg());
+        assertNotNull(org, "Org should have been created in LDAP");
+        assertThat(org.getMembers().contains(account.getUid())).isTrue();
     }
 
     @Test
     public void keycloakLoginLetUserUnmodifiedInLdapWhenUserExists()
             throws DataServiceException, DuplicatedEmailException {
         String userId = "testoidcuser2";
-        createTestUser(userId, THREE_ROLES);
+        createTestUser(userId, random(), THREE_ROLES);
         logAndFollowRedirect(userId);
         Account account = accountDao.findByUID("keycloak_" + userId);
         Account updatedAccount = accountDao.findByUID("keycloak_" + userId);
@@ -49,10 +53,10 @@ public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
     public void keycloakLoginLetUserUnmodifiedWithROLEPrefixedRole()
             throws DataServiceException, DuplicatedEmailException, DuplicatedCommonNameException {
         String userId = "testoidcuser3";
-        createTestUser(userId, FOUR_ROLES);
+        createTestUser(userId, random(), FOUR_ROLES);
         logAndFollowRedirect(userId);
 
-        createTestUser(userId, THREE_ROLES);
+        createTestUser(userId, random(), THREE_ROLES);
         logAndFollowRedirect(userId);
 
         Account account = accountDao.findByUID("keycloak_" + userId);
