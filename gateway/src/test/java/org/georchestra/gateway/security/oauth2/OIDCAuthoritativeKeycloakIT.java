@@ -2,12 +2,14 @@ package org.georchestra.gateway.security.oauth2;
 
 import org.georchestra.ds.DataServiceException;
 import org.georchestra.ds.DuplicatedCommonNameException;
+import org.georchestra.ds.orgs.Org;
 import org.georchestra.ds.roles.Role;
 import org.georchestra.ds.roles.RoleFactory;
 import org.georchestra.ds.users.Account;
 import org.georchestra.ds.users.DuplicatedEmailException;
 import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.ldap.NameNotFoundException;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -17,6 +19,8 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
 
@@ -28,13 +32,16 @@ public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
     @Test
     public void keycloakLoginCreateUserInLdapWhenUserUnknown() throws DataServiceException {
         String userId = "testoidcuser1";
-        createTestUser(userId, random(), THREE_ROLES);
+        UserRepresentation keycloakUser = createTestUser(userId, random(), THREE_ROLES);
+        String expectedOrg = keycloakUser.getFirstName();
 
         logAndFollowRedirect(userId);
 
         Account account = accountDao.findByUID("keycloak_" + userId);
         Set<String> roles = roleDao.findAllForUser(account).stream().map(Role::getName).collect(Collectors.toSet());
         assertEquals(Set.of("TEST_ROLE", "APPS_GEORCHESTRA", "OTHER_ROLE", "USER", "OIDC_USER"), roles);
+        Org orgInLdap = orgsDao.findByCommonName(expectedOrg);
+        assertThat(orgInLdap.getMembers().contains(account.getUid())).isTrue();
     }
 
     @Test
@@ -61,18 +68,24 @@ public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
     }
 
     @Test
-    public void keycloakLoginRewriteUserWithROLEPrefixedRole()
+    public void keycloakLoginRewriteUserWithROLEPrefixedRoleAndUpdatedOrg()
             throws DataServiceException, DuplicatedEmailException, DuplicatedCommonNameException {
         String userId = "testoidcuser3";
-        createTestUser(userId, random(), THREE_ROLES);
+        UserRepresentation keycloakUser = createTestUser(userId, random(), THREE_ROLES);
+        String initialOrg = keycloakUser.getFirstName();
         logAndFollowRedirect(userId);
 
-        createTestUser(userId, random(), FOUR_ROLES);
+        keycloakUser = updateTestUser(userId, random(), FOUR_ROLES);
+        String updatedOrg = keycloakUser.getFirstName();
         logAndFollowRedirect(userId);
 
         Account account = accountDao.findByUID("keycloak_" + userId);
         Set<String> roles = roleDao.findAllForUser(account).stream().map(Role::getName).collect(Collectors.toSet());
         assertEquals(Set.of("TEST_ROLE", "APPS_GEORCHESTRA", "PREFIX", "USER", "OIDC_USER"), roles);
+        Org initialOrgInLdap = orgsDao.findByCommonName(initialOrg);
+        assertThat(initialOrgInLdap.getMembers().contains(account.getUid())).isFalse();
+        Org updatedOrgInLdap = orgsDao.findByCommonName(updatedOrg);
+        assertThat(updatedOrgInLdap.getMembers().contains(account.getUid())).isTrue();
     }
 
 }

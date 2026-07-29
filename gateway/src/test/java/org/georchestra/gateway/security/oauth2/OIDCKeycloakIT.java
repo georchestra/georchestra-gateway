@@ -7,6 +7,8 @@ import org.georchestra.ds.roles.Role;
 import org.georchestra.ds.users.Account;
 import org.georchestra.ds.users.DuplicatedEmailException;
 import org.junit.jupiter.api.Test;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.ldap.NameNotFoundException;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
 
@@ -53,15 +56,21 @@ public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
     public void keycloakLoginLetUserUnmodifiedWithROLEPrefixedRole()
             throws DataServiceException, DuplicatedEmailException, DuplicatedCommonNameException {
         String userId = "testoidcuser3";
-        createTestUser(userId, random(), FOUR_ROLES);
+        UserRepresentation keycloakUser = createTestUser(userId, random(), FOUR_ROLES);
+        String initialOrg = keycloakUser.getFirstName();
         logAndFollowRedirect(userId);
 
-        createTestUser(userId, random(), THREE_ROLES);
+        keycloakUser = createTestUser(userId, random(), THREE_ROLES);
+        String updatedOrg = keycloakUser.getFirstName();
         logAndFollowRedirect(userId);
 
         Account account = accountDao.findByUID("keycloak_" + userId);
         Set<String> roles = roleDao.findAllForUser(account).stream().map(Role::getName).collect(Collectors.toSet());
         assertEquals(Set.of("TEST_ROLE", "APPS_GEORCHESTRA", "PREFIX", "USER", "OIDC_USER"), roles);
+        Org org = orgsDao.findByCommonName(initialOrg);
+        assertNotNull(org, "Org should have been created in LDAP");
+        assertThat(org.getMembers().contains(account.getUid())).isTrue();
+        assertThrows(NameNotFoundException.class, () -> orgsDao.findByCommonName(updatedOrg));
     }
 
 }

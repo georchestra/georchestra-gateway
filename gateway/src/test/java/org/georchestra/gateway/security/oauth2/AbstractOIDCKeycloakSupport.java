@@ -7,6 +7,7 @@ import org.georchestra.ds.roles.RoleDao;
 import org.georchestra.ds.users.AccountDao;
 import org.georchestra.gateway.app.GeorchestraGatewayApplication;
 import org.georchestra.testcontainers.ldap.GeorchestraLdapContainer;
+import org.jetbrains.annotations.NotNull;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -131,18 +132,8 @@ public abstract class AbstractOIDCKeycloakSupport {
 
     protected static UserRepresentation createTestUser(String userId, String orgSuffix, String roles) {
         RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
-        UserRepresentation testuser = new UserRepresentation();
-        testuser.setUsername(userId);
-        testuser.setEmail(String.format("psc+%s@georchestra.org", userId));
-        testuser.setFirstName("when_test_use_given_name_as_org_" + orgSuffix);
-        testuser.setLastName("user");
-        testuser.setEnabled(true);
-        CredentialRepresentation pwd = new CredentialRepresentation();
-        pwd.setTemporary(false);
-        pwd.setType(CredentialRepresentation.PASSWORD);
-        pwd.setValue(userId);
-        testuser.setCredentials(List.of(pwd));
-        Response response = realm.users().create(testuser);
+        UserRepresentation testUser = createUserRepresentation(userId, orgSuffix);
+        Response response = realm.users().create(testUser);
         response.close();
 
         RoleRepresentation rolesToAdd = realm.clients().get(GEOR_CLIENT_ID).roles().list().stream()
@@ -151,7 +142,22 @@ public abstract class AbstractOIDCKeycloakSupport {
         List<RoleRepresentation> toClear = userToComplete.roles().clientLevel(GEOR_CLIENT_ID).listEffective();
         userToComplete.roles().clientLevel(GEOR_CLIENT_ID).remove(toClear);
         userToComplete.roles().clientLevel(GEOR_CLIENT_ID).add(List.of(rolesToAdd));
-        return testuser;
+        return testUser;
+    }
+
+    protected static UserRepresentation updateTestUser(String userId, String orgSuffix, String roles) {
+        RealmResource realm = keycloak.getKeycloakAdminClient().realm("georchestra-oidc");
+        UserRepresentation testUser = createUserRepresentation(userId, orgSuffix);
+        UserResource userToUpdate = realm.users().get(realm.users().searchByUsername(userId, true).get(0).getId());
+        userToUpdate.update(testUser);
+
+        RoleRepresentation rolesToAdd = realm.clients().get(GEOR_CLIENT_ID).roles().list().stream()
+                .filter(x -> roles.equals(x.getName())).findFirst().get();
+        UserResource userToComplete = realm.users().get(realm.users().searchByUsername(userId, true).get(0).getId());
+        List<RoleRepresentation> toClear = userToComplete.roles().clientLevel(GEOR_CLIENT_ID).listEffective();
+        userToComplete.roles().clientLevel(GEOR_CLIENT_ID).remove(toClear);
+        userToComplete.roles().clientLevel(GEOR_CLIENT_ID).add(List.of(rolesToAdd));
+        return testUser;
     }
 
     protected void logAndFollowRedirect(String userId) {
@@ -187,5 +193,20 @@ public abstract class AbstractOIDCKeycloakSupport {
 
     protected String random() {
         return UUID.randomUUID().toString().substring(0, 6);
+    }
+
+    private static @NotNull UserRepresentation createUserRepresentation(String userId, String orgSuffix) {
+        UserRepresentation testUser = new UserRepresentation();
+        testUser.setUsername(userId);
+        testUser.setEmail(String.format("psc+%s@georchestra.org", userId));
+        testUser.setFirstName("when_test_use_given_name_as_org_" + orgSuffix);
+        testUser.setLastName("user");
+        testUser.setEnabled(true);
+        CredentialRepresentation pwd = new CredentialRepresentation();
+        pwd.setTemporary(false);
+        pwd.setType(CredentialRepresentation.PASSWORD);
+        pwd.setValue(userId);
+        testUser.setCredentials(List.of(pwd));
+        return testUser;
     }
 }
