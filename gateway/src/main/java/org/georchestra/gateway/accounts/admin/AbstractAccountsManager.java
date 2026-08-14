@@ -85,7 +85,8 @@ public abstract class AbstractAccountsManager implements AccountManager {
 
     @Override
     public GeorchestraUser createOrUpdate(@NonNull GeorchestraUser mappedUser) {
-        return find(mappedUser).map(x -> this.update(mappedUser)).orElseGet(() -> createIfMissing(mappedUser));
+        return find(mappedUser).map(existing -> this.update(existing, mappedUser))
+                .orElseGet(() -> createIfMissing(mappedUser));
     }
 
     /**
@@ -216,10 +217,9 @@ public abstract class AbstractAccountsManager implements AccountManager {
         }
     }
 
-    protected GeorchestraUser update(GeorchestraUser mapped) {
+    protected GeorchestraUser update(GeorchestraUser existing, GeorchestraUser mapped) {
         lock.writeLock().lock();
         try {
-            GeorchestraUser existing = findInternal(mapped).orElse(null);
             updateInternal(existing, mapped);
             createUserOrgUniqueIdIfMissing(mapped);
             return existing;
