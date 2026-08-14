@@ -333,10 +333,12 @@ georchestra:
     security:
       oidc:
         claims:
-          roles:
-            json.path:
-              - "$.groups"
-            splitcsv: true
+          provider:
+            <provider-name>: 
+              roles:
+                json.path:
+                  - "$.groups"
+                splitcsv: true
 ```
 
 #### Provider-Specific Claims Example
