@@ -53,8 +53,7 @@ public class OIDCKeycloakIT extends AbstractOIDCKeycloakSupport {
     }
 
     @Test
-    public void keycloakLoginLetUserUnmodifiedWithROLEPrefixedRole()
-            throws DataServiceException, DuplicatedEmailException, DuplicatedCommonNameException {
+    public void keycloakLoginLetUserUnmodifiedWithROLEPrefixedRole() throws DataServiceException {
         String userId = "testoidcuser3";
         UserRepresentation keycloakUser = createTestUser(userId, random(), FOUR_ROLES);
         String initialOrg = keycloakUser.getFirstName();

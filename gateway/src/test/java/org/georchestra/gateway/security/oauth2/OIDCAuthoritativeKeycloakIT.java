@@ -12,7 +12,6 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,8 +64,7 @@ public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
     }
 
     @Test
-    public void keycloakLoginRewriteUserWithROLEPrefixedRoleAndUpdatedOrg()
-            throws DataServiceException, DuplicatedEmailException, DuplicatedCommonNameException {
+    public void keycloakLoginRewriteUserWithROLEPrefixedRoleAndUpdatedOrg() throws DataServiceException {
         String userId = "testoidcuser3";
         UserRepresentation keycloakUser = createTestUser(userId, random(), THREE_ROLES);
         String initialOrg = keycloakUser.getFirstName();
