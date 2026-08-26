@@ -83,4 +83,48 @@ public class OIDCAuthoritativeKeycloakIT extends AbstractOIDCKeycloakSupport {
         assertThat(updatedOrgInLdap.getMembers().contains(account.getUid())).isTrue();
     }
 
+    @Test
+    public void keycloakLoginRewriteUserWithUpdatedOrgAndRoleFromOrgs()
+            throws DataServiceException, DuplicatedCommonNameException {
+        String userId = "testoidcuser4";
+        UserRepresentation keycloakUser = createTestUser(userId, random(), THREE_ROLES);
+        String initialOrg = keycloakUser.getFirstName();
+        String initialOrgRole = "role_from_initial_org_" + random();
+        createOrgWithRole(initialOrg, initialOrgRole);
+
+        logAndFollowRedirect(userId);
+
+        Account account = accountDao.findByUID("keycloak_" + userId);
+        Set<String> roles = roleDao.findAllForUser(account).stream().map(Role::getName).collect(Collectors.toSet());
+        assertEquals(Set.of("TEST_ROLE", "APPS_GEORCHESTRA", "OTHER_ROLE", "USER", "OIDC_USER", initialOrgRole), roles);
+
+        keycloakUser = updateTestUser(userId, random(), FOUR_ROLES);
+        String updatedOrg = keycloakUser.getFirstName();
+        String updatedOrgRole = "role_from_updated_org_" + random();
+        createOrgWithRole(updatedOrg, updatedOrgRole);
+
+        logAndFollowRedirect(userId);
+
+        account = accountDao.findByUID("keycloak_" + userId);
+        roles = roleDao.findAllForUser(account).stream().map(Role::getName).collect(Collectors.toSet());
+        assertEquals(Set.of("TEST_ROLE", "APPS_GEORCHESTRA", "PREFIX", "USER", "OIDC_USER", updatedOrgRole), roles);
+        Org initialOrgInLdap = orgsDao.findByCommonName(initialOrg);
+        assertThat(initialOrgInLdap.getMembers().contains(account.getUid())).isFalse();
+        Org updatedOrgInLdap = orgsDao.findByCommonName(updatedOrg);
+        assertThat(updatedOrgInLdap.getMembers().contains(account.getUid())).isTrue();
+    }
+
+    private void createOrgWithRole(String initialOrg, String roleFromInitialOrg)
+            throws DataServiceException, DuplicatedCommonNameException {
+        Org org = new Org();
+        org.setId(initialOrg);
+        org.setShortName(initialOrg);
+        org.setName(initialOrg);
+        org.setOrgType("Other");
+        orgsDao.insert(org);
+        org = orgsDao.findByShortName(initialOrg);
+        Role role = RoleFactory.create(roleFromInitialOrg, "initial_role", false);
+        roleDao.insert(role);
+        roleDao.addOrg(roleFromInitialOrg, org);
+    }
 }

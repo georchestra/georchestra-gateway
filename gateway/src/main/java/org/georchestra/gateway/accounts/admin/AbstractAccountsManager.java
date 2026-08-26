@@ -220,8 +220,8 @@ public abstract class AbstractAccountsManager implements AccountManager {
     protected GeorchestraUser update(GeorchestraUser existing, GeorchestraUser mapped) {
         lock.writeLock().lock();
         try {
-            updateInternal(existing, mapped);
             createUserOrgUniqueIdIfMissing(mapped);
+            updateInternal(existing, mapped);
             return existing;
         } catch (DataServiceException | DuplicatedEmailException e) {
             throw new RuntimeException(e);

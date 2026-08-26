@@ -257,6 +257,11 @@ class LdapAccountsManager extends AbstractAccountsManager {
         for (String role : rolesToRemove) {
             roleDao.deleteUser(role, modifiedAccount);
         }
+        if (modifiedAccount.getOrg() != null) {
+            List<String> roles = roleDao.findAllForOrg(orgsDao.findByCommonName(modifiedAccount.getOrg())).stream()
+                    .map(Role::getName).collect(Collectors.toList());
+            roleDao.addUsersInRoles(roles, List.of(modifiedAccount));
+        }
     }
 
     private void ensureRolesExist(GeorchestraUser mapped, Account newAccount) {
