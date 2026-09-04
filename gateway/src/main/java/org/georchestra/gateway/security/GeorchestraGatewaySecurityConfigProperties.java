@@ -71,6 +71,11 @@ public class GeorchestraGatewaySecurityConfigProperties implements Validator {
     private boolean createNonExistingUsersInLDAP = true;
 
     /**
+     * Disable LDAP form login while keeping LDAP HTTP Basic authentication enabled.
+     */
+    private boolean disableLdapFormLogin = false;
+
+    /**
      * Flag indicating whether the user should be redirected to a page causing a
      * configureable delay after a successful login. Defaults to 0, which
      * deactivates the feature.

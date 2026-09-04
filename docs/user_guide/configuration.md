@@ -566,3 +566,12 @@ georchestra:
       http://localhost:8080/geoserver/,
       http://localhost:8080/console/
 ```
+
+## Disable LDAP Login form
+
+It's possible to disable LDAP form login while keeping LDAP HTTP Basic authentication enabled.
+Useful when LDAP must remain available for technical clients, while browser users should authenticate only through OAuth2/OIDC.
+
+```yaml
+georchestra.gateway.security.disableLdapFormLogin: true
+```

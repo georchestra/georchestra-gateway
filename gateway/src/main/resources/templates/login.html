@@ -30,7 +30,7 @@
                 <a href="/" class="d-flex align-items-center justify-content-center" th:if="${not headerEnabled}">
                     <img th:src="${logoUrl}" alt="" width="200" height="72">
                 </a>
-                <form class="form-signin" method="post" action="/login" th:if="${ldapEnabled}">
+                <form class="form-signin" method="post" action="/login" th:if="${ldapFormLoginEnabled}">
                     <h2 class="form-signin-heading"><span th:text="#{login_message_title}"/></h2>
                     <h4 class="fs-6 fw-light"><span th:text="#{login_message_subtitle}"/></h4>
                     <div class="my-4 text-danger text-center"
