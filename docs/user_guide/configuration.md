@@ -573,5 +573,5 @@ It's possible to disable LDAP form login while keeping LDAP HTTP Basic authentic
 Useful when LDAP must remain available for technical clients, while browser users should authenticate only through OAuth2/OIDC.
 
 ```yaml
-disableLdapFormLogin: false
+disableLdapFormLogin: true
 ```
